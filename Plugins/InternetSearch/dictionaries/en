@@ -1,0 +1,6 @@
+<search,google> (LINE question)
+  goto "http://www.google.com/search?q=$question$"
+<wolfram,wolf RAM>[ alpha] (LINE question)
+  goto "www.wolframalpha.com/input/?i=$question$"
+youtube (LINE video)
+  goto "https://www.youtube.com/results?search_query=$video$"

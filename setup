@@ -1,0 +1,33 @@
+#!/bin/bash
+
+python lispeak.py displayInstallWarning
+
+# Setup speech recognition for the person.
+
+sudo -i apt-get install sox python-argparse wget espeak xautomation xvkbd -y
+
+DIR="$(pwd)"
+
+echo Assuming all files are in "'$DIR'"
+
+touch Recognition/dictionary.c
+cd Recognition
+make
+cd ..
+rm Recognition/modes/main.dic
+rm Recognition/bin/ -r
+rm $HOME/.lispeak/ -r
+mkdir $HOME/.lispeak/
+cp Setup/defaults/bin Recognition/bin -r
+touch $HOME/.lispeak/UserInfo
+touch $HOME/.lispeak/plugins.db
+touch $HOME/.lispeak/plugins.dic
+cp Setup/defaults/UserInfo $HOME/.lispeak/UserInfo
+mkdir $HOME/.lispeak/services
+cp lispeak.py $HOME/.lispeak/services
+touch Recognition/modes/main.dic
+cp Setup/defaults/main.dic Recognition/modes/main.dic
+#./installDefault
+python lispeak.py askInfo
+nohup Recognition/bin/goto 'http://lispeak.bmandesigns.com/thanks' "nohup.out" &
+echo "Done, you will have to setup the hotkey yourself."
