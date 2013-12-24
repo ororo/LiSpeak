@@ -4,7 +4,7 @@ python lispeak.py displayInstallWarning
 
 # Setup speech recognition for the person.
 
-sudo -i apt-get install sox python-argparse wget espeak xautomation xvkbd -y
+sudo -i apt-get install sox python-argparse wget espeak xautomation xvkbd python-appindicator -y
 
 DIR="$(pwd)"
 
