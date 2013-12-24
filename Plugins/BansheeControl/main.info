@@ -1,0 +1,6 @@
+name=Banshee Control
+author=BmanDesigns (Brett Mayson)
+version=1.0
+identifier=bmandesigns.bansheecontrol
+types=commands
+lang=en

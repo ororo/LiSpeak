@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+
 import subprocess,sys,platform,tarfile,os
 import sqlite3 as sql
 
@@ -63,6 +65,9 @@ def getInfo(plugin="UserInfo"):
     oData = oFile.read()
     oFile.close()
     return parseData(oData)
+    
+def homeDir():
+    return home 
  
 def getSingleInfo(item):
     return getInfo()[item.upper()]
@@ -76,9 +81,10 @@ def writeSingleInfo(item,new=False):
  
 def writeInfo(new,plugin="UserInfo"):
     if plugin == "UserInfo":
-        oFile = open(root+"/UserInfo")
+        path = root+"/UserInfo"
     else:
-        oFile = open(root+"/configs/"+plugin)
+        path = root+"/configs/"+plugin
+    oFile = open(path)
     oData = oFile.read()
     oFile.close()
     orig = parseData(oData)
@@ -86,8 +92,8 @@ def writeInfo(new,plugin="UserInfo"):
     for e in orig:
         if e not in data:
             data[e] = orig[e]
-    with open(root+"/UserInfo",'w') as info:
-        info.write("#LiSpeak User Info File")
+    with open(path,'w') as info:
+        info.write("#LiSpeak Config File: "+plugin)
         for each in data:
             info.write("\n"+each.upper()+"="+data[each])
             
@@ -95,6 +101,7 @@ def sqlCheck(cur):
     cur.execute("CREATE TABLE IF NOT EXISTS plugins(id INTEGER PRIMARY KEY, name TEXT, identifier TEXT,type TEXT, version TEXT, author TEXT, binFiles TEXT,services TEXT, dicts TEXT, actions TEXT)")
             
 def installPlugin(path):
+    dictionaries = []
     services = []
     executables = []
     complete = False
@@ -196,6 +203,32 @@ def installPlugin(path):
                     except:
                         output("Error Installing Plugin In main.dic")
                     dictionary.close()
+                    try:
+                        os.system("mkdir "+root+"/dictionaries")
+                        new = os.listdir(root+"/"+data['identifier']+"/dictionaries")
+                        for f in new:
+                            if os.path.isdir(root+"/"+data['identifier']+"/dictionaries/"+f):
+                                try:
+                                    dictionary = open(root+'/dictionaries/'+f+'.dic')
+                                except:
+                                    os.system("touch "+root+'/dictionaries/'+f+'.dic')
+                                    dictionary = open(root+'/dictionaries/'+f+'.dic')
+                                text = dictionary.read()
+                                dictionary.close()
+                                actions = open(root+"/"+data['identifier']+"/dictionaries/"+f+"/"+installLang)
+                                command = actions.read()
+                                actions.close()
+                                try:
+                                    dictionary = open(root+'/dictionaries/'+f+'.dic','w')
+                                    dictionary.write("#PLUGIN: "+data['identifier']+"\n")
+                                    dictionary.write(command)
+                                    dictionary.write("#END\n")
+                                    dictionary.write(text)
+                                except:
+                                    output("Error Installing Plugin In "+f+".dic")
+                                dictionaries.append(f)
+                    except:
+                        print "Error Scanning Dictionaries"
                     descfile = open(root+"/"+data['identifier']+"/languages/"+installLang)
                     desc = descfile.read()
                     descfile.close()
@@ -226,7 +259,7 @@ def installPlugin(path):
                 with con:
                     cur = con.cursor()
                     sqlCheck(cur)
-                    execline = "INSERT INTO plugins VALUES(NULL, \""+data['name']+"\", \""+str(data['identifier'])+"\", \""+str(data['types'])+"\", \""+str(data['version'])+"\", \""+data['author']+"\", \""+str(executables)+"\", \""+str(services)+"\", \""+str([])+"\", \""+str(actions)+"\")"
+                    execline = "INSERT INTO plugins VALUES(NULL, \""+data['name']+"\", \""+str(data['identifier'])+"\", \""+str(data['types'])+"\", \""+str(data['version'])+"\", \""+data['author']+"\", \""+str(executables)+"\", \""+str(services)+"\", \""+str(dictionaries)+"\", \""+str(actions)+"\")"
                     cur.execute(execline)
                 os.system("rm "+root+"/"+data['identifier']+" -r")
                 print "Done"
@@ -261,48 +294,73 @@ def removePlugin(ridentifier):
                     os.system("rm "+root+"/services/"+ser)
                 print "Removing Config File"
                 os.system("rm "+root+"/configs/"+identifier)
-            dictionary = open(root+'/plugins.dic')
-            text = ""
-            deleting = False
-            for line in dictionary:
-                if deleting == False:
-                    add = True
-                    if line.startswith('#PLUGIN: '):
-                        if line.replace('#PLUGIN: ','').replace('\n','') == identifier:
+                print "Removng Dictionaries"
+                for dic in eval(dictionaries):
+                    dictionary = open(root+'/dictionaries/'+dic+'.dic')
+                    text = ""
+                    deleting = False
+                    for line in dictionary:
+                        if deleting == False:
+                            add = True
+                            if line.startswith('#PLUGIN: '):
+                                if line.replace('#PLUGIN: ','').replace('\n','') == identifier:
+                                    add = False
+                                    deleting = True
+                        else:
                             add = False
-                            deleting = True
-                else:
-                    add = False
-                    if line == "#END\n":
-                        deleting = False
-                if add == True:
-                    text = text + line
-            dictionary.close()
-            try:
-                dictionary = open(root+'/plugins.dic','w')
-                dictionary.write(text)
-            except:
-                output("Error Cleaning plugins.dic")
-            dictionary.close()
-            cur.execute("DELETE FROM plugins WHERE id = "+str(pid))
+                            if line == "#END\n":
+                                deleting = False
+                        if add == True:
+                            text = text + line
+                    dictionary.close()
+                    try:
+                        dictionary = open(root+'/dictionaries/'+dic+'.dic','w')
+                        dictionary.write(text)
+                    except:
+                        output("Error Cleaning "+dic+'.dic')
+                    dictionary.close()
+                dictionary = open(root+'/plugins.dic')
+                text = ""
+                deleting = False
+                for line in dictionary:
+                    if deleting == False:
+                        add = True
+                        if line.startswith('#PLUGIN: '):
+                            if line.replace('#PLUGIN: ','').replace('\n','') == identifier:
+                                add = False
+                                deleting = True
+                    else:
+                        add = False
+                        if line == "#END\n":
+                            deleting = False
+                    if add == True:
+                        text = text + line
+                dictionary.close()
+                try:
+                    dictionary = open(root+'/plugins.dic','w')
+                    dictionary.write(text)
+                except:
+                    output("Error Cleaning plugins.dic")
+                dictionary.close()
+                cur.execute("DELETE FROM plugins WHERE id = "+str(pid))
 
 commands = {"askInfo":askInfo,"getInfo":getSingleInfo,"writeInfo":writeSingleInfo,"displayInstallWarning":displayInstallWarning,'installPlugin':installPlugin,'removePlugin':removePlugin}
 if __name__ == "__main__":
     args = sys.argv
     if args[1] in commands:
-        #try:
-        #    r = commands[args[1]](args[2],args[3])
-        #    if r != None:
-        #        print r
-        #except:
-        #    try:
-        r = commands[args[1]](args[2])
-        #        if r != None:
-        #          print r
-        #    except:
-        #        r = commands[args[1]]()
-        #        if r != None:
-        #            print r
+        try:
+            r = commands[args[1]](args[2],args[3])
+            if r != None:
+                print r
+        except:
+            try:
+                r = commands[args[1]](args[2])
+                if r != None:
+                  print r
+            except:
+                r = commands[args[1]]()
+                if r != None:
+                    print r
     else:
         print "Invalid Argument:",args[1]
         print

@@ -1,0 +1,18 @@
+new playlist
+  type '\\Cn'
+quit
+  type '\\Cw'
+edit[ <song,track,file>]
+  type 'e'
+<show,display> browser
+  type '\\Cb'
+[<show,display> ]lyrics
+  type '\\Ct'
+[<show,display> ]fullscreen
+  type 'f'
+[<show,display> ]equalizer
+  type '\\Ce'
+<show,display,jump to> current song
+  type '\\Cj'
+restart[ song]
+  type 'r'

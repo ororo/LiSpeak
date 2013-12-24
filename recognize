@@ -15,6 +15,8 @@
 # TODO, make this use the mode, context and custom sed script
 
 USER_DIR=$HOME/.lispeak
+rm $HOME/.lispeak/bin/lispeak.py
+rm $HOME/.lispeak/services/lispeak.py
 
 # Try to run a command in ./Recognition/bin with useful errors.
 function run_command() {
@@ -36,6 +38,9 @@ function run_command() {
 }
 
 cd $(dirname $0)
+
+cp "./lispeak" "$HOME/.lispeak/bin/lispeak.py"
+cp "./lispeak" "$HOME/.lispeak/services/lispeak.py"
 
 read mode < MODE
 
@@ -66,6 +71,24 @@ if [ -e "$USER_DIR/personal.dic" ];then
     fi
 fi
 
+python current.py
+read process < PROCESS
+echo "$USER_DIR/dictionaries/${process}.dic"
+if [ -e "$USER_DIR/dictionaries/${process}.dic" ];then
+    COMMAND=$(./Recognition/dictionary "$speech" "$USER_DIR/dictionaries/${process}.dic")
+
+    EXIT=$?
+    if [ "$EXIT" == 0 ];then
+
+	run_command "$COMMAND"
+
+	exit 0
+    fi
+    if [ "$EXIT" != 2 ];then
+	echo "There is an error in $USER_DIR/dictionaries/${process}.dic"
+    fi
+fi
+
 if [ -e "$USER_DIR/plugins.dic" ];then
     COMMAND=$(./Recognition/dictionary "$speech" "$USER_DIR/plugins.dic")
 
@@ -81,7 +104,7 @@ if [ -e "$USER_DIR/plugins.dic" ];then
     fi
 fi
 
-COMMAND=$(./Recognition/dictionary "$speech" "./Recognition/modes/${mode}.dic")
+COMMAND=$(./Recognition/dictionary "$speech" "./Recognition/modes/main.dic")
 
 echo $speech
 
@@ -95,6 +118,6 @@ elif [ "$EXIT" == 2 ];then
 
 else 
     echo "There is an error in ${mode}.dic"
-    ./Recognition/bin/result Error "There was an error while reading ${mode}.dic" \
+    ./Recognition/bin/result Error "There was an error while reading main.dic" \
 	"$COMMAND" ""
 fi

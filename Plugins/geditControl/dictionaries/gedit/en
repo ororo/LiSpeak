@@ -1,0 +1,52 @@
+new[ <file,document>]
+  xType 'keydown Control_L' 'key n' 'keyup Control_L'
+open[ <file,document>]
+  xType 'keydown Control_L' 'key o' 'keyup Control_L'
+save[ <file,document>]
+  xType 'keydown Control_L' 'key s' 'keyup Control_L'
+save as
+  xType 'keydown Shift_L' 'keydown Control_L' 'key s' 'keyup Shift_L' 'keyup Control_L'
+print preview
+  xType 'keydown Shift_L' 'keydown Control_L' 'key p' 'keyup Shift_L' 'keyup Control_L'
+print[ <file,document>]
+  xType 'keydown Control_L' 'key p' 'keyup Control_L'
+close[ <file,document>]
+  xType 'keydown Control_L' 'key w' 'keyup Control_L'
+quit
+  xType 'keydown Control_L' 'key q' 'keyup Control_L'
+undo
+  xType 'keydown Control_L' 'key z' 'keyup Control_L'
+redo
+  xType 'keydown Shift_L' 'keydown Control_L' 'key z' 'keyup Shift_L' 'keyup Control_L'
+cut
+  xType 'keydown Control_L' 'key x' 'keyup Control_L'
+paste[ text]
+  xType 'keydown Control_L' 'key v' 'keyup Control_L'
+copy[ text]
+  xType 'keydown Control_L' 'key c' 'keyup Control_L'
+select all[ text]
+  xType 'keydown Control_L' 'key a' 'keyup Control_L'
+side panel
+  xType 'key F9'
+fullscreen
+  xType 'key F11'
+find[ text]
+  xType 'keydown Control_L' 'key f' 'keyup Control_L'
+replace[ text]
+  xType 'keydown Control_L' 'key h' 'keyup Control_L'
+go[ ]to line
+  xType 'keydown Control_L' 'key i' 'keyup Control_L'
+save all[ <files,documents>]
+  xType 'keydown Shift_L' 'keydown Control_L' 'key l' 'keyup Shift_L' 'keyup Control_L'
+close all[ <files,documents>]
+  xType 'keydown Shift_L' 'keydown Control_L' 'key w' 'keyup Shift_L' 'keyup Control_L'
+new [document ]group
+  xType 'keydown Control_L' 'key Alt_L' 'key n' 'keyup Control_L'
+next [document ]group
+  xType 'keydown Shift_L' 'keydown Control_L' 'keydown Alt_L' 'key Page_Down' 'keyup Alt_L' 'keyup Shift_L' 'keyup Control_L'
+previous [document ]group
+  xType 'keydown Shift_L' 'keydown Control_L' 'keydown Alt_L' 'key Page_Up' 'keyup Alt_L' 'keyup Shift_L' 'keyup Control_L'
+next[ <file,document>]
+  xType 'keydown Control_L' 'keydown Alt_L' 'key Page_Down' 'keyup Alt_L' 'keyup Control_L'
+<previous,back>[ <file,document>]
+  xType 'keydown Control_L' 'keydown Alt_L' 'key Page_Up' 'keyup Alt_L' 'keyup Control_L'

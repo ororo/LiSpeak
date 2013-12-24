@@ -50,17 +50,21 @@ n.show()
 
 updateCount = 50
 
+old = ""
+
 while True:
-    if updateCount == 1:
+    if updateCount > 5:
         os.chdir("../")
         #os.system("./pm")
         #os.system("./update")
         pid = subprocess.Popen("xprop -id `xdotool getwindowfocus` | grep '_NET_WM_PID' | grep -oE '[[:digit:]]*$'", shell=True, stdout=subprocess.PIPE).communicate()[0].replace('\n','')
         currentWindow = subprocess.Popen("ps -p "+pid+" -o comm=", shell=True, stdout=subprocess.PIPE).communicate()[0].replace('\n','')
-        n.update(currentWindow,"","")
-        n.show()
+        if old != currentWindow:
+            n.update(currentWindow)
+            n.show()
         os.chdir("Microphone")
         updateCount = 0
+        old = currentWindow
     while os.path.exists("silence"):
         sleep(.1)
     i = 0

@@ -1,0 +1,79 @@
+#!/usr/bin/env python
+
+from HTMLParser import HTMLParser
+import urllib2,sys,os,lispeak
+
+home = lispeak.homeDir()
+f = open(home+"/.steam/registry.vdf")
+data = f.read()
+f.close()
+
+output = {}
+
+class MyHTMLParser(HTMLParser):
+        def handle_starttag(self, tag, attrs):
+            if tag == "title":
+                self.next = True
+        def handle_endtag(self, tag):
+            pass#print "Encountered an end tag :", tag
+        def handle_data(self, data):
+            if self.next == True:
+                self.name = data.split("\xc2")[0].strip()
+                self.next = False
+            pass#print "Encountered some data  :", data
+
+def getNameFromID(ID):
+    data = lispeak.getInfo("bmandesigns.steamlaunch")
+    if ID in data:
+        return data[ID]
+    else:
+        request = urllib2.Request("http://steamdb.info/app/"+ID)
+        opener = urllib2.build_opener()  
+        request.add_header('User-Agent','Mozilla/5.0 (X11; U; Linux i686) Gecko/20071127 Firefox/2.0.0.11')
+        html = opener.open(request).read()  
+        parser = MyHTMLParser()
+        parser.next = False
+        parser.feed(html)
+        lispeak.writeInfo({ID:parser.name},"bmandesigns.steamlaunch")
+        return parser.name
+
+def parseTree(parent,data):
+    brackets = 0
+    go = False
+    newData = []
+    for line in data:
+        line = line.strip()
+        if go == True:
+            if line.startswith("{"):
+                brackets = brackets + 1
+            elif line.startswith("}"):
+                brackets = brackets - 1
+            newData.append(line)
+            if brackets == 0:
+                parent[section] = parseTree(parent[section],newData)
+                newData = []
+                go = False
+        elif line.startswith("\"") and "\t" not in line:
+            section = line.replace("\"","")
+            go = True
+            parent[section] = {}
+        elif "\t" in line:
+            stage = 0
+            key = ""
+            value = ""
+            for letter in line:
+                if letter == "\"":
+                    stage = stage + 1
+                elif stage == 1:
+                    key = key + letter
+                elif stage == 3:
+                    value = value + letter
+            parent[key] = value
+    return parent
+output = parseTree(output,data.split("\n"))
+apps = output["Registry"]["HKCU"]["Software"]["Valve"]["Steam"]["apps"]
+args = sys.argv
+for each in apps:
+    if apps[each]["installed"] == "1":
+        if getNameFromID(each).lower() == args[1].lower():
+            os.system("xdg-open steam://rungameid/"+each)

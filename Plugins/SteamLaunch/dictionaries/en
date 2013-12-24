@@ -1,0 +1,2 @@
+[<play,launch> ]<steam,game> (LINE id)
+  steamLaunch "$id$"
