@@ -1,0 +1,25 @@
+Core
+    Move MODE file to ./lispeak
+    
+Services
+    Auto start
+    Add items into indicator
+    
+Indicator
+    Changing Icon
+    
+Plugins
+    List installed plugins
+    New Repository
+    Enabled plugins based on focused window
+        Example:
+            When gedit is focused saying "replace" will push ctrl+h but wouldn't if you were in chrome
+    
+Setup
+    Fully Graphical
+    
+Steam Plugin
+    Service will read ./steam/registry.vdf to get installed games
+    Chache game names from id
+    launch game by id
+    xdg-open steam://rungameid/%id%
