@@ -1,34 +1,119 @@
 #!/usr/bin/env python
 
-import subprocess,sys,platform,tarfile,os
+import subprocess,sys,platform,tarfile,os,argparse,shutil
 import sqlite3 as sql
 
 home = subprocess.Popen("echo $HOME", shell=True, stdout=subprocess.PIPE).communicate()[0].replace('\n','')
 root = home + "/.lispeak"
+installDir = ''.join([e+'/' for e in os.path.realpath(__file__).split('/')[0:-1]])
+installDir = installDir[:-1]
 
 approvedDistros = {"Ubuntu":["13.10"]}
 
-def displayInstallWarning():
+def yn(text = "Continue?",exit=False):
+    if force == False:
+        yna = raw_input(text+" (y/n) ")
+        if yna.lower() in ['yes','y','sure','why not','go for it','have at it','okay','yup','yep']:
+            return True
+        else:
+            if exit == True:
+                sys.exit(1)
+            else:
+                return False
+    else:
+        return True
+
+def setup():
+    sudo(["apt-get","install","sox","python-argparse","wget","espeak","xautomation","xvkbd","python-appindicator","-y"])
+    touch(installDir+"/Recognition/dictionary.c")
+    cd("Recognition")
+    call("make")
+    cd(installDir)
+    delete([installDir+"/Recognition/modes/main.dic",installDir+"/Recognition/bin/",home+"/.lispeak/",installDir+"/Recognition/dictionary.c"])
+    createDirectory(root)
+    touch([home+"/.lispeak/UserInfo",home+"/.lispeak/plugins.db",home+"/.lispeak/plugins.dic",installDir+"/Recognition/modes/main.dic"])
+    copy([
+        [installDir+"/Setup/defaults/bin/",      installDir+"/Recognition/bin/"],
+        [installDir+"/Setup/defaults/main.dic", installDir+"/Recognition/modes/main.dic"]
+    ])
+    askInfo()
+    #nohup Recognition/bin/goto 'http://lispeak.bmandesigns.com/thanks' "nohup.out" &
+    dialogInfo("Done, you will have to setup the hotkey yourself.\n\nLiSpeak needs to be started with ./lispeak --start")
+def sudo(cmd):
+    cmd.insert(0,"pkexec")
+    if quiet:
+        display = False
+    else:
+        if debug:
+            display = True
+        else:
+            display = False
+    call(cmd,not display)
+    
+def dialogInfo(text,term=True):
+    debug("Creating Info Dialog: "+text)
+    if term == True:
+        output(text)
+    call(["zenity","--info","--text="+text])
+def dialogPrompt(text="Continue",exit=False):
+    p = subprocess.Popen("zenity --question --text='"+text+"'",shell=True,stderr=subprocess.PIPE)
+    error = p.stderr.read()
+    p.communicate()
+    #code = p.stdout.read()
+    #print code
+    if "cannot open display" in error:
+        return yn(text,exit)
+    else:
+        if p.returncode:
+            if exit == False:
+                return False
+            else:
+                sys.exit(1)
+        else:
+            return True
+def cd(path):
+    if not path.startswith("/"):
+        path = os.getcwd()+"/"+path
+    debug("Entering Directory: "+path)
+    os.chdir(path)
+def call(cmd,hide=True):
+    if type(cmd) == str:
+        cmd = [cmd]
+    with open(os.devnull, 'wb') as devnull:
+        debug("Calling Command: "+str(cmd))
+        if hide==True:
+            subprocess.check_call(cmd, stdout=devnull, stderr=subprocess.STDOUT)
+        else:
+            subprocess.check_call(cmd)
+def displayOSWarning():
     d,v,j = platform.linux_distribution()
     if d != "":
         if d in approvedDistros:
             if v in approvedDistros[d]:
-                print d,v,"is a supported operating system"
+                dialogInfo(d+" "+v+" is a supported operating system")
             else:
-                print d,"is a supported operating system, but has not been tested on",v
-                print "LiSpeak may not work properly"
-                raw_input("Press enter to continue")
+                dialogInfo(d+" is a supported operating system, but has not been tested on "+v+"\nLiSpeak may not work properly")
+                dialogPrompt(exit=True)
         else:
-            print d,"is NOT a supported operating system"
-            print "LiSpeak may not work properly"
-            raw_input("Press enter to continue")
+            dialogInfo(d+" is NOT a supported operating system\nLiSpeak may not work properly")
+            dialogPrompt(exit=True)
     else:
-        print "Your operating system could not be detected"
-        print "LiSpeak may not work properly"
-        raw_input("Press enter to continue")
-
-def output(text):
-    print text
+        dialogInfo("Your operating system could not be detected\nLiSpeak may not work properly")
+        dialogPrompt(exit=True)
+def touch(path):   
+    if type(path)==str:
+        if not os.path.exists(os.path.dirname(path)):
+            createDirectory(os.path.dirname(path))
+        debug("Touching File: "+path)
+        os.system("touch "+path)
+    elif type(path)==list:
+        for p in path:
+            touch(p)
+def output(text="",debugOnly=False):
+    if quiet == False and (debugOnly == False or (debugMode == True)):
+        print text
+def debug(text):
+    output(text,True)
 
 def askInfo(title="LiSpeak User Configuration",text="User Information",askFor={},plugin="UserInfo"):
     if askFor == {}:
@@ -38,7 +123,6 @@ def askInfo(title="LiSpeak User Configuration",text="User Information",askFor={}
             text2 = text2 + " --add-entry='"+e[1]+"'"
         res = subprocess.Popen("zenity --forms "+text2+" --text='"+text+"' --title='"+title+"'", shell=True, stdout=subprocess.PIPE).communicate()[0].replace('\n','')
         res = res.split("|")
-        installDir = ''.join([e+'/' for e in os.path.realpath(__file__).split('/')[0:-1]])
         x = 0
         data = {}
         for e in askFor:
@@ -79,22 +163,55 @@ def homeDir():
 def displayNotification(text,text2 = False,image=False):
     if type(text) == list:
         for line in text:
-            os.system("echo \""+line+"\n\" >> "+getSingleInfo("ROOTDIR")+"Microphone/result")
+            os.system("echo \""+line+"\n\" >> "+installDir+"Microphone/result")
     else:
         if text2 == False:
-            os.system("echo \""+text+"\n\" >> "+getSingleInfo("ROOTDIR")+"Microphone/result")
+            os.system("echo \""+text+"\n\" >> "+installDir+"Microphone/result")
         else:
-            os.system("echo \""+text+"\" >> "+getSingleInfo("ROOTDIR")+"Microphone/result")
+            os.system("echo \""+text+"\" >> "+installDir+"Microphone/result")
     if text2 != False:
-        os.system("echo \""+text2+"\n\" >> "+getSingleInfo("ROOTDIR")+"Microphone/result")
+        os.system("echo \""+text2+"\n\" >> "+installDir+"Microphone/result")
     if image != False:
-        os.system("echo \""+image+"\n\" >> "+getSingleInfo("ROOTDIR")+"Microphone/result_image")
-    os.system(getSingleInfo("ROOTDIR")+"pycmd result")
-    print getSingleInfo("ROOTDIR")+"pycmd result"
+        os.system("echo \""+image+"\n\" >> "+installDir+"Microphone/result_image")
+    os.system(installDir+"pycmd result")
  
 def getSingleInfo(item):
     return getInfo()[item.upper()]
     
+def copy(src,dst=""):
+    if type(src) == str and dst != "":
+        if os.path.exists(dst):
+            delete(dst)
+        if os.path.isdir(src):
+            debug("Copying Directory: "+src+" to "+dst)
+            shutil.copytree(src,dst)
+        else:
+            debug("Copying File: "+src+" to "+dst)
+            shutil.copy(src,dst)
+    elif type(src) == list:
+        for c in src:
+            copy(c[0],c[1])
+def createDirectory(directory):
+    if type(directory) == str:
+        if not os.path.exists(directory):
+            debug("Creating Directory: "+directory)
+            os.makedirs(directory)
+    elif type(directory)==list:
+        for d in directory:
+            createDirectory(d)
+def delete(path):
+    if type(path) == str:
+        if os.path.exists(path):
+            if os.path.isdir(path):
+                debug("Deleting Directory: "+path)
+                shutil.rmtree(path)
+            else:
+                debug("Deleting File: "+path)
+                os.remove(path)
+    elif type(path) == list:
+        for p in path:
+            delete(p)
+   
 def writeSingleInfo(item,new=False):
     try:
         writeInfo({item.upper():new})
@@ -123,7 +240,7 @@ def writeInfo(new,plugin="UserInfo"):
 def sqlCheck(cur):
     cur.execute("CREATE TABLE IF NOT EXISTS plugins(id INTEGER PRIMARY KEY, name TEXT, identifier TEXT,type TEXT, version TEXT, author TEXT, binFiles TEXT,services TEXT, dicts TEXT, actions TEXT)")
             
-def installPlugin(path):
+def installPlugin(path,upgrading=False):
     dictionaries = []
     services = []
     executables = []
@@ -150,32 +267,31 @@ def installPlugin(path):
             version = float(data['version'])
             if currentVersion > version:
                 output("A newer version is already installed")
-                with open('InstallResult','w') as d:
-                    d.write("A newer version is already installed")
             elif currentVersion == version:
                 output("This version is already installed")
-                with open('InstallResult','w') as d:
-                    d.write("This version is already installed")
+                if dialogPrompt("Reinstall?") == True:
+                    removePlugin(identifier,True)
+                    installPlugin(path)
             else:
-                output("Updating Files Has Not Yet Been Added, please remove the old version with -r and then install again")
-                with open('InstallResult','w') as d:
-                    d.write("Updating Files Has Not Yet Been Added, please remove the old version with -r and then install again")
-                #Install Files
+                output("A previous version is already installed")
+                if dialogPrompt("Upgrade?") == True:
+                    removePlugin(identifier,True)
+                    installPlugin(path)
         except:
             isntall = False
             userLang = getSingleInfo("lang")
             if userLang in data['lang']:
-                print "This plugin is available in",userLang
+                output("This plugin is available in "+userLang)
                 install = True
                 installLang = userLang
             else:
                 if len(data['lang']):
-                    print "This plugin is only available in",data['lang'][0]
+                    output("This plugin is only available in "+data['lang'][0])
                     installLang = data['lang'][0]
                     install = raw_input("Install Anyway? (y/n) ").lower() in ['y','yes']
                 else:
                     while install == False:
-                        print "This plugin is only available in",data['lang']
+                        output("This plugin is only available in "+data['lang'])
                         l = raw_input("Which language would you like to install it in?")
                         if l in data['lang']:
                             installLang = l
@@ -184,30 +300,32 @@ def installPlugin(path):
                 actions = {}
                 if "depends" in data:
                     depend = data['depends']
-                    os.system("sudo -i apt-get install "+" ".join(depend))
-                print "Installation is beginning"
-                os.system("rm "+root+"/"+data['identifier']+" -r")
-                print "Extracting"
+                    cmd = ["apt-get","install"]
+                    cmd.extend(depend)
+                    sudo(cmd)
+                output("Installation is beginning")
+                delete(root+"/"+data['identifier'])
+                output("Extracting")
                 tar.extractall(root+"/"+data['identifier'])
                 if "commands" in data['types']:
-                    print "Scanning Files"
+                    output("Scanning Files")
                     try:
                         new = os.listdir(root+"/"+data['identifier']+"/bin")
                         executables = new
-                        os.system("mkdir "+root+"/bin")
+                        createDirectory(root+"/bin")
                         existing = os.listdir(root+"/bin")
                         for f in new:
                             if f in existing:
-                                print "Conflict Found: "+f
+                                output("Conflict Found: "+f)
                                 install = False
                         if install == False:
                             break
-                        print "Moving Executables"
+                        output("Moving Executables")
                         for f in new:
                             os.system("mv \""+root+"/"+data['identifier']+"/bin/"+f+"\" \""+root+"/bin/"+f+"\"")
                             os.system("chmod +x \""+root+"/bin/"+f+"\"")
                     except:
-                        print "No Executable Files"
+                        output("No Executable Files")
                     try:
                         dictionary = open(root+'/plugins.dic')
                     except:
@@ -228,7 +346,7 @@ def installPlugin(path):
                         output("Error Installing Plugin In main.dic")
                     dictionary.close()
                     try:
-                        os.system("mkdir "+root+"/dictionaries")
+                        createDirectory(root+"/dictionaries")
                         new = os.listdir(root+"/"+data['identifier']+"/dictionaries")
                         for f in new:
                             if os.path.isdir(root+"/"+data['identifier']+"/dictionaries/"+f):
@@ -252,7 +370,7 @@ def installPlugin(path):
                                     output("Error Installing Plugin In "+f+".dic")
                                 dictionaries.append(f)
                     except:
-                        print "Error Scanning Dictionaries"
+                        output("Error Scanning Dictionaries")
                     descfile = open(root+"/"+data['identifier']+"/languages/"+installLang)
                     desc = descfile.read()
                     descfile.close()
@@ -263,21 +381,21 @@ def installPlugin(path):
                             n = d.split(":",1)
                             actions[n[0]] = n[1]
                 if "service" in data['types']:
-                    print "Scanning Files"
+                    output("Scanning Files")
                     new = os.listdir(root+"/"+data['identifier']+"/services")
                     services = new
-                    os.system("mkdir "+root+"/services")
+                    createDirectory(root+"/services")
                     existing = os.listdir(root+"/services")
                     for f in new:
                         if f in existing:
-                            print "Conflict Found: "+f
+                            output("Conflict Found: "+f)
                             install = False
                     if install == False:
                         break
-                    print "Moving Services"
+                    output("Moving Services")
                     for f in new:
                        os.system("mv \""+root+"/"+data['identifier']+"/services/"+f+"\" \""+root+"/services/"+f+".service\"")
-                os.system("mkdir "+root+"/configs")
+                createDirectory(root+"/configs/")
                 os.system("touch \""+root+"/configs/"+data['identifier']+"\"")
                 con = sql.connect(root+"/plugins.db")
                 with con:
@@ -286,19 +404,18 @@ def installPlugin(path):
                     execline = "INSERT INTO plugins VALUES(NULL, \""+data['name']+"\", \""+str(data['identifier'])+"\", \""+str(data['types'])+"\", \""+str(data['version'])+"\", \""+data['author']+"\", \""+str(executables)+"\", \""+str(services)+"\", \""+str(dictionaries)+"\", \""+str(actions)+"\")"
                     cur.execute(execline)
                 os.system("rm "+root+"/"+data['identifier']+" -r")
-                print "Done"
+                output("Done")
                 complete = True
                 
             if complete == False:
-                print
-                print "Installation Cancelled"
-                print
+                output()
+                output("Installation Cancelled")
+                output()
             else:
-                print
-                print "Installation Done!"
-                print
-            
-def removePlugin(ridentifier):
+                output()
+                output("Installation Done!")
+                output()
+def pluginInfo(plugin):
     con = sql.connect(root+"/plugins.db")
     with con:
         cur = con.cursor()
@@ -307,18 +424,75 @@ def removePlugin(ridentifier):
         pluginList = cur.fetchall()
         for line in pluginList:
             pid,name,identifier,types,version,author,cmdfile,servicefiles,dictionaries,actions = line
-            print identifier,ridentifier
+            if identifier == plugin:
+                output()
+                output (name+" : "+identifier)
+                output()
+                output ("Author: "+author)
+                output ("Version: "+version)
+                output ("Types: "+str(types))
+                if "commands" in types:
+                    output ("Command(s): "+str(cmdfile))
+                if "service" in types:
+                    output ("Service(s): "+str(servicefiles))
+                output ("Dictionaries: "+str(dictionaries))
+                output ("Actions:")
+                actions = eval(actions)
+                for each in actions:
+                    output ("\t"+each+"\t\t"+actions[each].replace('\n',''))
+                output ("Commands:")
+                dictionary = open(root+"/plugins.dic")
+                adding = False
+                for line in dictionary:
+                    if adding == False:
+                        add = False
+                        if line.startswith('#PLUGIN: '):
+                            if line.replace('#PLUGIN: ','').replace('\n','') == identifier:
+                                add = False
+                                adding = True
+                    else:
+                        add = True
+                        if line == "#END\n":
+                            adding = False
+                            add = False
+                    if add == True:
+                            output ("\t"+line.replace('\n',''))
+                dictionary.close()
+def listPlugins():
+    output()
+    con = sql.connect(root+"/plugins.db")
+    with con:
+            cur = con.cursor()
+            sqlCheck(cur)
+            cur.execute("SELECT * FROM plugins")
+            pluginList = cur.fetchall()
+            for line in pluginList:
+                pid,name,identifier,types,version,author,cmdfile,servicefiles,dictionaries,actions = line
+                output(""+name+" : "+identifier+" v"+version)
+                actions = eval(actions)
+                for each in actions:
+                    output("\t"+each+"\t"+actions[each].replace('\n',''))
+def removePlugin(ridentifier,saveConfig=False):
+    con = sql.connect(root+"/plugins.db")
+    with con:
+        cur = con.cursor()
+        sqlCheck(cur)
+        cur.execute("SELECT * FROM plugins")
+        pluginList = cur.fetchall()
+        for line in pluginList:
+            pid,name,identifier,types,version,author,cmdfile,servicefiles,dictionaries,actions = line
             if identifier == ridentifier:
-                print "Removing "+name
+                output("Removing "+name)
                 for cmd in eval(cmdfile):
-                    print "Removing Executable:",cmd
-                    os.system("rm "+root+"/bin/"+cmd)
+                    output("Removing Executable: "+cmd)
+                    delete(root+"/bin/"+cmd)
                 for ser in eval(servicefiles):
-                    print "Removing Service:",ser
-                    os.system("rm "+root+"/services/"+ser)
-                print "Removing Config File"
-                os.system("rm "+root+"/configs/"+identifier)
-                print "Removng Dictionaries"
+                    output("Removing Service: "+ser)
+                    delete(root+"/services/"+ser)
+                if saveConfig == False:
+                    output("Removing Config File")
+                    delete(root+"/configs/"+identifier)
+                output("Removng Dictionaries")
                 for dic in eval(dictionaries):
                     dictionary = open(root+'/dictionaries/'+dic+'.dic')
                     text = ""
@@ -368,10 +542,41 @@ def removePlugin(ridentifier):
                 dictionary.close()
                 cur.execute("DELETE FROM plugins WHERE id = "+str(pid))
 
-commands = {"askInfo":askInfo,"getInfo":getSingleInfo,"writeInfo":writeSingleInfo,"displayInstallWarning":displayInstallWarning,'installPlugin':installPlugin,'removePlugin':removePlugin,'notification':displayNotification}
-if __name__ == "__main__":
-    args = sys.argv
-    if args[1] in commands:
+commands = {"askInfo":askInfo,"getInfo":getSingleInfo,"writeInfo":writeSingleInfo,"displayInstallWarning":displayOSWarning,'installPlugin':installPlugin,'removePlugin':removePlugin,'notification':displayNotification}
+if __name__ == "__main__": 
+    #args = sys.argv
+    parser = argparse.ArgumentParser(description='Process some integers.')
+    parser.add_argument("--setup",dest='setup',action='store_true',default=False,help='Setup LiSpeak')
+    parser.add_argument('-i', metavar='file', type=str,help='Install a plugin - plugin .sp or .tar.gz file',default="")
+    parser.add_argument('-r', metavar='plugin', type=str,help='Remove the specified plugin',default="")
+    parser.add_argument('-p', metavar='name', type=str,help='Install a plugin from the repo',default="")
+    parser.add_argument('-d', metavar='plugin', type=str,help='Display info on a plugin',default="")
+    parser.add_argument('-l', dest='listPlugins', action='store_true',default=False,help='List the installed plugins')
+    parser.add_argument('-f', dest='force', action='store_true',default=False,help='Force installation with no confirmation.')
+    parser.add_argument("-q",dest='quiet',action='store_true',default=False,help='Run the program with no output')
+    parser.add_argument("--oswarn",dest='warn',action='store_true',default=False,help='Warn the user if their operating system is not supported')
+    parser.add_argument("--ask",dest='ask',action='store_true',default=False,help='Ask the user to re-enter their info')
+    parser.add_argument("--debug",dest='debug',action='store_true',default=False,help='Debug the program')
+    args = parser.parse_args()
+    quiet = args.quiet
+    debugMode = args.debug
+    force = args.force
+    debug(args)
+    if args.warn:
+        displayOSWarning()
+    if args.ask:
+        askInfo()
+    if args.setup:
+        setup()
+    if args.r != "":
+        removePlugin(args.r)
+    if args.i != "":
+        installPlugin(args.i)
+    if args.listPlugins:
+        listPlugins()
+    if args.p != "":
+        pluginInfo(args.p)
+    if 1 == 2:#args[1] in commands:
         if len(args[2:]) > 2:
             r = commands[args[1]](args[2:])
             if r != None:
@@ -382,20 +587,21 @@ if __name__ == "__main__":
                 if r != None:
                     print r
             except IndexError as e:
-                print e
                 try:
                     r = commands[args[1]](args[2])
                     if r != None:
                       print r
-                except TypeError as e:
-                    print e
+                except IndexError as e:
                     r = commands[args[1]]()
                     if r != None:
                         print r
-    else:
-        print "Invalid Argument:",args[1]
-        print
-        print "Valid Commands:"
-        for e in commands:
-            print e
-    
+    #else:
+    #    print "Invalid Argument:",args[1]
+    #    print
+    #    print "Valid Commands:"
+    #    for e in commands:
+    #        print e
+else:
+    quiet = True
+    debugMode = True
+    force = True

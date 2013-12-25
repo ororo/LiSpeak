@@ -3,6 +3,18 @@ LiSpeak
 
 A voice command system built on the base of Palaver
 
+How to Install
+======
+1. Download and extract LiSpeak (we recommend your home folder)
+
+2. Run ./lispeak --install          (you can use --debug to see whats happening "behind the scenes")
+
+3. Run ./start
+
+4. Configure a keyboard shortcut for ./hotkey
+
+5. That's it!
+
 Language Support
 ======
 LiSpeak plugins are structured to easily have support for any language.
