@@ -14,6 +14,8 @@
    #  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 # TODO, make this use the mode, context and custom sed script
 
+cd ${0%/*}
+
 USER_DIR=$HOME/.lispeak
 rm $HOME/.lispeak/bin/lispeak.py
 rm $HOME/.lispeak/services/lispeak.py
@@ -37,14 +39,17 @@ function run_command() {
     fi
 }
 
-cd $(dirname $0)
+echo $(dirname $HOME/$0)
+
+cd $(dirname $HOME/$0)
 
 cp "./lispeak" "$HOME/.lispeak/bin/lispeak.py"
 cp "./lispeak" "$HOME/.lispeak/services/lispeak.py"
+cp "./lispeak" "./Recognition/bin/lispeak.py"
 
 read mode < MODE
 
-speech="$1"
+speech=$(eval "echo $1 | tr '[:upper:]' '[:lower:]'")
 
 # Use sed scripts here.
 if [ -z "$speech" ];then
@@ -71,7 +76,7 @@ if [ -e "$USER_DIR/personal.dic" ];then
     fi
 fi
 
-python current.py
+./current
 read process < PROCESS
 echo "$USER_DIR/dictionaries/${process}.dic"
 if [ -e "$USER_DIR/dictionaries/${process}.dic" ];then

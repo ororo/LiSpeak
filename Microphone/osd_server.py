@@ -42,6 +42,19 @@ pynotify.init("Speech Recognition")
 
 n = pynotify.Notification(transText("LiSpeak Ready"),"")
 
+try:
+    os.system("rm pycmd_*")
+except:
+    pass
+try:
+    os.remove("result")
+except:
+    pass
+try:
+    os.remove("result_image")
+except:
+    pass
+
 # This line allows palaver to work even if the computer is suspending
 # screensavers. Such as when a fullscreen video is playing.
 n.set_urgency(pynotify.URGENCY_CRITICAL)
@@ -54,17 +67,17 @@ old = ""
 
 while True:
     if updateCount > 5:
-        os.chdir("../")
+        #os.chdir("../")
         #os.system("./pm")
         #os.system("./update")
-        pid = subprocess.Popen("xprop -id `xdotool getwindowfocus` | grep '_NET_WM_PID' | grep -oE '[[:digit:]]*$'", shell=True, stdout=subprocess.PIPE).communicate()[0].replace('\n','')
-        currentWindow = subprocess.Popen("ps -p "+pid+" -o comm=", shell=True, stdout=subprocess.PIPE).communicate()[0].replace('\n','')
-        if old != currentWindow:
-            n.update(currentWindow)
-            n.show()
-        os.chdir("Microphone")
+        #pid = subprocess.Popen("xprop -id `xdotool getwindowfocus` | grep '_NET_WM_PID' | grep -oE '[[:digit:]]*$'", shell=True, stdout=subprocess.PIPE).communicate()[0].replace('\n','')
+        #currentWindow = subprocess.Popen("ps -p "+pid+" -o comm=", shell=True, stdout=subprocess.PIPE).communicate()[0].replace('\n','')
+        #if old != currentWindow:
+        #    n.update(currentWindow)
+        #    n.show()
+        #os.chdir("Microphone")
         updateCount = 0
-        old = currentWindow
+        #old = currentWindow
     while os.path.exists("silence"):
         sleep(.1)
     i = 0
@@ -105,39 +118,57 @@ while True:
             pass
     i = 0
     while os.path.exists("pycmd_result"):
-        f = open("result");
+        try:
+            f = open("result")
        
-        title = transText(f.readline())
-        print title
-        image = f.readline()
-        
-        tmp = f.readline()
-        
-        body = ""
-        while tmp != '':
-            body += image
-            image = tmp
+            title = transText(f.readline())
+            image = f.readline()
+            
             tmp = f.readline()
             
-        if title == '\n' or title == '':
-            title = " "
-        if body == '\n' or body == '':
-            body = " "
-        else:
-            if body[-1:] == '\n':
-                body = body[:-1]
-        if image == '\n' or image == '':
-            image = " "
-        else:
-            if image[-1:] == '\n':
-                image = image[:-1]
-          
-        n.update(title,body,image)
-        n.show()
-        try:
-            os.rename("pycmd_result","pycmd_nocmd")
+            body = ""
+            while tmp != '':
+                body += image
+                image = tmp
+                tmp = f.readline()
+                
+            if title == '\n' or title == '':
+                title = " "
+            if body == '\n' or body == '':
+                body = " "
+            else:
+                if body[-1:] == '\n':
+                    body = body[:-1]
+            if image == '\n' or image == '':
+                image = " "
+            else:
+                if image[-1:] == '\n':
+                    image = image[:-1]
+                    
+            if os.path.exists("result_image"):
+                imf = open("result_image")
+                image = imf.read()
+                print "IMAGE: ",image.replace("\n","").replace("file://","")
+                imf.close()
+            
+            n.update(title,body,image.replace("\n","").replace("file://",""))
+            n.show()
+            try:
+                os.rename("pycmd_result","pycmd_nocmd")
+            except:
+                pass
+            try:
+                os.remove("result")
+            except:
+                pass
+            try:
+                os.remove("result_image")
+            except:
+                print "Can't Delete!"
+            os.system("espeak -a 200 \""+title+"\"")
+            os.system("espeak -a 200 \""+body+"\"")
         except:
-            pass
+            print "Error Displaying Notification"
     while os.path.exists("pycmd_stop"):
     
         n.update(transText("Please wait"),

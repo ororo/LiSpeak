@@ -12,7 +12,10 @@ class AndroidHandler(BaseHTTPRequestHandler):
             self.send_response(200)
             self.send_header('Content-type','text/html')
             self.end_headers()
-            os.system(root+"recognize \""+args[2]+"\"")
+            oldPath = os.getcwd()
+            os.chdir(root)
+            os.system(root+"recognize \""+args[2]+"\" &disown")
+            os.chdir(oldPath)
             self.wfile.write("Completed")
         else:
             self.send_response(200)

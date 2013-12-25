@@ -2,22 +2,27 @@
   say "$words$"
 <type,write> (LINE words)
   type "$words$\\r"
-copy[ this]
-  type '\\Cc'
-paste[ this]
-  type '\\Cv'
-
-dictation mode
-  mode dictation
-
-<s,S>tatus
-    result_from_call "git status"
+undo
+  xType 'keydown Control_L' 'key z' 'keyup Control_L'
+redo
+  xType 'keydown Shift_L' 'keydown Control_L' 'key z' 'keyup Shift_L' 'keyup Control_L'
+cut
+  xType 'keydown Control_L' 'key x' 'keyup Control_L'
+paste[ text]
+  xType 'keydown Control_L' 'key v' 'keyup Control_L'
+copy[ text]
+  xType 'keydown Control_L' 'key c' 'keyup Control_L'
+select all[ text]
+  xType 'keydown Control_L' 'key a' 'keyup Control_L'
 
 go[ ]to (LINE site)
   goto "$site$"
 
 open <g,G>oogle <c,C>hrome
   open 'google-chrome'
-open does not exit
-  open 'bob'
 
+[<show,display,what is[ the],>][ ]<date,today>
+  date
+  
+(LINE word)
+  wolf "$word$"

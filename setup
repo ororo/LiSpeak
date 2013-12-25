@@ -1,6 +1,6 @@
 #!/bin/bash
 
-python lispeak.py displayInstallWarning
+./lispeak displayInstallWarning
 
 # Setup speech recognition for the person.
 
