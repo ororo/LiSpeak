@@ -1,0 +1,27 @@
+#!/bin/bash
+
+cd ${0%/*}
+
+shopt -s nullglob
+for f in *.pid
+do
+    echo $f
+    base=$(basename $f)
+	read PID < $f
+	kill $PID
+	rm $f
+done
+
+./Microphone/indicator_server.py 2>/dev/null &disown
+echo $! > "indicator.pid"
+./Microphone/osd_server.py 2>/dev/null &disown
+echo $! > "osd.pid"
+
+shopt -s nullglob
+for f in $HOME/.lispeak/services/*.service
+do
+    echo $f
+    base=$(basename $f)t
+    $f &disown
+    echo $! > "$base.pid"
+done

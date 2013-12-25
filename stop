@@ -1,0 +1,13 @@
+#!/bin/bash
+
+cd ${0%/*}
+
+shopt -s nullglob
+for f in *.pid
+do
+    echo $f
+    base=$(basename $f)
+	read PID < $f
+	kill $PID
+	rm $f
+done
