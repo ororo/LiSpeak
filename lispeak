@@ -322,7 +322,10 @@ def displayNotification(text,text2 = False,image=False):
     os.system(installDir+"/pycmd result")
  
 def getSingleInfo(item,plugin="UserInfo"):
-    return getInfo(plugin)[item.upper()]
+    try:
+        return getInfo(plugin)[item.upper()]
+    except:
+        return ""
     
 def copy(src,dst=""):
     if type(src) == str and dst != "":

@@ -3,7 +3,7 @@
 # This script is hacky, maybe it should work using sockets.
 # Or dbus, or w/e
 # -*- coding: cp1252 -*-
-import pynotify, time, os, subprocess,lispeak
+import pynotify, time, os, subprocess,lispeak,urllib2
 
 try:
     os.chdir("Microphone")
@@ -66,7 +66,7 @@ updateCount = 50
 old = ""
 
 while True:
-    if updateCount > 5:
+    if updateCount > 10:
         #os.chdir("../")
         #os.system("./pm")
         #os.system("./update")
@@ -76,6 +76,19 @@ while True:
         #    n.update(currentWindow)
         #    n.show()
         #os.chdir("Microphone")
+        f = urllib2.urlopen("http://lispeak.bmandesigns.com/functions.php?f=messageUpdate")
+        nid,title,text = f.read().split("||")
+        lastId = lispeak.getSingleInfo("lastid")
+        if lastId == "":
+            lastId = nid
+        try:
+            go = int(nid) > int(lastId)
+        except:
+            go = True
+        if go:
+            n.update("LiSpeak - "+title,text,"")
+            n.show()
+            lispeak.writeSingleInfo("lastid",str(int(lastId)+1))
         updateCount = 0
         #old = currentWindow
     while os.path.exists("silence"):
