@@ -6,7 +6,7 @@ import sqlite3 as sql
 home = subprocess.Popen("echo $HOME", shell=True, stdout=subprocess.PIPE).communicate()[0].replace('\n','')
 root = home + "/.lispeak"
 
-approvedDistros = {"XUbuntu":["13.10"]}
+approvedDistros = {"Ubuntu":["13.10"]}
 
 languages = {}
 
@@ -118,7 +118,8 @@ def translate(text,lang=False):
     else:
         try:
             rtext = gt.translate(text+" _END_ _END_",lang).encode('utf8')
-            writeSingleInfo(text,rtext.replace("_END_",""),"Language-"+lang.lower(),False)
+            touch(root+"/configs/Language"+lang.lower(),False)
+            writeSingleInfo(text,rtext.replace("_END_",""),"Language-"+lang.lower(),False,False)
         except:
             rtext = text
     x = 0
@@ -181,11 +182,12 @@ def displayOSWarning():
     else:
         dialogInfo("Your operating system could not be detected\nLiSpeak may not work properly")
         dialogPrompt(exit=True)
-def touch(path):   
+def touch(path,out=True):   
     if type(path)==str:
         if not os.path.exists(os.path.dirname(path)):
             createDirectory(os.path.dirname(path))
-        debug("Touching File: "+path)
+        if out:
+            debug("Touching File: "+path)
         os.system("touch "+path)
     elif type(path)==list:
         for p in path:
@@ -211,10 +213,11 @@ def askInfo(title="LiSpeak User Configuration",text="User Information",askFor={}
         for e in askFor:
             data[e[0]] = res[x]
             x = x + 1
-        
-        data["ROOTDIR"] = installDir
-        
-        writeInfo(data,plugin)
+        if plugin != False:
+            data["ROOTDIR"] = installDir
+            writeInfo(data,plugin)
+        else:
+            return data
         
 def parseData(text):
     oData = text.split("\n")
@@ -287,8 +290,8 @@ def copy(src,dst=""):
 def createDirectory(directory):
     if type(directory) == str:
         if not os.path.exists(directory):
-            debug("Creating Directory: "+directory)
             os.makedirs(directory)
+            debug("Creating Directory: "+directory)
     elif type(directory)==list:
         for d in directory:
             createDirectory(d)
@@ -305,21 +308,22 @@ def delete(path):
         for p in path:
             delete(p)
    
-def writeSingleInfo(item,new=False,plugin="UserInfo",upper=True):
+def writeSingleInfo(item,new=False,plugin="UserInfo",upper=True,t=True):
     try:
         if upper:
             new = new.upper()
-        writeInfo({item:new},plugin,upper)
+        writeInfo({item:new},plugin,upper,t)
         return True
     except:
         return False
  
-def writeInfo(new,plugin="UserInfo",upper=True):
+def writeInfo(new,plugin="UserInfo",upper=True,t=True):
     if plugin == "UserInfo":
         path = root+"/UserInfo"
     else:
         path = root+"/configs/"+plugin
-    touch(path)
+    if t:
+        touch(path)
     oFile = open(path)
     oData = oFile.read()
     oFile.close()
