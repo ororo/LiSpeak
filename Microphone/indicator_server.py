@@ -44,7 +44,7 @@ class indicator:
     
     def restart(self,widget):
         os.chdir("../")
-        subprocess.call(["./restart"])
+        subprocess.call(["./start"])
 
     def install(self,widget):
         os.chdir("../")

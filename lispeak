@@ -1,18 +1,18 @@
 #!/usr/bin/env python
 
-import subprocess,sys,platform,tarfile,os,argparse,shutil
+import subprocess,sys,platform,tarfile,os,argparse,shutil,traceback
 import sqlite3 as sql
 
 home = subprocess.Popen("echo $HOME", shell=True, stdout=subprocess.PIPE).communicate()[0].replace('\n','')
 root = home + "/.lispeak"
-installDir = ''.join([e+'/' for e in os.path.realpath(__file__).split('/')[0:-1]])
-installDir = installDir[:-1]
 
 approvedDistros = {"Ubuntu":["13.10"]}
 
+languages = {}
+
 def yn(text = "Continue?",exit=False):
     if force == False:
-        yna = raw_input(text+" (y/n) ")
+        yna = raw_input(translate(text)+" (y/n) ")
         if yna.lower() in ['yes','y','sure','why not','go for it','have at it','okay','yup','yep']:
             return True
         else:
@@ -29,16 +29,23 @@ def setup():
     cd("Recognition")
     call("make")
     cd(installDir)
-    delete([installDir+"/Recognition/modes/main.dic",installDir+"/Recognition/bin/",home+"/.lispeak/",installDir+"/Recognition/dictionary.c"])
-    createDirectory(root)
-    touch([home+"/.lispeak/UserInfo",home+"/.lispeak/plugins.db",home+"/.lispeak/plugins.dic",installDir+"/Recognition/modes/main.dic"])
+    delete([installDir+"/Recognition/modes/main.dic",installDir+"/Recognition/bin/",root,installDir+"/Recognition/dictionary.c"])
+    createDirectory([root,root+"/configs"])
+    touch([home+"/.lispeak/UserInfo",root+"/plugins.db",root+"/plugins.dic",installDir+"/Recognition/modes/main.dic"])
     copy([
         [installDir+"/Setup/defaults/bin/",      installDir+"/Recognition/bin/"],
         [installDir+"/Setup/defaults/main.dic", installDir+"/Recognition/modes/main.dic"]
     ])
-    askInfo()
+    askInfo() 
     #nohup Recognition/bin/goto 'http://lispeak.bmandesigns.com/thanks' "nohup.out" &
-    dialogInfo("Done, you will have to setup the hotkey yourself.\n\nLiSpeak needs to be started with ./lispeak --start")
+    dialogInfo("Done, you will have to setup the hotkey yourself.\n\nLiSpeak needs to be started with:"," ./lispeak --start")
+def loadLanguage(lang="en"):
+    languages[lang.lower()] = getInfo("Language-"+lang.lower())
+def copyLibraries():
+    #[installDir+"/Setup/libraries/", [installDir+"/",installDir+"/Recognition/bin/"]]
+    libraries = os.listdir(installDir+"/Setup/libraries")
+    for l in libraries:
+        copy(installDir+"/Setup/libraries/"+l,[installDir+"/"+l,installDir+"/Recognition/bin/"+l])
 def sudo(cmd):
     cmd.insert(0,"pkexec")
     if quiet:
@@ -49,13 +56,78 @@ def sudo(cmd):
         else:
             display = False
     call(cmd,not display)
-    
-def dialogInfo(text,term=True):
+def translate(text,lang=False):
+    text = str(text).replace("\n","_NL_")
+    paths = []
+    replaces = []
+    x = 0
+    while "/" in text:
+        scan = False
+        path = ""
+        for l in text:
+            if l == "/":
+                scan = True
+                path = path + l
+            elif l != " " and scan == True:
+                path = path + l
+            elif l == " " and scan == True:
+                scan = False
+                break
+        if path != "":
+            paths.append(path)
+            text = text.replace(path,"_PATH"+str(x)+"_")
+        x = x + 1
+    while "^" in text:
+        scan = False
+        ntext = ""
+        ntext2 = ""
+        for l in text:
+            if l == "^" and scan == False:
+                scan = True
+                ntext2 = ntext2 + l
+            elif l != "^" and scan == True:
+                ntext = ntext + l
+                ntext2 = ntext2 + l
+            elif l == "^" and scan == True:
+                ntext2 = ntext2 + l
+                scan = False
+                break
+        if ntext != "":
+            replaces.append(ntext)
+            text = text.replace(ntext2,"_NT"+str(x)+"_")
+        x = x + 1
+    #Add support later for predefined language packs
+    if lang == False:
+        try:
+            lang = getSingleInfo("lang")
+        except:
+            lang = "en"
+    if lang not in languages:
+        loadLanguage(lang)
+    if text in languages[lang.lower()]:
+        rtext = languages[lang.lower()][text]
+    else:
+        try:
+            rtext = gt.translate(text+" _END_ _END_",lang).encode('utf8')
+            writeSingleInfo(text,rtext.replace("_END_",""),"Language-"+lang.lower(),False)
+        except:
+            rtext = text
+    x = 0
+    for p in paths:
+        rtext = rtext.replace("_PATH"+str(x)+"_",p)
+        x = x + 1
+    x = 0
+    for p in replaces:
+        rtext = rtext.replace("_NT"+str(x)+"_",p)
+        x = x + 1
+    return rtext.replace("_END_","").replace("_NL_","\n")
+def dialogInfo(text,notrans="",term=True):
     debug("Creating Info Dialog: "+text)
     if term == True:
         output(text)
-    call(["zenity","--info","--text="+text])
+    call(["zenity","--info","--text="+translate(text)+notrans])
 def dialogPrompt(text="Continue",exit=False):
+    text = translate(text)
     p = subprocess.Popen("zenity --question --text='"+text+"'",shell=True,stderr=subprocess.PIPE)
     error = p.stderr.read()
     p.communicate()
@@ -111,16 +183,18 @@ def touch(path):
             touch(p)
 def output(text="",debugOnly=False):
     if quiet == False and (debugOnly == False or (debugMode == True)):
-        print text
+        print translate(text)
 def debug(text):
     output(text,True)
 
 def askInfo(title="LiSpeak User Configuration",text="User Information",askFor={},plugin="UserInfo"):
+    title=translate(title)
+    text = translate(text)
     if askFor == {}:
         askFor = [["first","First Name"],["last","Last Name"],["email","Email"],["lang","Language (en,es,fr)"],["wakey","Wolfram Alpha Key"]]
         text2 = ""
         for e in askFor:
-            text2 = text2 + " --add-entry='"+e[1]+"'"
+            text2 = text2 + " --add-entry='"+translate(e[1])+"'"
         res = subprocess.Popen("zenity --forms "+text2+" --text='"+text+"' --title='"+title+"'", shell=True, stdout=subprocess.PIPE).communicate()[0].replace('\n','')
         res = res.split("|")
         x = 0
@@ -149,13 +223,16 @@ def parseData(text):
     return orig
     
 def getInfo(plugin="UserInfo"):
-    if plugin == "UserInfo":
-        oFile = open(root+"/UserInfo")
-    else:
-        oFile = open(root+"/configs/"+plugin)
-    oData = oFile.read()
-    oFile.close()
-    return parseData(oData)
+    try:
+        if plugin == "UserInfo":
+            oFile = open(root+"/UserInfo")
+        else:
+            oFile = open(root+"/configs/"+plugin)
+        oData = oFile.read()
+        oFile.close()
+        return parseData(oData)
+    except:
+        return {}
     
 def homeDir():
     return home 
@@ -163,34 +240,41 @@ def homeDir():
 def displayNotification(text,text2 = False,image=False):
     if type(text) == list:
         for line in text:
-            os.system("echo \""+line+"\n\" >> "+installDir+"Microphone/result")
+            os.system("echo \""+translate(line)+"\n\" >> "+installDir+"/Microphone/result")
     else:
         if text2 == False:
-            os.system("echo \""+text+"\n\" >> "+installDir+"Microphone/result")
+            os.system("echo \""+translate(text)+"\n\" >> "+installDir+"/Microphone/result")
         else:
-            os.system("echo \""+text+"\" >> "+installDir+"Microphone/result")
+            os.system("echo \""+translate(text)+"\" >> "+installDir+"/Microphone/result")
     if text2 != False:
-        os.system("echo \""+text2+"\n\" >> "+installDir+"Microphone/result")
+        os.system("echo \""+translate(text2)+"\n\" >> "+installDir+"/Microphone/result")
     if image != False:
-        os.system("echo \""+image+"\n\" >> "+installDir+"Microphone/result_image")
-    os.system(installDir+"pycmd result")
+        os.system("echo \""+image+"\n\" >> "+installDir+"/Microphone/result_image")
+    os.system(installDir+"/pycmd result")
  
-def getSingleInfo(item):
-    return getInfo()[item.upper()]
+def getSingleInfo(item,plugin="UserInfo"):
+    return getInfo(plugin)[item.upper()]
     
 def copy(src,dst=""):
     if type(src) == str and dst != "":
-        if os.path.exists(dst):
-            delete(dst)
-        if os.path.isdir(src):
-            debug("Copying Directory: "+src+" to "+dst)
-            shutil.copytree(src,dst)
-        else:
-            debug("Copying File: "+src+" to "+dst)
-            shutil.copy(src,dst)
-    elif type(src) == list:
+        if type(dst) == str:
+            if os.path.exists(dst):
+                delete(dst)
+            if os.path.isdir(src):
+                debug("Copying Directory: "+src+" to "+dst)
+                shutil.copytree(src,dst)
+            else:
+                debug("Copying File: "+src+" to "+dst)
+                shutil.copy(src,dst)
+        elif type(dst) == list:
+            for c in dst:
+                copy(src,c)
+    elif type(src) == list and dst == "":
         for c in src:
             copy(c[0],c[1])
+    elif type(src) == list and type(dst) == str:
+        for c in src:
+            copy(c,dst)
 def createDirectory(directory):
     if type(directory) == str:
         if not os.path.exists(directory):
@@ -212,18 +296,21 @@ def delete(path):
         for p in path:
             delete(p)
    
-def writeSingleInfo(item,new=False):
+def writeSingleInfo(item,new=False,plugin="UserInfo",upper=True):
     try:
-        writeInfo({item.upper():new})
+        if upper:
+            new = new.upper()
+        writeInfo({item:new},plugin,upper)
         return True
     except:
         return False
  
-def writeInfo(new,plugin="UserInfo"):
+def writeInfo(new,plugin="UserInfo",upper=True):
     if plugin == "UserInfo":
         path = root+"/UserInfo"
     else:
         path = root+"/configs/"+plugin
+    touch(path)
     oFile = open(path)
     oData = oFile.read()
     oFile.close()
@@ -235,7 +322,10 @@ def writeInfo(new,plugin="UserInfo"):
     with open(path,'w') as info:
         info.write("#LiSpeak Config File: "+plugin)
         for each in data:
-            info.write("\n"+each.upper()+"="+data[each])
+            d = data[each]
+            if upper:
+                each = each.upper()
+            info.write("\n"+each+"="+d)
             
 def sqlCheck(cur):
     cur.execute("CREATE TABLE IF NOT EXISTS plugins(id INTEGER PRIMARY KEY, name TEXT, identifier TEXT,type TEXT, version TEXT, author TEXT, binFiles TEXT,services TEXT, dicts TEXT, actions TEXT)")
@@ -541,22 +631,34 @@ def removePlugin(ridentifier,saveConfig=False):
                     output("Error Cleaning plugins.dic")
                 dictionary.close()
                 cur.execute("DELETE FROM plugins WHERE id = "+str(pid))
+quiet = False
+debugMode = False
+#try:
+installDir = getSingleInfo("ROOTDIR")
+#except:
+#    installDir = ''.join([e+'/' for e in os.path.realpath(__file__).split('/')[0:-1]])
+try:
+    import goslate
+    gt = goslate.Goslate()
+except:
+    copyLibraries()
+    import goslate
+    gt = goslate.Goslate()
 
-commands = {"askInfo":askInfo,"getInfo":getSingleInfo,"writeInfo":writeSingleInfo,"displayInstallWarning":displayOSWarning,'installPlugin':installPlugin,'removePlugin':removePlugin,'notification':displayNotification}
 if __name__ == "__main__": 
     #args = sys.argv
-    parser = argparse.ArgumentParser(description='Process some integers.')
-    parser.add_argument("--setup",dest='setup',action='store_true',default=False,help='Setup LiSpeak')
-    parser.add_argument('-i', metavar='file', type=str,help='Install a plugin - plugin .sp or .tar.gz file',default="")
-    parser.add_argument('-r', metavar='plugin', type=str,help='Remove the specified plugin',default="")
-    parser.add_argument('-p', metavar='name', type=str,help='Install a plugin from the repo',default="")
-    parser.add_argument('-d', metavar='plugin', type=str,help='Display info on a plugin',default="")
-    parser.add_argument('-l', dest='listPlugins', action='store_true',default=False,help='List the installed plugins')
-    parser.add_argument('-f', dest='force', action='store_true',default=False,help='Force installation with no confirmation.')
-    parser.add_argument("-q",dest='quiet',action='store_true',default=False,help='Run the program with no output')
-    parser.add_argument("--oswarn",dest='warn',action='store_true',default=False,help='Warn the user if their operating system is not supported')
-    parser.add_argument("--ask",dest='ask',action='store_true',default=False,help='Ask the user to re-enter their info')
-    parser.add_argument("--debug",dest='debug',action='store_true',default=False,help='Debug the program')
+    parser = argparse.ArgumentParser(description='LiSpeak - Linux Voice Command System')
+    parser.add_argument("--setup",dest='setup',action='store_true',default=False,help=translate('Setup LiSpeak'))
+    parser.add_argument('-i', metavar='file', type=str,help=translate('Install a plugin - plugin .sp or .tar.gz file'),default="")
+    parser.add_argument('-r', metavar='plugin', type=str,help=translate('Remove the specified plugin'),default="")
+    parser.add_argument('-p', metavar='name', type=str,help=translate('Install a plugin from the repo'),default="")
+    parser.add_argument('-d', metavar='plugin', type=str,help=translate('Display info on a plugin'),default="")
+    parser.add_argument('-l', dest='listPlugins', action='store_true',default=False,help=translate('List the installed plugins'))
+    parser.add_argument('-f', dest='force', action='store_true',default=False,help=translate('Force installation with no confirmation.'))
+    parser.add_argument("-q",dest='quiet',action='store_true',default=False,help=translate('Run the program with no output'))
+    parser.add_argument("--oswarn",dest='warn',action='store_true',default=False,help=translate('Warn the user if their operating system is not supported'))
+    parser.add_argument("--ask",dest='ask',action='store_true',default=False,help=translate('Ask the user to re-enter their info'))
+    parser.add_argument("--debug",dest='debug',action='store_true',default=False,help=translate('Debug the program'))
     args = parser.parse_args()
     quiet = args.quiet
     debugMode = args.debug

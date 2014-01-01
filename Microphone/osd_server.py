@@ -3,7 +3,7 @@
 # This script is hacky, maybe it should work using sockets.
 # Or dbus, or w/e
 # -*- coding: cp1252 -*-
-import pynotify, time, os, subprocess
+import pynotify, time, os, subprocess,lispeak
 
 try:
     os.chdir("Microphone")
@@ -11,7 +11,7 @@ except:
     print "Currently in",os.getcwd()
 PWD=str(os.getcwd()) # Our full path
 
-def transText(text):
+def transaText(text):
     text = text.replace("\n",'')
     home = subprocess.Popen("echo $HOME", shell=True, stdout=subprocess.PIPE).communicate()[0].replace('\n','')
     with open(home+"/.lispeak/UserInfo") as f:
@@ -40,7 +40,7 @@ def transText(text):
 
 pynotify.init("Speech Recognition")
 
-n = pynotify.Notification(transText("LiSpeak Ready"),"")
+n = pynotify.Notification(lispeak.translate("LiSpeak Ready"),"")
 
 try:
     os.system("rm pycmd_*")
@@ -86,11 +86,11 @@ while True:
             i = 0
             continue
         if i < 32:
-            n.update(transText("Listening"),
+            n.update(lispeak.translate("Listening"),
                      "",
                      PWD+"/Recording/thumbs/rec"+ str((i+1))+".gif")
         if i >= 32:
-            n.update(transText("Listening"),
+            n.update(lispeak.translate("Listening"),
                      "",
                      PWD+"/Recording/thumbs/rec"+ str(64-i)+".gif")
         n.show()
@@ -98,7 +98,7 @@ while True:
         time.sleep(.1)
     i = 0
     while os.path.exists("pycmd_wait"):
-        n.update(transText("Performing recognition"),
+        n.update(lispeak.translate("Performing recognition"),
                  "",
                  PWD+"/Waiting/wait-"+str(i)+".png")
         n.show()
@@ -108,7 +108,7 @@ while True:
             i = 0
     i = 0
     while os.path.exists("pycmd_done"):
-        n.update(transText("Done"),
+        n.update(lispeak.translate("Done"),
                  " ",
                  " ")
         n.show()
@@ -121,7 +121,7 @@ while True:
         try:
             f = open("result")
        
-            title = transText(f.readline())
+            title = lispeak.translate(f.readline())
             image = f.readline()
             
             tmp = f.readline()
@@ -171,7 +171,7 @@ while True:
             print "Error Displaying Notification"
     while os.path.exists("pycmd_stop"):
     
-        n.update(transText("Please wait"),
+        n.update(lispeak.translate("Please wait"),
                  "",
                  PWD+"/Not_Ready/stop.png")
         n.show()

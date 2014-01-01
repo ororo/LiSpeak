@@ -20,12 +20,13 @@ USER_DIR=$HOME/.lispeak
 rm $HOME/.lispeak/bin/lispeak.py
 rm $HOME/.lispeak/services/lispeak.py
 
+while read line           
+do          
+	export "$line"        
+done <$USER_DIR/UserInfo
+
 # Try to run a command in ./Recognition/bin with useful errors.
 function run_command() {
-	while read line           
-	do           
-		export "$line"           
-	done <$USER_DIR/UserInfo
     eval "./Recognition/bin/$1"
 
     if [ $? != 0 ];then
@@ -39,15 +40,18 @@ function run_command() {
     fi
 }
 
-echo $(dirname $HOME/$0)
+cd $ROOTDIR
 
-cd $(dirname $HOME/$0)
+echo $ROOTDIR
 
 cp "./lispeak" "$HOME/.lispeak/bin/lispeak.py"
 cp "./lispeak" "$HOME/.lispeak/services/lispeak.py"
 cp "./lispeak" "./Recognition/bin/lispeak.py"
+cp "./lispeak" "./Microphone/lispeak.py"
 
-read mode < MODE
+cp "./Setup/libraries/goslate.py" "$HOME/.lispeak/bin/"
+cp "./Setup/libraries/goslate.py" "$HOME/.lispeak/services/"
+cp "./Setup/libraries/goslate.py" "./Microphone/"
 
 speech=$(eval "echo $1 | tr '[:upper:]' '[:lower:]'")
 
