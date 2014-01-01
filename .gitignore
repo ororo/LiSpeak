@@ -1,0 +1,32 @@
+speech.flac
+result.json
+tmp.sp
+
+#Process IDs
+*.pid
+
+# Object files
+*.o
+
+# Libraries
+*.lib
+*.a
+
+# Shared objects (inc. Windows DLLs)
+*.dll
+*.so
+*.so.*
+*.dylib
+
+# Executables
+*.exe
+*.out
+*.app
+
+#Python bytecode
+*.pyc
+*.pyo
+
+
+#Text editor's backup file
+*~

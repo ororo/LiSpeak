@@ -37,7 +37,7 @@ def setup():
         [installDir+"/Setup/defaults/main.dic", installDir+"/Recognition/modes/main.dic"]
     ])
     askInfo() 
-    #nohup Recognition/bin/goto 'http://lispeak.bmandesigns.com/thanks' "nohup.out" &
+    os.system("nohup Recognition/bin/goto 'http://lispeak.bmandesigns.com/thanks' \"nohup.out\" &")
     dialogInfo("Done, you will have to setup the hotkey yourself.\n\nLiSpeak needs to be started with: ^./lispeak --start^")
 def loadLanguage(lang="en"):
     languages[lang.lower()] = getInfo("Language-"+lang.lower())
@@ -68,22 +68,6 @@ def translate(text,lang=False):
     paths = []
     replaces = []
     x = 0
-    while "/" in text:
-        scan = False
-        path = ""
-        for l in text:
-            if l == "/":
-                scan = True
-                path = path + l
-            elif l != " " and scan == True:
-                path = path + l
-            elif l == " " and scan == True:
-                scan = False
-                break
-        if path != "":
-            paths.append(path)
-            text = text.replace(path,"_PATH"+str(x)+"_")
-        x = x + 1
     while "^" in text:
         scan = False
         ntext = ""
@@ -103,6 +87,24 @@ def translate(text,lang=False):
             replaces.append(ntext)
             text = text.replace(ntext2,"_NT"+str(x)+"_")
         x = x + 1
+    x = 0
+    while "/" in text:
+        scan = False
+        path = ""
+        for l in text:
+            if l == "/":
+                scan = True
+                path = path + l
+            elif l != " " and scan == True:
+                path = path + l
+            elif l == " " and scan == True:
+                scan = False
+                break
+        if path != "":
+            paths.append(path)
+            text = text.replace(path,"_PATH"+str(x)+"_")
+        x = x + 1
+    
     #Add support later for predefined language packs
     if lang == False:
         try:
