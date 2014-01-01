@@ -14,7 +14,7 @@ class AndroidHandler(BaseHTTPRequestHandler):
             self.end_headers()
             oldPath = os.getcwd()
             os.chdir(root)
-            os.system(root+"recognize \""+args[2]+"\" &disown")
+            os.system(root+"/recognize \""+args[2]+"\" &disown")
             os.chdir(oldPath)
             self.wfile.write("Completed")
         else:

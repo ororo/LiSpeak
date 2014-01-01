@@ -1,12 +1,12 @@
 #!/usr/bin/env python
 
-import subprocess,sys,platform,tarfile,os,argparse,shutil,traceback
+import subprocess,sys,platform,tarfile,os,argparse,shutil,urllib2,time
 import sqlite3 as sql
 
 home = subprocess.Popen("echo $HOME", shell=True, stdout=subprocess.PIPE).communicate()[0].replace('\n','')
 root = home + "/.lispeak"
 
-approvedDistros = {"Ubuntu":["13.10"]}
+approvedDistros = {"XUbuntu":["13.10"]}
 
 languages = {}
 
@@ -38,7 +38,7 @@ def setup():
     ])
     askInfo() 
     #nohup Recognition/bin/goto 'http://lispeak.bmandesigns.com/thanks' "nohup.out" &
-    dialogInfo("Done, you will have to setup the hotkey yourself.\n\nLiSpeak needs to be started with:"," ./lispeak --start")
+    dialogInfo("Done, you will have to setup the hotkey yourself.\n\nLiSpeak needs to be started with: ^./lispeak --start^")
 def loadLanguage(lang="en"):
     languages[lang.lower()] = getInfo("Language-"+lang.lower())
 def copyLibraries():
@@ -46,6 +46,13 @@ def copyLibraries():
     libraries = os.listdir(installDir+"/Setup/libraries")
     for l in libraries:
         copy(installDir+"/Setup/libraries/"+l,[installDir+"/"+l,installDir+"/Recognition/bin/"+l])
+def downloadPackage(name,install=True):
+    f = urllib2.urlopen("http://lispeak.bmandesigns.com/functions.php?f=download&t=name&s="+name)
+    with open(installDir+'/tmp.tar.gz', "wb") as local_file:
+        local_file.write(f.read())
+    time.sleep(0.2)
+    installPlugin(installDir+'/tmp.tar.gz')
+    delete(installDir+"/tmp.tar.gz")
 def sudo(cmd):
     cmd.insert(0,"pkexec")
     if quiet:
@@ -57,7 +64,7 @@ def sudo(cmd):
             display = False
     call(cmd,not display)
 def translate(text,lang=False):
-    text = str(text).replace("\n","_NL_")
+    text = str(text).replace("\n","_NL_").replace("\t","_TB_")
     paths = []
     replaces = []
     x = 0
@@ -120,7 +127,7 @@ def translate(text,lang=False):
     for p in replaces:
         rtext = rtext.replace("_NT"+str(x)+"_",p)
         x = x + 1
-    return rtext.replace("_END_","").replace("_NL_","\n")
+    return rtext.replace("_END_","").replace("_NL_","\n").replace("_TB_","\t")
 def dialogInfo(text,notrans="",term=True):
     debug("Creating Info Dialog: "+text)
     if term == True:
@@ -561,7 +568,8 @@ def listPlugins():
                 output(""+name+" : "+identifier+" v"+version)
                 actions = eval(actions)
                 for each in actions:
-                    output("\t"+each+"\t"+actions[each].replace('\n',''))
+                    output("\t"+each+"\t^"+actions[each].replace('\n','')+"^")
+                output()
 def removePlugin(ridentifier,saveConfig=False):
     con = sql.connect(root+"/plugins.db")
     with con:
@@ -633,10 +641,10 @@ def removePlugin(ridentifier,saveConfig=False):
                 cur.execute("DELETE FROM plugins WHERE id = "+str(pid))
 quiet = False
 debugMode = False
-#try:
-installDir = getSingleInfo("ROOTDIR")
-#except:
-#    installDir = ''.join([e+'/' for e in os.path.realpath(__file__).split('/')[0:-1]])
+try:
+    installDir = getSingleInfo("ROOTDIR")
+except:
+    installDir = os.path.dirname(os.path.realpath(__file__))
 try:
     import goslate
     gt = goslate.Goslate()
@@ -674,9 +682,11 @@ if __name__ == "__main__":
         removePlugin(args.r)
     if args.i != "":
         installPlugin(args.i)
+    if args.p != "":
+        downloadPackage(args.p)
     if args.listPlugins:
         listPlugins()
-    if args.p != "":
+    if args.d != "":
         pluginInfo(args.p)
     if 1 == 2:#args[1] in commands:
         if len(args[2:]) > 2:

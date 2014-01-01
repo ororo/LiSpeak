@@ -12,6 +12,15 @@ do
 	rm $f
 done
 
+cp "./lispeak" "$HOME/.lispeak/bin/lispeak.py"
+cp "./lispeak" "$HOME/.lispeak/services/lispeak.py"
+cp "./lispeak" "./Recognition/bin/lispeak.py"
+cp "./lispeak" "./Microphone/lispeak.py"
+
+cp "./Setup/libraries/goslate.py" "$HOME/.lispeak/bin/"
+cp "./Setup/libraries/goslate.py" "$HOME/.lispeak/services/"
+cp "./Setup/libraries/goslate.py" "./Microphone/"
+
 ./Microphone/indicator_server.py 2>/dev/null &disown
 echo $! > "indicator.pid"
 ./Microphone/osd_server.py 2>/dev/null &disown

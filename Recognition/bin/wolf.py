@@ -54,5 +54,4 @@ if appid != "":
         output = "Command Not Found"
 else:
     output = "Command Not Found"
-print "OUTPUT:"+output
 lispeak.displayNotification(output)
