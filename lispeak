@@ -1,7 +1,10 @@
 #!/usr/bin/env python
 
-import subprocess,sys,platform,tarfile,os,argparse,shutil,urllib2,time
+import subprocess,sys,platform,tarfile,os,argparse,shutil,urllib2,time,pygtk
 import sqlite3 as sql
+
+pygtk.require('2.0')
+import gtk
 
 home = subprocess.Popen("echo $HOME", shell=True, stdout=subprocess.PIPE).communicate()[0].replace('\n','')
 root = home + "/.lispeak"
@@ -9,6 +12,57 @@ root = home + "/.lispeak"
 approvedDistros = {"Ubuntu":["13.10"]}
 
 languages = {}
+
+class DefaultPlugins:
+	def pluginToggle(self, widget, plugin):
+		x = 0
+		for e in self.plugins:
+			if e == plugin:
+				self.plugins.pop(x)
+				return 1
+			x = x + 1
+		self.plugins.append(plugin)
+
+	def install(self,widget):
+		self.window.hide()
+		for e in self.plugins:
+			downloadPackage(e)
+		gtk.main_quit()
+	def __init__(self):
+		self.plugins = []
+		plugins = urllib2.urlopen("http://lispeak.bmandesigns.com/functions.php?f=corePlugins").read().split("|#|")
+		for p in plugins:
+			if p != "":
+				self.plugins.append(p)
+		self.checks = []
+		self.window = gtk.Window(gtk.WINDOW_TOPLEVEL)
+		self.window.set_default_size(200,400)
+		self.window.set_title(translate("LiSpeak Default Plugins Installation"))
+		self.window.connect("delete_event", lambda w,e: gtk.main_quit())
+		self.vbox = gtk.VBox(False, 0)
+		self.window.add(self.vbox)
+		self.vbox.show()
+
+		for e in self.plugins:			  
+			check = gtk.CheckButton(e)
+			check.set_active(True)
+			check.connect("toggled", self.pluginToggle, e)
+			self.checks.append(check)
+			self.vbox.add(check)	
+			check.show()
+								   
+		button = gtk.Button(translate("Install"))
+		self.checks.append(button)
+		button.connect("clicked", self.install)
+		self.vbox.pack_start(button, True, True, 0)
+		button.set_flags(gtk.CAN_DEFAULT)
+		button.grab_default()
+		button.show()
+		self.window.show()
+
+def runGTK():
+	gtk.main()
+	return 0
 
 def yn(text = "Continue?",exit=False):
     if force == False:
@@ -38,6 +92,8 @@ def setup():
         [installDir+"/Setup/defaults/main.dic", installDir+"/Recognition/modes/main.dic"]
     ])
     askInfo() 
+    DefaultPlugins()
+    runGTK()
     os.system("nohup Recognition/bin/goto 'http://lispeak.bmandesigns.com/thanks' \"nohup.out\" &")
     dialogInfo("Done, you will have to setup the hotkey yourself.\n\nLiSpeak needs to be started with: ^./lispeak --start^")
 def loadLanguage(lang="en"):
