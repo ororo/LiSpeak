@@ -24,6 +24,7 @@ def yn(text = "Continue?",exit=False):
         return True
 
 def setup():
+    displayOSWarning()
     sudo(["apt-get","install","sox","python-argparse","wget","espeak","xautomation","xvkbd","python-appindicator","-y"])
     touch(installDir+"/Recognition/dictionary.c")
     cd("Recognition")
@@ -131,14 +132,14 @@ def translate(text,lang=False):
         rtext = rtext.replace("_NT"+str(x)+"_",p)
         x = x + 1
     return rtext.replace("_END_","").replace("_NL_","\n").replace("_TB_","\t")
-def dialogInfo(text,notrans="",term=True):
+def dialogInfo(text,title="LiSpeak",notrans="",term=True):
     debug("Creating Info Dialog: "+text)
     if term == True:
         output(text)
-    call(["zenity","--info","--text="+translate(text)+notrans])
-def dialogPrompt(text="Continue",exit=False):
+    call(["zenity","--info","--text="+translate(text)+notrans,"--title="+translate(title)+""])
+def dialogPrompt(text="Continue",title="LiSpeak",exit=False):
     text = translate(text)
-    p = subprocess.Popen("zenity --question --text='"+text+"'",shell=True,stderr=subprocess.PIPE)
+    p = subprocess.Popen("zenity --question --text='"+text+"' --title="+translate(title)+"",shell=True,stderr=subprocess.PIPE)
     error = p.stderr.read()
     p.communicate()
     #code = p.stdout.read()
@@ -172,7 +173,7 @@ def displayOSWarning():
     if d != "":
         if d in approvedDistros:
             if v in approvedDistros[d]:
-                dialogInfo(d+" "+v+" is a supported operating system")
+                output(d+" "+v+" is a supported operating system")
             else:
                 dialogInfo(d+" is a supported operating system, but has not been tested on "+v+"\nLiSpeak may not work properly")
                 dialogPrompt(exit=True)
