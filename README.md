@@ -17,6 +17,8 @@ How to Install
 
 Language Support
 ======
+Google Translate is used to automatically translate any phrases that are not pre-defined by language files. Translations are then stored locally to both increase the program's speed and provide some offline support (for mobile plugins, currently internet access is required by speech-to-text).
+
 LiSpeak plugins are structured to easily have support for any language.
 Files are named in accordance to their language. An English dictionary file is just name "en" and a Spanish dictionary file is name "es". It is that simple to add different languages.
 
