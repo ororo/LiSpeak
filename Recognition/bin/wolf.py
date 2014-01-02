@@ -22,7 +22,7 @@ class MyHTMLParser(HTMLParser):
             self.go = False
 
 try:
-    appid = lispeak.getInfo()['WAKEY']
+    appid = lispeak.getInfo()['WOLF']
 except:
     appid = ""
 if appid != "":

@@ -1,18 +1,23 @@
 #!/usr/bin/env python
-import gtk,appindicator,subprocess,os,sys
+
+import gtk,gobject,os,appindicator,subprocess
+
+try:
+    os.chdir("Microphone")
+except:
+    print "Currently in",os.getcwd()
+PWD=str(os.getcwd())
 
 class indicator:
     def __init__(self):
-        try:
-            os.chdir("Microphone")
-        except:
-            print "Currently in",os.getcwd()
-        PWD=str(os.getcwd())
+        
         self.ind = appindicator.Indicator("LiSpeak", PWD + "/Indicator/mic.png", appindicator.CATEGORY_APPLICATION_STATUS)
         self.ind.set_status(appindicator.STATUS_ACTIVE)
 
         self.menu_setup()
         self.ind.set_menu(self.menu)
+        
+        gobject.timeout_add(100, self.callback)
 
     def menu_setup(self):
         self.menu = gtk.Menu()
@@ -51,5 +56,13 @@ class indicator:
         subprocess.call(["./install_gui"])
         os.chdir("Microphone")
 
+    def callback(self):
+        if os.path.exists("in_grey"):
+            self.ind.set_icon(PWD + "/Indicator/mic.png")
+            os.remove('in_grey')
+        if os.path.exists("in_green"):
+            self.ind.set_icon(PWD + "/Indicator/listen.png")
+            os.remove("in_green")
+        return True
 ind = indicator()
-ind.main()
+gtk.main()

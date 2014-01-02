@@ -21,10 +21,10 @@ cp "./Setup/libraries/goslate.py" "$HOME/.lispeak/bin/"
 cp "./Setup/libraries/goslate.py" "$HOME/.lispeak/services/"
 cp "./Setup/libraries/goslate.py" "./Microphone/"
 
-./Microphone/indicator_server.py 2>/dev/null &disown
-echo $! > "indicator.pid"
 ./Microphone/osd_server.py 2>/dev/null &disown
 echo $! > "osd.pid"
+./Microphone/indicator_server.py 2>/dev/null &disown
+echo $! > "indicator.pid"
 
 shopt -s nullglob
 for f in $HOME/.lispeak/services/*.service

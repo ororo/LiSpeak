@@ -1,10 +1,16 @@
 #!/usr/bin/env python
 
+VERSION = 1.1
+
 import subprocess,sys,platform,tarfile,os,argparse,shutil,urllib2,time,pygtk
 import sqlite3 as sql
 
-pygtk.require('2.0')
-import gtk
+import commands
+
+DEPENDS_PAGE = 1
+USER_INFO_PAGE = 2
+PLUGIN_PAGE = 3
+EXIT_PAGE = 4
 
 home = subprocess.Popen("echo $HOME", shell=True, stdout=subprocess.PIPE).communicate()[0].replace('\n','')
 root = home + "/.lispeak"
@@ -13,56 +19,136 @@ approvedDistros = {"Ubuntu":["13.10"]}
 
 languages = {}
 
-class DefaultPlugins:
-	def pluginToggle(self, widget, plugin):
-		x = 0
-		for e in self.plugins:
-			if e == plugin:
-				self.plugins.pop(x)
-				return 1
-			x = x + 1
-		self.plugins.append(plugin)
+class InstallGUI:
+    def __init__(self):
+        filename = "lispeak.glade"
+        self.builder = Gtk.Builder()
+        self.builder.add_from_file(filename)
+        self.builder.connect_signals(self)
+        self.window = self.builder.get_object("window1")
+        self.notebook = self.builder.get_object("ntbMain")
+        self.nButton = self.builder.get_object("btnNext")
+        self.nButton.connect("clicked", self.nextPage)
+        self.cButton = self.builder.get_object("btnCenter")
+        self.cButton.connect("clicked", self.centerClick)
+        self.pButton = self.builder.get_object("btnBack")
+        self.pButton.connect("clicked", self.prevPage)
+        self.pButton.set_visible(False)
+        self.window.set_title("LiSpeak Installation")
+        self.window.show_all()
+        self.window.connect("destroy", Gtk.main_quit)
+        self.bxPlugins = self.builder.get_object("bxPlugins")
+        self.notebook.append_page(self.bxPlugins,Gtk.Label("None"))
+        self.builder.get_object("lblWelcome").set_text("Welcome to LiSpeak v"+str(VERSION))
+        self.bxDone = self.builder.get_object("bxDone")
+        self.notebook.append_page(self.bxDone,Gtk.Label("None1"))
+        self.pButton.set_visible(False)
+        self.processPage(0)
+        self.loadedPlugins = False
+        self.status = "cancel"
+        
+    def centerClick(self,widget):
+        num = self.notebook.get_current_page()
+        if num == DEPENDS_PAGE:
+            cmd = self.needs
+            cmd.insert(0,"pkexec")
+            cmd.insert(1,"apt-get")
+            cmd.insert(2,"install")
+            cmd.append("-y")
+            subprocess.check_call(cmd)
+            self.notebook.next_page()
+            new = self.notebook.get_current_page()
+            self.processPage(new)
+        elif num == PLUGIN_PAGE:
+            for p,label,switch in self.plugins:
+                downloadPackage(p)
+            self.notebook.next_page()
+            new = self.notebook.get_current_page()
+            self.processPage(new)
+        
+    def processPage(self,num,forward=True):
+        if num != 0:
+            self.pButton.set_visible(True)
+        else:
+            self.pButton.set_visible(False)
+        if num in [DEPENDS_PAGE,PLUGIN_PAGE]:
+            self.cButton.set_visible(True)
+        else:
+            self.cButton.set_visible(False)
+        if num == EXIT_PAGE:
+            self.nButton.set_label("Exit")
+        elif num == PLUGIN_PAGE:
+            self.nButton.set_label("Skip")
+        else:
+            self.nButton.set_label("Continue")
+        if num == DEPENDS_PAGE:
+            self.nButton.set_label("Skip Dependencies")
+            depends = ["sox","python-argparse","wget","espeak","xautomation","xvkbd","python-appindicator"]
+            self.needs = []
+            for d in depends:
+                resp = commands.getstatusoutput("dpkg-query -W -f='${Status} ${Version}' "+d)[1]
+                if("install" not in resp or "deinstall" in resp):
+                    self.needs.append(d)
+            if len(self.needs) == 0:
+                if forward:
+                    self.notebook.next_page()
+                else:
+                    self.notebook.prev_page()
+                new = self.notebook.get_current_page()
+                self.processPage(new)
+            else:
+                self.dlist = self.builder.get_object("lblDependsList")
+                text = ""
+                for n in self.needs:
+                    text = text + n + "\n"
+                self.dlist.set_text(text)
+        
+        elif num == PLUGIN_PAGE and self.loadedPlugins == False:
+            self.newPlugins = []
+            plugins = urllib2.urlopen("http://lispeak.bmandesigns.com/functions.php?f=corePlugins").read().split("|#|")
+            for p in plugins:
+                if p != "":
+                    self.newPlugins.append(p)
+            self.pluginGrid = self.builder.get_object("grdPluginList")
+            self.plugins = []
+            x = 0
+            for p in self.newPlugins:
+                label = Gtk.Label(p)
+                switch = Gtk.Switch()
+                switch.set_active(True)
+                switch.set_halign(Gtk.Align.CENTER)
+                switch.set_valign(Gtk.Align.CENTER)
+                self.pluginGrid.attach(label,0,x,1,1)
+                self.pluginGrid.attach(switch,1,x,1,1)
+                label.show()
+                switch.show()
+                self.plugins.append([p,label,switch])
+                x = x + 1
+            self.loadedPlugins = True
+            
+    def nextPage(self,widget):
+        if self.notebook.get_current_page() == USER_INFO_PAGE:
+            self.userinfo = {}
+            for e in ['first','last','lang','email','wolf']:
+                self.userinfo[e.upper()] = self.builder.get_object('ent'+e[0].upper()+e[1:]).get_text()
+            writeInfo(self.userinfo)
+        elif self.notebook.get_current_page() == EXIT_PAGE:
+            self.status = "good"
+            Gtk.main_quit()
+        self.notebook.next_page()
+        new = self.notebook.get_current_page()
+        
+        self.processPage(new,True)
+        
+    def prevPage(self,widget):
+        self.notebook.prev_page()
+        new = self.notebook.get_current_page()
+        self.processPage(new,False)
 
-	def install(self,widget):
-		self.window.hide()
-		for e in self.plugins:
-			downloadPackage(e)
-		gtk.main_quit()
-	def __init__(self):
-		self.plugins = []
-		plugins = urllib2.urlopen("http://lispeak.bmandesigns.com/functions.php?f=corePlugins").read().split("|#|")
-		for p in plugins:
-			if p != "":
-				self.plugins.append(p)
-		self.checks = []
-		self.window = gtk.Window(gtk.WINDOW_TOPLEVEL)
-		self.window.set_default_size(200,400)
-		self.window.set_title(translate("LiSpeak Default Plugins Installation"))
-		self.window.connect("delete_event", lambda w,e: gtk.main_quit())
-		self.vbox = gtk.VBox(False, 0)
-		self.window.add(self.vbox)
-		self.vbox.show()
-
-		for e in self.plugins:			  
-			check = gtk.CheckButton(e)
-			check.set_active(True)
-			check.connect("toggled", self.pluginToggle, e)
-			self.checks.append(check)
-			self.vbox.add(check)	
-			check.show()
-								   
-		button = gtk.Button(translate("Install"))
-		self.checks.append(button)
-		button.connect("clicked", self.install)
-		self.vbox.pack_start(button, True, True, 0)
-		button.set_flags(gtk.CAN_DEFAULT)
-		button.grab_default()
-		button.show()
-		self.window.show()
-
-def runGTK():
-	gtk.main()
-	return 0
+def displayInstaller():
+    app = InstallGUI()
+    Gtk.main()
+    return app
 
 def yn(text = "Continue?",exit=False):
     if force == False:
@@ -79,7 +165,6 @@ def yn(text = "Continue?",exit=False):
 
 def setup():
     displayOSWarning()
-    sudo(["apt-get","install","sox","python-argparse","wget","espeak","xautomation","xvkbd","python-appindicator","-y"])
     touch(installDir+"/Recognition/dictionary.c")
     cd("Recognition")
     call("make")
@@ -91,11 +176,10 @@ def setup():
         [installDir+"/Setup/defaults/bin/",      installDir+"/Recognition/bin/"],
         [installDir+"/Setup/defaults/main.dic", installDir+"/Recognition/modes/main.dic"]
     ])
-    askInfo() 
-    DefaultPlugins()
-    runGTK()
-    os.system("nohup Recognition/bin/goto 'http://lispeak.bmandesigns.com/thanks' \"nohup.out\" &")
-    dialogInfo("Done, you will have to setup the hotkey yourself.\n\nLiSpeak needs to be started with: ^./lispeak --start^")
+    gui = displayInstaller()
+    if gui.status == "good":
+        os.system("nohup Recognition/bin/goto 'http://lispeak.bmandesigns.com/thanks' \"nohup.out\" &")
+    #dialogInfo("Done, you will have to setup the hotkey yourself.\n\nLiSpeak needs to be started with: ^./lispeak --start^")
 def loadLanguage(lang="en"):
     languages[lang.lower()] = getInfo("Language-"+lang.lower())
 def copyLibraries():
@@ -119,7 +203,6 @@ def sudo(cmd):
             display = True
         else:
             display = False
-    call(cmd,not display)
 def translate(text,lang=False):
     text = str(text).replace("\n","_NL_").replace("\t","_TB_")
     paths = []
@@ -259,7 +342,7 @@ def askInfo(title="LiSpeak User Configuration",text="User Information",askFor={}
     title=translate(title)
     text = translate(text)
     if askFor == {}:
-        askFor = [["first","First Name"],["last","Last Name"],["email","Email"],["lang","Language (en,es,fr)"],["wakey","Wolfram Alpha Key"]]
+        askFor = [["first","First Name"],["last","Last Name"],["email","Email"],["lang","Language (en,es,fr)"],["wolf","Wolfram Alpha Key"]]
         text2 = ""
         for e in askFor:
             text2 = text2 + " --add-entry='"+translate(e[1])+"'"
@@ -380,6 +463,7 @@ def writeSingleInfo(item,new=False,plugin="UserInfo",upper=True,t=True):
 def writeInfo(new,plugin="UserInfo",upper=True,t=True):
     if plugin == "UserInfo":
         path = root+"/UserInfo"
+        new["ROOTDIR"] = installDir
     else:
         path = root+"/configs/"+plugin
     if t:
@@ -451,7 +535,7 @@ def installPlugin(path,upgrading=False):
                 if len(data['lang']):
                     output("This plugin is only available in "+data['lang'][0])
                     installLang = data['lang'][0]
-                    install = raw_input("Install Anyway? (y/n) ").lower() in ['y','yes']
+                    install = dialogPrompt("This plugin is only available in "+(",".join(data['lang']))+"\nInstall Anyway?")
                 else:
                     while install == False:
                         output("This plugin is only available in "+data['lang'])
@@ -709,6 +793,8 @@ quiet = False
 debugMode = False
 try:
     installDir = getSingleInfo("ROOTDIR")
+    if installDir == "":
+        installDir = os.path.dirname(os.path.realpath(__file__))
 except:
     installDir = os.path.dirname(os.path.realpath(__file__))
 try:
@@ -720,6 +806,7 @@ except:
     gt = goslate.Goslate()
 
 if __name__ == "__main__": 
+    from gi.repository import Gtk 
     #args = sys.argv
     parser = argparse.ArgumentParser(description='LiSpeak - Linux Voice Command System')
     parser.add_argument("--setup",dest='setup',action='store_true',default=False,help=translate('Setup LiSpeak'))

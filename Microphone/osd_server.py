@@ -3,7 +3,7 @@
 # This script is hacky, maybe it should work using sockets.
 # Or dbus, or w/e
 # -*- coding: cp1252 -*-
-import pynotify, time, os, subprocess,lispeak,urllib2
+import pynotify, time, os, subprocess,lispeak,urllib2,appindicator,gtk
 
 try:
     os.chdir("Microphone")
@@ -95,25 +95,20 @@ while True:
         sleep(.1)
     i = 0
     while os.path.exists("pycmd_record"):
+        os.system("touch in_green")
         if i >=64:
             i = 0
             continue
         if i < 32:
-            n.update(lispeak.translate("Listening"),
-                     "",
-                     PWD+"/Recording/thumbs/rec"+ str((i+1))+".gif")
+            n.update(lispeak.translate("Listening"),"",PWD+"/Recording/thumbs/rec"+ str((i+1))+".gif")
         if i >= 32:
-            n.update(lispeak.translate("Listening"),
-                     "",
-                     PWD+"/Recording/thumbs/rec"+ str(64-i)+".gif")
+            n.update(lispeak.translate("Listening"),"",PWD+"/Recording/thumbs/rec"+ str(64-i)+".gif")
         n.show()
         i += 8
-        time.sleep(.1)
+        time.sleep(.05)
     i = 0
     while os.path.exists("pycmd_wait"):
-        n.update(lispeak.translate("Performing recognition"),
-                 "",
-                 PWD+"/Waiting/wait-"+str(i)+".png")
+        n.update(lispeak.translate("Performing recognition"),"",PWD+"/Waiting/wait-"+str(i)+".png")
         n.show()
         time.sleep(.1)
         i += 1;
@@ -121,9 +116,8 @@ while True:
             i = 0
     i = 0
     while os.path.exists("pycmd_done"):
-        n.update(lispeak.translate("Done"),
-                 " ",
-                 " ")
+        os.system("touch in_grey")
+        n.update(lispeak.translate("Done"),"","")
         n.show()
         try:
             os.rename("pycmd_done","pycmd_nocmd")
@@ -131,6 +125,7 @@ while True:
             pass
     i = 0
     while os.path.exists("pycmd_result"):
+        os.system("touch in_grey")
         try:
             f = open("result")
        
@@ -184,9 +179,7 @@ while True:
             print "Error Displaying Notification"
     while os.path.exists("pycmd_stop"):
     
-        n.update(lispeak.translate("Please wait"),
-                 "",
-                 PWD+"/Not_Ready/stop.png")
+        n.update(lispeak.translate("Please wait"),"",PWD+"/Not_Ready/stop.png")
         n.show()
         try:
             os.rename("pycmd_stop","pycmd_nocmd")

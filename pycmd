@@ -41,7 +41,7 @@ if ps auxww |grep -v grep |grep indicator_server.py > /dev/null 2>&1;then
 else # otherwise start it
     ./Microphone/indicator_server.py 2>/dev/null & 
     echo $! > "indicator.pid"
-fi    
+fi      
 # This should be run from the base dir.
 cd Microphone
 
