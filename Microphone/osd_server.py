@@ -173,8 +173,9 @@ while True:
                 os.remove("result_image")
             except:
                 print "Can't Delete!"
-            os.system("espeak -a 200 \""+title+"\"")
-            os.system("espeak -a 200 \""+body+"\"")
+            if lispeak.getSingleInfo("ESPEAK") == "True":
+                os.system("espeak -a 200 \""+title+"\"")
+                os.system("espeak -a 200 \""+body+"\"")
         except:
             print "Error Displaying Notification"
     while os.path.exists("pycmd_stop"):

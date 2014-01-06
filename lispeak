@@ -61,7 +61,8 @@ class InstallGUI:
             self.processPage(new)
         elif num == PLUGIN_PAGE:
             for p,label,switch in self.plugins:
-                downloadPackage(p)
+                if switch.get_active():
+                    downloadPackage(p)
             self.notebook.next_page()
             new = self.notebook.get_current_page()
             self.processPage(new)
@@ -131,6 +132,7 @@ class InstallGUI:
             self.userinfo = {}
             for e in ['first','last','lang','email','wolf']:
                 self.userinfo[e.upper()] = self.builder.get_object('ent'+e[0].upper()+e[1:]).get_text()
+            self.userinfo["ESPEAK"] = str(self.builder.get_object("swEspeak").get_active())
             writeInfo(self.userinfo)
         elif self.notebook.get_current_page() == EXIT_PAGE:
             self.status = "good"
@@ -797,6 +799,7 @@ try:
         installDir = os.path.dirname(os.path.realpath(__file__))
 except:
     installDir = os.path.dirname(os.path.realpath(__file__))
+writeSingleInfo("ROOTDIR",installDir)
 try:
     import goslate
     gt = goslate.Goslate()
