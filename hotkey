@@ -17,6 +17,8 @@
 # Look for CONFIG file to see if it has SOUND or VISUAL set
 # And display accordingly
 
+cd "$(dirname "$0")"
+
 if [ -e "speech.pid" ];then
     read PID_OF_SPEECH < speech.pid
     sleep .1 # This is so the end of the speech doesn't get cut off.
