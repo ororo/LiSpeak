@@ -1,4 +1,26 @@
-#!/bin/bash
-i=$(date)
-echo $i >> Microphone/result
-./pycmd result
+#!/usr/bin/env python
+
+import time,sys
+try:
+    import lispeak
+except:
+    pass
+
+cmd = sys.argv[1]
+
+try:
+    li = sys.argv[2]
+except:
+    li = True
+
+out = "Command "+str(cmd)+" not recognized"
+
+if cmd == "date":
+    out = time.strftime("%A, %B ") + str(int(time.strftime("%d")))
+elif cmd == "time":
+    out = time.strftime("%I:%M %p")
+    
+if li == True:
+    lispeak.displayNotification(out)
+else:
+    print out

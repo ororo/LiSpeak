@@ -55,78 +55,110 @@ cp "./Setup/libraries/goslate.py" "./Microphone/"
 
 speech=$(eval "echo $1 | tr '[:upper:]' '[:lower:]'")
 
-# Use sed scripts here.
-if [ -z "$speech" ];then
-    echo "Speech unable to be transcribed."
-    ./Recognition/bin/result "Speech unable to be transcribed"
-    exit 1
+read mode < "$USER_DIR/MODE"
+
+if [ -z "$mode" ]; then
+    mode="main"
 fi
 
-rm Microphone/result 2>/dev/null
+echo "MODE IS: $mode"
+
+if [ $mode = "main" ]; then
+
+    # Use sed scripts here.
+    if [ -z "$speech" ];then
+        echo "Speech unable to be transcribed."
+        ./Recognition/bin/result "Speech unable to be transcribed"
+        exit 1
+    fi
+
+    rm Microphone/result 2>/dev/null
 
 
-if [ -e "$USER_DIR/personal.dic" ];then
-    COMMAND=$(./Recognition/dictionary "$speech" "$USER_DIR/personal.dic")
+    if [ -e "$USER_DIR/personal.dic" ];then
+        COMMAND=$(./Recognition/dictionary "$speech" "$USER_DIR/personal.dic")
+
+        EXIT=$?
+        if [ "$EXIT" == 0 ];then
+
+	    run_command "$COMMAND"
+
+	    exit 0
+        fi
+        if [ "$EXIT" != 2 ];then
+	    echo "There is an error in $USER_DIR/personal.dic"
+        fi
+    fi
+
+    ./current
+    read process < PROCESS
+    echo "$USER_DIR/dictionaries/${process}.dic"
+    if [ -e "$USER_DIR/dictionaries/${process}.dic" ];then
+        COMMAND=$(./Recognition/dictionary "$speech" "$USER_DIR/dictionaries/${process}.dic")
+
+        EXIT=$?
+        if [ "$EXIT" == 0 ];then
+
+	    run_command "$COMMAND"
+
+	    exit 0
+        fi
+        if [ "$EXIT" != 2 ];then
+	    echo "There is an error in $USER_DIR/dictionaries/${process}.dic"
+        fi
+    fi
+
+    if [ -e "$USER_DIR/plugins.dic" ];then
+        COMMAND=$(./Recognition/dictionary "$speech" "$USER_DIR/plugins.dic")
+
+        EXIT=$?
+        if [ "$EXIT" == 0 ];then
+
+	    run_command "$COMMAND"
+
+	    exit 0
+        fi
+        if [ "$EXIT" != 2 ];then
+	    echo "There is an error in $USER_DIR/plugins.dic"
+        fi
+    fi
+
+    COMMAND=$(./Recognition/dictionary "$speech" "./Recognition/modes/main.dic")
+
+    echo $speech
 
     EXIT=$?
+
     if [ "$EXIT" == 0 ];then
+        run_command "$COMMAND"
+        exit 0
+    elif [ "$EXIT" == 2 ];then
+        ./Recognition/bin/result Error "'$speech'" "is not a recognized command" ""
 
-	run_command "$COMMAND"
-
-	exit 0
+    else 
+        echo "There is an error in ${mode}.dic"
+        ./Recognition/bin/result Error "There was an error while reading main.dic" \
+	    "$COMMAND" ""
     fi
-    if [ "$EXIT" != 2 ];then
-	echo "There is an error in $USER_DIR/personal.dic"
-    fi
-fi
+else
 
-./current
-read process < PROCESS
-echo "$USER_DIR/dictionaries/${process}.dic"
-if [ -e "$USER_DIR/dictionaries/${process}.dic" ];then
-    COMMAND=$(./Recognition/dictionary "$speech" "$USER_DIR/dictionaries/${process}.dic")
+    echo "NOT RUNNING MAIN"
+
+    COMMAND=$(./Recognition/dictionary "$speech" "$USER_DIR/modes/$mode")
+
+    echo $speech
 
     EXIT=$?
+
     if [ "$EXIT" == 0 ];then
+        run_command "$COMMAND"
+        exit 0
+    elif [ "$EXIT" == 2 ];then
+        ./Recognition/bin/result Error "'$speech'" "is not a recognized command" ""
 
-	run_command "$COMMAND"
-
-	exit 0
+    else 
+        echo "There is an error in ${mode}.dic"
+        ./Recognition/bin/result Error "There was an error while reading $mode" \
+	    "$COMMAND" ""
     fi
-    if [ "$EXIT" != 2 ];then
-	echo "There is an error in $USER_DIR/dictionaries/${process}.dic"
-    fi
-fi
-
-if [ -e "$USER_DIR/plugins.dic" ];then
-    COMMAND=$(./Recognition/dictionary "$speech" "$USER_DIR/plugins.dic")
-
-    EXIT=$?
-    if [ "$EXIT" == 0 ];then
-
-	run_command "$COMMAND"
-
-	exit 0
-    fi
-    if [ "$EXIT" != 2 ];then
-	echo "There is an error in $USER_DIR/plugins.dic"
-    fi
-fi
-
-COMMAND=$(./Recognition/dictionary "$speech" "./Recognition/modes/main.dic")
-
-echo $speech
-
-EXIT=$?
-
-if [ "$EXIT" == 0 ];then
-    run_command "$COMMAND"
-    exit 0
-elif [ "$EXIT" == 2 ];then
-    ./Recognition/bin/result Error "'$speech'" "is not a recognized command" ""
-
-else 
-    echo "There is an error in ${mode}.dic"
-    ./Recognition/bin/result Error "There was an error while reading main.dic" \
-	"$COMMAND" ""
 fi

@@ -86,23 +86,31 @@ class InstallGUI:
             self.nButton.set_label("Skip Dependencies")
             depends = ["sox","python-argparse","wget","espeak","xautomation","xvkbd","python-appindicator"]
             self.needs = []
-            for d in depends:
-                resp = commands.getstatusoutput("dpkg-query -W -f='${Status} ${Version}' "+d)[1]
-                if("install" not in resp or "deinstall" in resp):
-                    self.needs.append(d)
-            if len(self.needs) == 0:
-                if forward:
-                    self.notebook.next_page()
+            try:
+                resp = commands.getstatusoutput("dpkg --get-selections | grep -v deinstall > packages")[1]
+                installed = []
+                with open("packages") as pack:
+                    for l in pack:
+                        installed.append(l.replace("\t","").replace(" ","").replace("install","").replace("\n",""))
+                for d in depends:
+                    if d not in installed:
+                        self.needs.append(d)
+                if len(self.needs) == 0:
+                    if forward:
+                        self.notebook.next_page()
+                    else:
+                        self.notebook.prev_page()
+                    new = self.notebook.get_current_page()
+                    self.processPage(new)
                 else:
-                    self.notebook.prev_page()
-                new = self.notebook.get_current_page()
-                self.processPage(new)
-            else:
-                self.dlist = self.builder.get_object("lblDependsList")
-                text = ""
-                for n in self.needs:
-                    text = text + n + "\n"
-                self.dlist.set_text(text)
+                    self.dlist = self.builder.get_object("lblDependsList")
+                    text = ""
+                    for n in self.needs:
+                        text = text + n + "\n"
+                    self.dlist.set_text(text)
+            except:
+                debug("Error Checking For Dependencies")
+                self.notebook.next_page()
         
         elif num == PLUGIN_PAGE and self.loadedPlugins == False:
             self.newPlugins = []
@@ -172,8 +180,8 @@ def setup():
     call("make")
     cd(installDir)
     delete([installDir+"/Recognition/modes/main.dic",installDir+"/Recognition/bin/",root,installDir+"/Recognition/dictionary.c"])
-    createDirectory([root,root+"/configs"])
-    touch([home+"/.lispeak/UserInfo",root+"/plugins.db",root+"/plugins.dic",installDir+"/Recognition/modes/main.dic"])
+    createDirectory([root,root+"/configs",root+"/modes"])
+    touch([home+"/.lispeak/UserInfo",root+"/plugins.db",root+"/plugins.dic",installDir+"/Recognition/modes/main.dic",root+"/MODE"])
     copy([
         [installDir+"/Setup/defaults/bin/",      installDir+"/Recognition/bin/"],
         [installDir+"/Setup/defaults/main.dic", installDir+"/Recognition/modes/main.dic"]
@@ -181,6 +189,7 @@ def setup():
     gui = displayInstaller()
     if gui.status == "good":
         os.system("nohup Recognition/bin/goto 'http://lispeak.bmandesigns.com/thanks' \"nohup.out\" &")
+        os.system("./start")
     #dialogInfo("Done, you will have to setup the hotkey yourself.\n\nLiSpeak needs to be started with: ^./lispeak --start^")
 def loadLanguage(lang="en"):
     languages[lang.lower()] = getInfo("Language-"+lang.lower())
@@ -571,14 +580,14 @@ def installPlugin(path,upgrading=False):
                             break
                         output("Moving Executables")
                         for f in new:
-                            os.system("mv \""+root+"/"+data['identifier']+"/bin/"+f+"\" \""+root+"/bin/"+f+"\"")
+                            copy(root+"/"+data['identifier']+"/bin/"+f,root+"/bin/"+f)
                             os.system("chmod +x \""+root+"/bin/"+f+"\"")
                     except:
                         output("No Executable Files")
                     try:
                         dictionary = open(root+'/plugins.dic')
                     except:
-                        os.system("touch "+root+'/plugins.dic')
+                        touch(root+'/plugins.dic')
                         dictionary = open(root+'/plugins.dic')
                     text = dictionary.read()
                     dictionary.close()
@@ -602,7 +611,7 @@ def installPlugin(path,upgrading=False):
                                 try:
                                     dictionary = open(root+'/dictionaries/'+f+'.dic')
                                 except:
-                                    os.system("touch "+root+'/dictionaries/'+f+'.dic')
+                                    touch(root+'/dictionaries/'+f+'.dic')
                                     dictionary = open(root+'/dictionaries/'+f+'.dic')
                                 text = dictionary.read()
                                 dictionary.close()
@@ -643,16 +652,40 @@ def installPlugin(path,upgrading=False):
                         break
                     output("Moving Services")
                     for f in new:
-                       os.system("mv \""+root+"/"+data['identifier']+"/services/"+f+"\" \""+root+"/services/"+f+".service\"")
+                       copy(root+"/"+data['identifier']+"/services/"+f,root+"/services/"+f+".service")
+                if "mode" in data['types']:
+                    output('Scanning Modes')
+                    createDirectory(root+"/modes")
+                    new = os.listdir(root+"/"+data['identifier']+"/modes")
+                    for f in new:
+                        if os.path.isdir(root+"/"+data['identifier']+"/modes/"+f):
+                            try:
+                                dictionary = open(root+'/modes/'+f)
+                            except:
+                                touch(root+'/modes/'+f)
+                                dictionary = open(root+'/modes/'+f)
+                            text = dictionary.read()
+                            dictionary.close()
+                            actions = open(root+"/"+data['identifier']+"/modes/"+f+"/"+installLang)
+                            command = actions.read()
+                            actions.close()
+                            try:
+                                dictionary = open(root+'/modes/'+f,'w')
+                                dictionary.write("#PLUGIN: "+data['identifier']+"\n")
+                                dictionary.write(command)
+                                dictionary.write("#END\n")
+                                dictionary.write(text)
+                            except:
+                                output("Error Installing Plugin In "+f)
                 createDirectory(root+"/configs/")
-                os.system("touch \""+root+"/configs/"+data['identifier']+"\"")
+                touch(root+"/configs/"+data['identifier'])
                 con = sql.connect(root+"/plugins.db")
                 with con:
                     cur = con.cursor()
                     sqlCheck(cur)
                     execline = "INSERT INTO plugins VALUES(NULL, \""+data['name']+"\", \""+str(data['identifier'])+"\", \""+str(data['types'])+"\", \""+str(data['version'])+"\", \""+data['author']+"\", \""+str(executables)+"\", \""+str(services)+"\", \""+str(dictionaries)+"\", \""+str(actions)+"\")"
                     cur.execute(execline)
-                os.system("rm "+root+"/"+data['identifier']+" -r")
+                delete(root+"/"+data['identifier'])
                 output("Done")
                 complete = True
                 
