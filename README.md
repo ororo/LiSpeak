@@ -7,7 +7,7 @@ How to Install
 ======
 1. Download and extract LiSpeak (we recommend your home folder)
 
-2. Run ./lispeak --install          (you can use --debug to see whats happening "behind the scenes")
+2. Run ./lispeak --setup          (you can use --debug to see whats happening "behind the scenes")
 
 3. Run ./start
 
