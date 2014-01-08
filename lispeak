@@ -84,7 +84,7 @@ class InstallGUI:
             self.nButton.set_label("Continue")
         if num == DEPENDS_PAGE:
             self.nButton.set_label("Skip Dependencies")
-            depends = ["sox","python-argparse","wget","espeak","xautomation","xvkbd","python-appindicator"]
+            depends = ["sox","python-argparse","wget","espeak","xautomation","xvkbd","python-appindicator","xdotool"]
             self.needs = []
             for d in depends:
                 resp = commands.getstatusoutput("dpkg-query -W -f='${Status} ${Version}' "+d)[1]
