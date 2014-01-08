@@ -11,7 +11,7 @@ How to Install
 
 3. Run ./start
 
-4. Configure a keyboard shortcut for ./hotkey
+4. Configure a keyboard shortcut for ./hotkey (We recommend setting the hotkey command to something like "bash /home/USER/LiSpeak/hotkey" as this seems to work best. "bash" folled by the complete path.
 
 5. That's it!
 
