@@ -18,6 +18,9 @@ void store_special_variables(char *speech,char *buf);
 
 //****************************
 
+/**
+* Return the command corresponding to /speech/ according to the dictionary file named /database/
+*/
 char *get_command(char *database,char *speech) {
 
   FILE *file;
@@ -59,6 +62,9 @@ char *get_command(char *database,char *speech) {
   return ret;
 }
 
+/**
+* Create the command, using the given line of dictionary /buf/ and the variables stored in /var_LL/
+*/
 char *create_command(char *buf) {
 
   /* while(var_Header != NULL) { */
@@ -169,6 +175,9 @@ char *create_command(char *buf) {
   return ret;
 }
 
+/**
+* Create the var_LL linked list, then set up the special variable SPEECH 
+*/
 void store_special_variables(char *speech,char *buf) {
   assert(var_LL == NULL);
   
