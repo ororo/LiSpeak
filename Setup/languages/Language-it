@@ -1,0 +1,26 @@
+#LiSpeak Config File: Language-it
+Install a plugin - plugin .sp or .tar.gz file=Installa un plugin -. Plug-sp o tar.gz
+Install a plugin from the repo=Installa un plugin dal repository
+List the installed plugins=Elenca i plugin installati
+LinuxMint is NOT a supported operating system_NL_LiSpeak may not work properly=LinuxMint non è un sistema operativo supportato._NL_LiSpeak potrebbe non funzionare correttamente
+LiSpeak=LiSpeak
+Display info on a plugin=Visualizza informazioni su un plugin
+Setup LiSpeak=Lancia il programma di setup di LiSpeak
+LiSpeak Ready=LiSpeak Pronto  
+Continue=Continua
+Run the program with no output=Esegui il programma senza uscire
+Force installation with no confirmation.=Forza l'installazione, senza conferma
+Remove the specified plugin=Rimuovi il plugin specificato
+Debug the program=Esegui il debug del programma
+Warn the user if their operating system is not supported=Avvisa se il sistema operativo non è supportato
+Ask the user to re-enter their info=Chiedi all'utente di inserire nuovamente le sue informazioni
+Speech unable to be transcribed=Non ho sentito bene
+Listening=Sto ascoltando
+Please wait=Aspettare per favore
+Performing recognition=Riconoscimento in corso...
+Done=Fatto.
+First Name=Nome
+Last Name=Cognome
+LiSpeak Ready=LiSpeak pronto
+Wolfram Alpha Key=Chiave di Wolfram Alpha
+
