@@ -30,3 +30,4 @@ tmp.sp
 
 #Text editor's backup file
 *~
+*.swp

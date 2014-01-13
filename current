@@ -1,8 +1,0 @@
-#!/usr/bin/env python
-
-import subprocess
-pid = subprocess.Popen("xprop -id `xdotool getwindowfocus` | grep '_NET_WM_PID' | grep -oE '[[:digit:]]*$'", shell=True, stdout=subprocess.PIPE).communicate()[0].replace('\n','')
-currentWindow = subprocess.Popen("ps -p "+pid+" -o comm=", shell=True, stdout=subprocess.PIPE).communicate()[0].replace('\n','')
-with open("PROCESS","w") as f:
-    f.write(currentWindow)
-
