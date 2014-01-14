@@ -208,7 +208,8 @@ def setup():
     touch([home+"/.lispeak/UserInfo",root+"/plugins.db",root+"/plugins.dic",installDir+"/Recognition/modes/main.dic",root+"/MODE"])
     copy([
         [installDir+"/Setup/defaults/bin/",      installDir+"/Recognition/bin/"],
-        [installDir+"/Setup/defaults/main.dic", installDir+"/Recognition/modes/main.dic"]
+        [installDir+"/Setup/defaults/main.dic", installDir+"/Recognition/modes/main.dic"],
+        [installDir+"/Setup/languages/", root+"/configs/"]
     ])
     gui = displayInstaller()
     if gui.status == "good":
@@ -293,7 +294,7 @@ def translate(text,lang=False):
     else:
         try:
             rtext = gt.translate(text+" _END_ _END_",lang).encode('utf8')
-            touch(root+"/configs/Language"+lang.lower(),False)
+            touch(root+"/configs/Language-"+lang.lower(),False)
             writeSingleInfo(text,rtext.replace("_END_",""),"Language-"+lang.lower(),False,False)
         except:
             rtext = text
