@@ -189,13 +189,7 @@ while True:
             except:
                 print "Can't Delete!"
             if lispeak.getSingleInfo("TTS") == "True":
-                engine = lispeak.getSingleInfo("TTSENGINE")
-                if engine == "espeak":
-                    os.system("espeak -a 200 \""+title+"\"")
-                    os.system("espeak -a 200 \""+body+"\"")
-                elif engine == "Google TTS":
-                    os.system("wget -q -U Mozilla -O audio.mp3 \"http://translate.google.com/translate_tts?ie=UTF-8&tl=en&q="+title+";."+body+"\"")
-                    os.system("mpg123 audio.mp3")
+                lispeak.speak([body,title])
                     
         except:
             print "Error Displaying Notification"

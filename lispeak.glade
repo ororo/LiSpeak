@@ -465,6 +465,7 @@ more-example</property>
                         <items>
                           <item translatable="yes">espeak</item>
                           <item translatable="yes">Google TTS</item>
+                          <item translatable="yes">pico2wave</item>
                         </items>
                       </object>
                       <packing>
