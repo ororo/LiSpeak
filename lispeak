@@ -2,7 +2,10 @@
 
 VERSION = 1.1
 
-import subprocess,sys,platform,tarfile,os,argparse,shutil,urllib2,time,pygtk
+import subprocess,sys,platform,tarfile,os,argparse,shutil,urllib2,time,threading
+
+from gi.repository import Gtk as gtk
+
 import sqlite3 as sql
 
 import commands
@@ -18,6 +21,24 @@ root = home + "/.lispeak"
 approvedDistros = {"Ubuntu":["13.10"]}
 
 languages = {}
+
+class WorkerThread(threading.Thread):
+
+	def __init__ (self, function, parent, after = None):
+		threading.Thread.__init__(self)
+		self.function = function
+		self.parent = parent
+		self.after = after
+ 
+	def run(self): # when does "run" get executed?
+		self.parent.still_working = True
+		self.function()
+		self.parent.still_working = False
+		if self.after != None:
+		    self.after()
+ 
+	def stop(self):
+		self = None
 
 class InstallGUI:
     def __init__(self):
@@ -42,6 +63,7 @@ class InstallGUI:
         self.builder.get_object("lblWelcome").set_text("Welcome to LiSpeak v"+str(VERSION))
         self.bxDone = self.builder.get_object("bxDone")
         self.notebook.append_page(self.bxDone,Gtk.Label("None1"))
+        
         self.pButton.set_visible(False)
         self.processPage(0)
         self.loadedPlugins = False
@@ -56,16 +78,14 @@ class InstallGUI:
             cmd.insert(2,"install")
             cmd.append("-y")
             subprocess.check_call(cmd)
-            self.notebook.next_page()
-            new = self.notebook.get_current_page()
-            self.processPage(new)
+            self.nextPage()   
         elif num == PLUGIN_PAGE:
+            x = 0
             for p,label,switch in self.plugins:
                 if switch.get_active():
-                    downloadPackage(p)
-            self.notebook.next_page()
-            new = self.notebook.get_current_page()
-            self.processPage(new)
+                    x = x + 1
+                    downloadPackage(p)       
+            self.nextPage()
         
     def processPage(self,num,forward=True):
         if num != 0:
@@ -84,13 +104,15 @@ class InstallGUI:
             self.nButton.set_label("Continue")
         if num == DEPENDS_PAGE:
             self.nButton.set_label("Skip Dependencies")
-            depends = ["sox","python-argparse","wget","espeak","xautomation","xvkbd","python-appindicator","xdotool"]
-            self.needs = []
+            depends = ["sox","libpython2.7-stdlib","wget","espeak","xautomation","xvkbd","python-appindicator","xdotool"]
+            self.needs = ["espeak"]
             try:
                 resp = commands.getstatusoutput("dpkg --get-selections | grep -v deinstall > packages")[1]
                 installed = []
                 with open("packages") as pack:
                     for l in pack:
+                        if ":" in l:
+                            l = l.split(":")[0]
                         installed.append(l.replace("\t","").replace(" ","").replace("install","").replace("\n",""))
                 for d in depends:
                     if d not in installed:
@@ -135,7 +157,7 @@ class InstallGUI:
                 x = x + 1
             self.loadedPlugins = True
             
-    def nextPage(self,widget):
+    def nextPage(self,widget=None):
         if self.notebook.get_current_page() == USER_INFO_PAGE:
             self.userinfo = {}
             for e in ['first','last','lang','email','wolf']:
@@ -174,6 +196,8 @@ def yn(text = "Continue?",exit=False):
         return True
 
 def setup():
+    installDir = os.path.dirname(os.path.realpath(__file__))
+    writeSingleInfo("ROOTDIR",installDir)
     displayOSWarning()
     touch(installDir+"/Recognition/dictionary.c")
     cd("Recognition")
@@ -485,15 +509,15 @@ def writeInfo(new,plugin="UserInfo",upper=True,t=True):
     orig = parseData(oData)
     data = new
     for e in orig:
-        if e not in data:
-            data[e] = orig[e]
+        if e.upper() not in data:
+            data[e.upper()] = orig[e.upper()]
     with open(path,'w') as info:
         info.write("#LiSpeak Config File: "+plugin)
         for each in data:
             d = data[each]
             if upper:
                 each = each.upper()
-            info.write("\n"+each+"="+d)
+            info.write("\n"+str(each)+"="+str(d))
             
 def sqlCheck(cur):
     cur.execute("CREATE TABLE IF NOT EXISTS plugins(id INTEGER PRIMARY KEY, name TEXT, identifier TEXT,type TEXT, version TEXT, author TEXT, binFiles TEXT,services TEXT, dicts TEXT, actions TEXT)")
@@ -826,13 +850,7 @@ def removePlugin(ridentifier,saveConfig=False):
                 cur.execute("DELETE FROM plugins WHERE id = "+str(pid))
 quiet = False
 debugMode = False
-try:
-    installDir = getSingleInfo("ROOTDIR")
-    if installDir == "":
-        installDir = os.path.dirname(os.path.realpath(__file__))
-except:
-    installDir = os.path.dirname(os.path.realpath(__file__))
-writeSingleInfo("ROOTDIR",installDir)
+installDir = os.path.dirname(os.path.realpath(__file__))
 try:
     import goslate
     gt = goslate.Goslate()

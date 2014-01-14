@@ -3,7 +3,10 @@
 # This script is hacky, maybe it should work using sockets.
 # Or dbus, or w/e
 # -*- coding: cp1252 -*-
-import pynotify, time, os, subprocess,lispeak,urllib2,appindicator,gtk
+import time, os, subprocess,lispeak,urllib2,json,urllib
+
+from gi.repository import Gtk as gtk
+from gi.repository import Notify
 
 try:
     os.chdir("Microphone")
@@ -38,9 +41,9 @@ def transaText(text):
     return text
 
 
-pynotify.init("Speech Recognition")
+Notify.init("Speech Recognition")
 
-n = pynotify.Notification(lispeak.translate("LiSpeak Ready"),"")
+n = Notify.Notification.new(lispeak.translate("LiSpeak Ready"),"","")
 
 try:
     os.system("rm pycmd_*")
@@ -57,7 +60,7 @@ except:
 
 # This line allows palaver to work even if the computer is suspending
 # screensavers. Such as when a fullscreen video is playing.
-n.set_urgency(pynotify.URGENCY_CRITICAL)
+#n.set_urgency(Notify.URGENCY_CRITICAL)
 
 n.show()
 
@@ -76,19 +79,31 @@ while True:
         #    n.update(currentWindow)
         #    n.show()
         #os.chdir("Microphone")
-        f = urllib2.urlopen("http://lispeak.bmandesigns.com/functions.php?f=messageUpdate")
-        nid,title,text = f.read().split("||")
-        lastId = lispeak.getSingleInfo("lastid")
-        if lastId == "":
-            lastId = nid
         try:
-            go = int(nid) > int(lastId)
+            f = urllib2.urlopen("http://lispeak.bmandesigns.com/functions.php?f=messageUpdate")
+            text = f.read()
+            try:
+                message = json.loads(text)
+            except:
+                message = {}
+                message['id'],message['title'],message['text'] = text.split("||")
+            lastId = lispeak.getSingleInfo("lastid")
+            if lastId == "":
+                lastId = message['id']
+            try:
+                go = int(message['id']) > int(lastId)
+            except:
+                go = True
+            if go:
+                if 'icon' in message:
+                    urllib.urlretrieve(message['icon'], "/tmp/lsicon.png")
+                    n.update("LiSpeak - "+message['title'],message['text'],"/tmp/lsicon.png")
+                else:
+                    n.update("LiSpeak - "+message['title'],message['text'],"")
+                n.show()
+            lispeak.writeSingleInfo("lastid",str(int(message['id'])))
         except:
-            go = True
-        if go:
-            n.update("LiSpeak - "+title,text,"")
-            n.show()
-            lispeak.writeSingleInfo("lastid",str(int(lastId)+1))
+            print "Error with message system"
         updateCount = 0
         #old = currentWindow
     while os.path.exists("silence"):

@@ -95,6 +95,15 @@ LiSpeak is has been started.</property>
         <child>
           <placeholder/>
         </child>
+        <child>
+          <placeholder/>
+        </child>
+        <child>
+          <placeholder/>
+        </child>
+        <child>
+          <placeholder/>
+        </child>
       </object>
       <packing>
         <property name="expand">True</property>
@@ -169,8 +178,13 @@ LiSpeak is has been started.</property>
                     <property name="label" translatable="yes">This windows will guide you through the process of installing LiSpeak.
 It will install the dependencies you require and get basic user information.
 With the exceptions of dependencies, you can push 'Back' and change 
-any of the previously entered information</property>
+any of the previously entered information.
+
+
+DO NOT FORCE QUIT THIS WINDOW
+Even if it appears to stop responding it is working in the background.</property>
                     <property name="justify">center</property>
+                    <property name="ellipsize">start</property>
                   </object>
                   <packing>
                     <property name="expand">False</property>
@@ -235,7 +249,7 @@ example-2
 more-example</property>
                   </object>
                   <packing>
-                    <property name="expand">False</property>
+                    <property name="expand">True</property>
                     <property name="fill">True</property>
                     <property name="position">2</property>
                   </packing>
