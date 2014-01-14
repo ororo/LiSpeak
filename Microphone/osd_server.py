@@ -189,7 +189,10 @@ while True:
             except:
                 print "Can't Delete!"
             if lispeak.getSingleInfo("TTS") == "True":
-                lispeak.speak([body,title])
+                if body != "":
+                    lispeak.speak([title,body])
+                else:
+                    lispeak.speak(title)
                     
         except:
             print "Error Displaying Notification"
