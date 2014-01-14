@@ -1,7 +1,0 @@
-name=Media Control
-version=1.0
-identifier=bmandesigns.mediacontrol
-author=BmanDesigns (Brett Mayson)
-types=commands
-depends=xautomation
-lang=en

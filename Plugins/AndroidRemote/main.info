@@ -1,7 +1,0 @@
-name=Android Remote
-version=1.1
-identifier=bmandesigns.androidremote
-author=BmanDesigns (Brett Mayson)
-types=service
-depends=python
-lang=en,es

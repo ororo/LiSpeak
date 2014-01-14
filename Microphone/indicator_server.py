@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-import gtk,gobject,os,appindicator,subprocess
+import gtk,gobject,os,appindicator,subprocess,lispeak
 
 try:
     os.chdir("Microphone")
@@ -52,9 +52,11 @@ class indicator:
         subprocess.call(["./start"])
 
     def install(self,widget):
-        os.chdir("../")
-        subprocess.call(["./install_gui"])
-        os.chdir("Microphone")
+        p = subprocess.Popen("zenity --entry --text='Enter the Plugin Name' --title='Plugin Installer'", shell=True, stdout=subprocess.PIPE).communicate()[0].replace('\n','')
+        print "Installing: "+p
+        lispeak.downloadPackage(p)
+        subprocess.Popen("zenity --info --text='Plugin Installed' --title='LiSpeak'", shell=True, stdout=subprocess.PIPE)
+        
 
     def callback(self):
         if os.path.exists("in_grey"):

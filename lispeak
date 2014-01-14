@@ -4,8 +4,6 @@ VERSION = 1.1
 
 import subprocess,sys,platform,tarfile,os,argparse,shutil,urllib2,time
 
-from gi.repository import Gtk as gtk
-
 import sqlite3 as sql
 
 import commands
@@ -164,6 +162,7 @@ class InstallGUI:
         self.processPage(new,False)
 
 def displayInstaller():
+    from gi.repository import Gtk as gtk
     app = InstallGUI()
     Gtk.main()
     return app
@@ -407,7 +406,7 @@ def getInfo(plugin="UserInfo"):
 def homeDir():
     return home 
  
-def displayNotification(text,text2 = False,image=False):
+def displayNotification(text,text2 = False,image=False,speak=None):
     if type(text) == list:
         for line in text:
             os.system("echo \""+translate(line)+"\n\" >> "+installDir+"/Microphone/result")
@@ -420,6 +419,8 @@ def displayNotification(text,text2 = False,image=False):
         os.system("echo \""+translate(text2)+"\n\" >> "+installDir+"/Microphone/result")
     if image != False:
         os.system("echo \""+image+"\n\" >> "+installDir+"/Microphone/result_image")
+    if speak != None:
+        os.system("echo \""+translate(speak)+"\" >> "+installDir+"/Microphone/speak")
     os.system(installDir+"/pycmd result")
  
 def getSingleInfo(item,plugin="UserInfo"):

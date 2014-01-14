@@ -78,6 +78,7 @@ while True:
         #if old != currentWindow:
         #    n.update(currentWindow)
         #    n.show()
+        #print currentWindow
         #os.chdir("Microphone")
         try:
             f = urllib2.urlopen("http://lispeak.bmandesigns.com/functions.php?f=messageUpdate")
@@ -155,6 +156,7 @@ while True:
                 image = tmp
                 tmp = f.readline()
                 
+            f.close() 
             if title == '\n' or title == '':
                 title = " "
             if body == '\n' or body == '':
@@ -188,9 +190,13 @@ while True:
                 os.remove("result_image")
             except:
                 print "Can't Delete!"
+            if os.path.exists("speak"):
+                f = open("speak")
+                body = f.read()
+                f.close()
             if lispeak.getSingleInfo("TTS") == "True":
                 if body != "":
-                    lispeak.speak([title,body])
+                    lispeak.speak(title+". "+body)
                 else:
                     lispeak.speak(title)
                     
