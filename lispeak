@@ -2,7 +2,7 @@
 
 VERSION = 1.1
 
-import subprocess,sys,platform,tarfile,os,argparse,shutil,urllib2,time,threading
+import subprocess,sys,platform,tarfile,os,argparse,shutil,urllib2,time
 
 from gi.repository import Gtk as gtk
 
@@ -22,23 +22,6 @@ approvedDistros = {"Ubuntu":["13.10"]}
 
 languages = {}
 
-class WorkerThread(threading.Thread):
-
-	def __init__ (self, function, parent, after = None):
-		threading.Thread.__init__(self)
-		self.function = function
-		self.parent = parent
-		self.after = after
- 
-	def run(self): # when does "run" get executed?
-		self.parent.still_working = True
-		self.function()
-		self.parent.still_working = False
-		if self.after != None:
-		    self.after()
- 
-	def stop(self):
-		self = None
 
 class InstallGUI:
     def __init__(self):
@@ -105,7 +88,7 @@ class InstallGUI:
         if num == DEPENDS_PAGE:
             self.nButton.set_label("Skip Dependencies")
             depends = ["sox","libpython2.7-stdlib","wget","espeak","xautomation","xvkbd","python-appindicator","xdotool"]
-            self.needs = ["espeak"]
+            self.needs = []
             try:
                 resp = commands.getstatusoutput("dpkg --get-selections | grep -v deinstall > packages")[1]
                 installed = []
