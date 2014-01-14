@@ -87,7 +87,7 @@ class InstallGUI:
             self.nButton.set_label("Continue")
         if num == DEPENDS_PAGE:
             self.nButton.set_label("Skip Dependencies")
-            depends = ["sox","libpython2.7-stdlib","wget","espeak","xautomation","xvkbd","python-appindicator","xdotool"]
+            depends = ["sox","libpython2.7-stdlib","wget","espeak","xautomation","xvkbd","python-appindicator","xdotool","mpg123"]
             self.needs = []
             try:
                 resp = commands.getstatusoutput("dpkg --get-selections | grep -v deinstall > packages")[1]
