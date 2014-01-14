@@ -145,7 +145,8 @@ class InstallGUI:
             self.userinfo = {}
             for e in ['first','last','lang','email','wolf']:
                 self.userinfo[e.upper()] = self.builder.get_object('ent'+e[0].upper()+e[1:]).get_text()
-            self.userinfo["ESPEAK"] = str(self.builder.get_object("swEspeak").get_active())
+            self.userinfo["TTS"] = str(self.builder.get_object("swEspeak").get_active())
+            self.userinfo["TTSEngine"] = str(self.builder.get_object("cbtTTS").get_active_text())
             writeInfo(self.userinfo)
         elif self.notebook.get_current_page() == EXIT_PAGE:
             self.status = "good"
@@ -180,7 +181,7 @@ def yn(text = "Continue?",exit=False):
 
 def setup():
     installDir = os.path.dirname(os.path.realpath(__file__))
-    writeSingleInfo("ROOTDIR",installDir)
+    print installDir 
     displayOSWarning()
     touch(installDir+"/Recognition/dictionary.c")
     cd("Recognition")
@@ -198,6 +199,7 @@ def setup():
     if gui.status == "good":
         os.system("nohup Recognition/bin/goto 'http://lispeak.bmandesigns.com/thanks' \"nohup.out\" &")
         os.system("./start")
+        writeSingleInfo("ROOTDIR",installDir,"UserInfo",False,False)
     #dialogInfo("Done, you will have to setup the hotkey yourself.\n\nLiSpeak needs to be started with: ^./lispeak --start^")
 def loadLanguage(lang="en"):
     languages[lang.lower()] = getInfo("Language-"+lang.lower())
@@ -356,27 +358,6 @@ def output(text="",debugOnly=False):
         print translate(text)
 def debug(text):
     output(text,True)
-
-def askInfo(title="LiSpeak User Configuration",text="User Information",askFor={},plugin="UserInfo"):
-    title=translate(title)
-    text = translate(text)
-    if askFor == {}:
-        askFor = [["first","First Name"],["last","Last Name"],["email","Email"],["lang","Language (en,es,fr)"],["wolf","Wolfram Alpha Key"]]
-        text2 = ""
-        for e in askFor:
-            text2 = text2 + " --add-entry='"+translate(e[1])+"'"
-        res = subprocess.Popen("zenity --forms "+text2+" --text='"+text+"' --title='"+title+"'", shell=True, stdout=subprocess.PIPE).communicate()[0].replace('\n','')
-        res = res.split("|")
-        x = 0
-        data = {}
-        for e in askFor:
-            data[e[0]] = res[x]
-            x = x + 1
-        if plugin != False:
-            data["ROOTDIR"] = installDir
-            writeInfo(data,plugin)
-        else:
-            return data
         
 def parseData(text):
     oData = text.split("\n")
@@ -482,7 +463,6 @@ def writeSingleInfo(item,new=False,plugin="UserInfo",upper=True,t=True):
 def writeInfo(new,plugin="UserInfo",upper=True,t=True):
     if plugin == "UserInfo":
         path = root+"/UserInfo"
-        new["ROOTDIR"] = installDir
     else:
         path = root+"/configs/"+plugin
     if t:
@@ -522,26 +502,27 @@ def installPlugin(path,upgrading=False):
             pluginList = cur.fetchall()
             for line in pluginList:
                 pid,name,identifier,types,version,author,cmdfile,servicefiles,dictionaries,actions = line
-                plugins[identifier] = [float(version),eval(cmdfile)]
+                plugins[name] = [float(version),eval(cmdfile)]
         tar = tarfile.open(mode='r:gz',fileobj=file(path))
         dataf = tar.extractfile('main.info')
         data = dataf.read()
         dataf.close()
-        data = parseData(data)       
+        data = parseData(data)
+        data['name'] = data['name'].replace(" ","")     
         try:
-            currentVersion = plugins[data['identifier']][0]
+            currentVersion = plugins[data['name']][0]
             version = float(data['version'])
             if currentVersion > version:
                 output("A newer version is already installed")
             elif currentVersion == version:
                 output("This version is already installed")
                 if dialogPrompt("Reinstall?") == True:
-                    removePlugin(identifier,True)
+                    removePlugin(name,True)
                     installPlugin(path)
             else:
                 output("A previous version is already installed")
                 if dialogPrompt("Upgrade?") == True:
-                    removePlugin(identifier,True)
+                    removePlugin(name,True)
                     installPlugin(path)
         except:
             isntall = False
@@ -570,13 +551,13 @@ def installPlugin(path,upgrading=False):
                     cmd.extend(depend)
                     sudo(cmd)
                 output("Installation is beginning")
-                delete(root+"/"+data['identifier'])
+                delete(root+"/"+data['name'])
                 output("Extracting")
-                tar.extractall(root+"/"+data['identifier'])
+                tar.extractall(root+"/"+data['name'])
                 if "commands" in data['types']:
                     output("Scanning Files")
                     try:
-                        new = os.listdir(root+"/"+data['identifier']+"/bin")
+                        new = os.listdir(root+"/"+data['name']+"/bin")
                         executables = new
                         createDirectory(root+"/bin")
                         existing = os.listdir(root+"/bin")
@@ -588,7 +569,7 @@ def installPlugin(path,upgrading=False):
                             break
                         output("Moving Executables")
                         for f in new:
-                            copy(root+"/"+data['identifier']+"/bin/"+f,root+"/bin/"+f)
+                            copy(root+"/"+data['name']+"/bin/"+f,root+"/bin/"+f)
                             os.system("chmod +x \""+root+"/bin/"+f+"\"")
                     except:
                         output("No Executable Files")
@@ -599,12 +580,12 @@ def installPlugin(path,upgrading=False):
                         dictionary = open(root+'/plugins.dic')
                     text = dictionary.read()
                     dictionary.close()
-                    actions = open(root+"/"+data['identifier']+"/dictionaries/"+installLang)
+                    actions = open(root+"/"+data['name']+"/dictionaries/"+installLang)
                     command = actions.read()
                     actions.close()
                     try:
                         dictionary = open(root+'/plugins.dic','w')
-                        dictionary.write("#PLUGIN: "+data['identifier']+"\n")
+                        dictionary.write("#PLUGIN: "+data['name']+"\n")
                         dictionary.write(command)
                         dictionary.write("#END\n")
                         dictionary.write(text)
@@ -613,9 +594,9 @@ def installPlugin(path,upgrading=False):
                     dictionary.close()
                     try:
                         createDirectory(root+"/dictionaries")
-                        new = os.listdir(root+"/"+data['identifier']+"/dictionaries")
+                        new = os.listdir(root+"/"+data['name']+"/dictionaries")
                         for f in new:
-                            if os.path.isdir(root+"/"+data['identifier']+"/dictionaries/"+f):
+                            if os.path.isdir(root+"/"+data['name']+"/dictionaries/"+f):
                                 try:
                                     dictionary = open(root+'/dictionaries/'+f+'.dic')
                                 except:
@@ -623,12 +604,12 @@ def installPlugin(path,upgrading=False):
                                     dictionary = open(root+'/dictionaries/'+f+'.dic')
                                 text = dictionary.read()
                                 dictionary.close()
-                                actions = open(root+"/"+data['identifier']+"/dictionaries/"+f+"/"+installLang)
+                                actions = open(root+"/"+data['name']+"/dictionaries/"+f+"/"+installLang)
                                 command = actions.read()
                                 actions.close()
                                 try:
                                     dictionary = open(root+'/dictionaries/'+f+'.dic','w')
-                                    dictionary.write("#PLUGIN: "+data['identifier']+"\n")
+                                    dictionary.write("#PLUGIN: "+data['name']+"\n")
                                     dictionary.write(command)
                                     dictionary.write("#END\n")
                                     dictionary.write(text)
@@ -637,7 +618,7 @@ def installPlugin(path,upgrading=False):
                                 dictionaries.append(f)
                     except:
                         output("Error Scanning Dictionaries")
-                    descfile = open(root+"/"+data['identifier']+"/languages/"+installLang)
+                    descfile = open(root+"/"+data['name']+"/languages/"+installLang)
                     desc = descfile.read()
                     descfile.close()
                     desc = desc.split('\n')
@@ -648,7 +629,7 @@ def installPlugin(path,upgrading=False):
                             actions[n[0]] = n[1]
                 if "service" in data['types']:
                     output("Scanning Files")
-                    new = os.listdir(root+"/"+data['identifier']+"/services")
+                    new = os.listdir(root+"/"+data['name']+"/services")
                     services = new
                     createDirectory(root+"/services")
                     existing = os.listdir(root+"/services")
@@ -660,13 +641,13 @@ def installPlugin(path,upgrading=False):
                         break
                     output("Moving Services")
                     for f in new:
-                       copy(root+"/"+data['identifier']+"/services/"+f,root+"/services/"+f+".service")
+                       copy(root+"/"+data['name']+"/services/"+f,root+"/services/"+f+".service")
                 if "mode" in data['types']:
                     output('Scanning Modes')
                     createDirectory(root+"/modes")
-                    new = os.listdir(root+"/"+data['identifier']+"/modes")
+                    new = os.listdir(root+"/"+data['name']+"/modes")
                     for f in new:
-                        if os.path.isdir(root+"/"+data['identifier']+"/modes/"+f):
+                        if os.path.isdir(root+"/"+data['name']+"/modes/"+f):
                             try:
                                 dictionary = open(root+'/modes/'+f)
                             except:
@@ -674,26 +655,26 @@ def installPlugin(path,upgrading=False):
                                 dictionary = open(root+'/modes/'+f)
                             text = dictionary.read()
                             dictionary.close()
-                            actions = open(root+"/"+data['identifier']+"/modes/"+f+"/"+installLang)
+                            actions = open(root+"/"+data['name']+"/modes/"+f+"/"+installLang)
                             command = actions.read()
                             actions.close()
                             try:
                                 dictionary = open(root+'/modes/'+f,'w')
-                                dictionary.write("#PLUGIN: "+data['identifier']+"\n")
+                                dictionary.write("#PLUGIN: "+data['name']+"\n")
                                 dictionary.write(command)
                                 dictionary.write("#END\n")
                                 dictionary.write(text)
                             except:
                                 output("Error Installing Plugin In "+f)
                 createDirectory(root+"/configs/")
-                touch(root+"/configs/"+data['identifier'])
+                touch(root+"/configs/"+data['name'])
                 con = sql.connect(root+"/plugins.db")
                 with con:
                     cur = con.cursor()
                     sqlCheck(cur)
                     execline = "INSERT INTO plugins VALUES(NULL, \""+data['name']+"\", \""+str(data['identifier'])+"\", \""+str(data['types'])+"\", \""+str(data['version'])+"\", \""+data['author']+"\", \""+str(executables)+"\", \""+str(services)+"\", \""+str(dictionaries)+"\", \""+str(actions)+"\")"
                     cur.execute(execline)
-                delete(root+"/"+data['identifier'])
+                delete(root+"/"+data['name'])
                 output("Done")
                 complete = True
                 
@@ -714,9 +695,9 @@ def pluginInfo(plugin):
         pluginList = cur.fetchall()
         for line in pluginList:
             pid,name,identifier,types,version,author,cmdfile,servicefiles,dictionaries,actions = line
-            if identifier == plugin:
+            if name == plugin:
                 output()
-                output (name+" : "+identifier)
+                output (name)
                 output()
                 output ("Author: "+author)
                 output ("Version: "+version)
@@ -737,7 +718,7 @@ def pluginInfo(plugin):
                     if adding == False:
                         add = False
                         if line.startswith('#PLUGIN: '):
-                            if line.replace('#PLUGIN: ','').replace('\n','') == identifier:
+                            if line.replace('#PLUGIN: ','').replace('\n','') == name:
                                 add = False
                                 adding = True
                     else:
@@ -758,12 +739,12 @@ def listPlugins():
             pluginList = cur.fetchall()
             for line in pluginList:
                 pid,name,identifier,types,version,author,cmdfile,servicefiles,dictionaries,actions = line
-                output(""+name+" : "+identifier+" v"+version)
+                output(""+name+" v"+version)
                 actions = eval(actions)
                 for each in actions:
                     output("\t"+each+"\t^"+actions[each].replace('\n','')+"^")
                 output()
-def removePlugin(ridentifier,saveConfig=False):
+def removePlugin(rname,saveConfig=False):
     con = sql.connect(root+"/plugins.db")
     with con:
         cur = con.cursor()
@@ -772,7 +753,7 @@ def removePlugin(ridentifier,saveConfig=False):
         pluginList = cur.fetchall()
         for line in pluginList:
             pid,name,identifier,types,version,author,cmdfile,servicefiles,dictionaries,actions = line
-            if identifier == ridentifier:
+            if name == rname:
                 output("Removing "+name)
                 for cmd in eval(cmdfile):
                     output("Removing Executable: "+cmd)
@@ -782,7 +763,7 @@ def removePlugin(ridentifier,saveConfig=False):
                     delete(root+"/services/"+ser)
                 if saveConfig == False:
                     output("Removing Config File")
-                    delete(root+"/configs/"+identifier)
+                    delete(root+"/configs/"+name)
                 output("Removng Dictionaries")
                 for dic in eval(dictionaries):
                     dictionary = open(root+'/dictionaries/'+dic+'.dic')
@@ -792,7 +773,7 @@ def removePlugin(ridentifier,saveConfig=False):
                         if deleting == False:
                             add = True
                             if line.startswith('#PLUGIN: '):
-                                if line.replace('#PLUGIN: ','').replace('\n','') == identifier:
+                                if line.replace('#PLUGIN: ','').replace('\n','') == name:
                                     add = False
                                     deleting = True
                         else:
@@ -815,7 +796,7 @@ def removePlugin(ridentifier,saveConfig=False):
                     if deleting == False:
                         add = True
                         if line.startswith('#PLUGIN: '):
-                            if line.replace('#PLUGIN: ','').replace('\n','') == identifier:
+                            if line.replace('#PLUGIN: ','').replace('\n','') == name:
                                 add = False
                                 deleting = True
                     else:
@@ -834,7 +815,10 @@ def removePlugin(ridentifier,saveConfig=False):
                 cur.execute("DELETE FROM plugins WHERE id = "+str(pid))
 quiet = False
 debugMode = False
-installDir = os.path.dirname(os.path.realpath(__file__))
+if __name__ == "__main__": 
+    installDir = os.path.dirname(os.path.realpath(__file__))
+else:
+    installDir = getInfo()['ROOTDIR']    
 try:
     import goslate
     gt = goslate.Goslate()
@@ -908,3 +892,4 @@ else:
     quiet = True
     debugMode = True
     force = True
+print installDir

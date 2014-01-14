@@ -1,10 +1,8 @@
 #!/usr/bin/env python
 
 import time,sys
-try:
-    import lispeak
-except:
-    pass
+import lispeak
+
 
 cmd = sys.argv[1]
 

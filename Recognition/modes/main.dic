@@ -37,9 +37,9 @@ open [google ]chrome
 open firefox
   open 'firefox'
 
-[<show,display,what is>][ the][ ]date[ <today,[right ]now>]
+[<show,display,what[ is]>][ the][ ]date[is it][ <today,[right ]now>]
   date date
-[<show,display,what is>][ the][ ]time[ <today,[right ]now>]
+[<show,display,what[ is]>][ the][ ]time[is it][ <today,[right ]now>]
   date time
   
 (LINE word)
