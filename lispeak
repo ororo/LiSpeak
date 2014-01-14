@@ -190,7 +190,8 @@ def speak(words):
         if engine == "espeak":
             os.system("espeak -a 200 \""+words+"\"")
         elif engine == "Google TTS":
-            os.system("wget -q -U Mozilla -O audio.mp3 \"http://translate.google.com/translate_tts?ie=UTF-8&tl=en&q="+words+"\"")
+            
+            os.system("wget -q -U Mozilla -O audio.mp3 \"http://translate.google.com/translate_tts?ie=UTF-8&tl="+getSingleInfo("LANG")+"&q="+words+"\"")
             os.system("mpg123 audio.mp3")
         elif engine == "pico2wave":
             os.system("pico2wave --wave=audio.wav \""+words+"\"")
@@ -912,3 +913,4 @@ else:
     debugMode = True
     force = True
 print installDir
+print "wget -q -U Mozilla -O audio.mp3 \"http://translate.google.com/translate_tts?ie=UTF-8&tl="+getSingleInfo("LANG")+"&q="+"blah"+"\""
