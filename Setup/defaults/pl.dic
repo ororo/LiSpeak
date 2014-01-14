@@ -32,10 +32,10 @@ idź[ ]do (LINE site)
   open 'xdg-user-dir DOWNLOAD | xargs nautilus'
 
 otwórz [google ]chrome
-  otwórz 'google-chrome'
+  open 'google-chrome'
   
 otwórz firefox
-  otwórz 'firefox'
+  open 'firefox'
 
 <[<pokaż,wyświetl>] datę,który <dzisiaj,dziś> jest>
   date date
