@@ -9,11 +9,9 @@ How to Install
 
 2. Run ./lispeak --setup          (you can use --debug to see whats happening "behind the scenes")
 
-3. Run ./start
+3. Configure a keyboard shortcut for ./hotkey - We recommend setting the hotkey command to something like "bash /home/USER/LiSpeak/hotkey" as this seems to work best. "bash" folled by the complete path.
 
-4. Configure a keyboard shortcut for ./hotkey - We recommend setting the hotkey command to something like "bash /home/USER/LiSpeak/hotkey" as this seems to work best. "bash" folled by the complete path.
-
-5. That's it!
+4. That's it!
 
 Language Support
 ======
