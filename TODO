@@ -1,22 +1,22 @@
 Core
-    Move MODE file to ./lispeak - MODE Removed
+    Move MODE file to ./lispeak - DONE
     
 Services
     Auto start - DONE
     Add items into indicator
     
 Indicator
-    Changing Icon
+    Changing Icon - DONE
     
 Plugins
-    List installed plugins
-    New Repository
+    List installed plugins - DONE
+    New Repository - DONE
     Enabled plugins based on focused window - DONE
         Example:
             When gedit is focused saying "replace" will push ctrl+h but wouldn't if you were in chrome
     
 Setup
-    Fully Graphical
+    Fully Graphical - DONE
     
 Steam Plugin - DONE
     read ./steam/registry.vdf to get installed games
