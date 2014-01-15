@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-
+# -*- coding: utf-8 -*- 
 VERSION = 1.1
 
 import subprocess,sys,platform,tarfile,os,argparse,shutil,urllib2,time
@@ -141,11 +141,14 @@ class InstallGUI:
     def nextPage(self,widget=None):
         if self.notebook.get_current_page() == USER_INFO_PAGE:
             self.userinfo = {}
-            for e in ['first','last','lang','email','wolf']:
+            for e in ['first','last','email','wolf']:
                 self.userinfo[e.upper()] = self.builder.get_object('ent'+e[0].upper()+e[1:]).get_text()
             self.userinfo["TTS"] = str(self.builder.get_object("swEspeak").get_active())
-            self.userinfo["TTSEngine"] = str(self.builder.get_object("cbtTTS").get_active_text())
-            if self.userinfo["TTSEngine"] == "pico2wave":
+            self.userinfo["TTSENGINE"] = str(self.builder.get_object("cbtTTS").get_active_text())
+            lang = str(self.builder.get_object("cbtLang").get_active_text())
+            languages = {"English":"en","Polski":'pl',u'Español':'es'}
+            self.userinfo['LANG'] = languages[lang]
+            if self.userinfo["TTSENGINE"] == "pico2wave":
                 subprocess.check_call(["pkexec","apt-get","install","libttspico0","libttspico-utils","libttspico-data","aplay","-y"])
             writeInfo(self.userinfo)
         elif self.notebook.get_current_page() == EXIT_PAGE:
@@ -190,7 +193,6 @@ def speak(words):
         if engine == "espeak":
             os.system("espeak -a 200 \""+words+"\"")
         elif engine == "Google TTS":
-            
             os.system("wget -q -U Mozilla -O audio.mp3 \"http://translate.google.com/translate_tts?ie=UTF-8&tl="+getSingleInfo("LANG")+"&q="+words+"\"")
             os.system("mpg123 audio.mp3")
         elif engine == "pico2wave":
@@ -199,7 +201,6 @@ def speak(words):
 
 def setup():
     installDir = os.path.dirname(os.path.realpath(__file__))
-    print installDir 
     displayOSWarning()
     touch(installDir+"/Recognition/dictionary.c")
     cd("Recognition")
@@ -210,7 +211,6 @@ def setup():
     touch([home+"/.lispeak/UserInfo",root+"/plugins.db",root+"/plugins.dic",installDir+"/Recognition/modes/main.dic",root+"/MODE"])
     copy([
         [installDir+"/Setup/defaults/bin/",      installDir+"/Recognition/bin/"],
-        [installDir+"/Setup/defaults/main.dic", installDir+"/Recognition/modes/main.dic"],
         [installDir+"/Setup/languages/", root+"/configs/"]
     ])
     gui = displayInstaller()
@@ -218,11 +218,11 @@ def setup():
         os.system("nohup Recognition/bin/goto 'http://lispeak.bmandesigns.com/thanks' \"nohup.out\" &")
         os.system("./start")
         writeSingleInfo("ROOTDIR",installDir,"UserInfo",False,False)
-    #dialogInfo("Done, you will have to setup the hotkey yourself.\n\nLiSpeak needs to be started with: ^./lispeak --start^")
+    lang = getInfo()['LANG']
+    copy(installDir+"/Setup/defaults/"+lang+".dic", installDir+"/Recognition/modes/main.dic")
 def loadLanguage(lang="en"):
     languages[lang.lower()] = getInfo("Language-"+lang.lower())
 def copyLibraries():
-    #[installDir+"/Setup/libraries/", [installDir+"/",installDir+"/Recognition/bin/"]]
     libraries = os.listdir(installDir+"/Setup/libraries")
     for l in libraries:
         copy(installDir+"/Setup/libraries/"+l,[installDir+"/"+l,installDir+"/Recognition/bin/"+l])
@@ -298,7 +298,8 @@ def translate(text,lang=False):
         try:
             rtext = gt.translate(text+" _END_ _END_",lang).encode('utf8')
             touch(root+"/configs/Language-"+lang.lower(),False)
-            writeSingleInfo(text,rtext.replace("_END_",""),"Language-"+lang.lower(),False,False)
+            print writeSingleInfo(text,rtext.replace("_END_",""),"Language-"+lang.lower(),False,False)
+            print "Writing New Translation:",text
         except:
             rtext = text
     x = 0
@@ -320,8 +321,6 @@ def dialogPrompt(text="Continue",title="LiSpeak",exit=False):
     p = subprocess.Popen("zenity --question --text='"+text+"' --title="+translate(title)+"",shell=True,stderr=subprocess.PIPE)
     error = p.stderr.read()
     p.communicate()
-    #code = p.stdout.read()
-    #print code
     if "cannot open display" in error:
         return yn(text,exit)
     else:
@@ -472,13 +471,9 @@ def delete(path):
             delete(p)
    
 def writeSingleInfo(item,new=False,plugin="UserInfo",upper=True,t=True):
-    try:
-        if upper:
-            new = new.upper()
-        writeInfo({item:new},plugin,upper,t)
-        return True
-    except:
-        return False
+    if upper:
+        item = item.upper()
+    writeInfo({item:new},plugin,upper,t)
  
 def writeInfo(new,plugin="UserInfo",upper=True,t=True):
     if plugin == "UserInfo":
@@ -912,5 +907,3 @@ else:
     quiet = True
     debugMode = True
     force = True
-print installDir
-print "wget -q -U Mozilla -O audio.mp3 \"http://translate.google.com/translate_tts?ie=UTF-8&tl="+getSingleInfo("LANG")+"&q="+"blah"+"\""

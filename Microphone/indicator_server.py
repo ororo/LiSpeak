@@ -55,9 +55,8 @@ class indicator:
         p = subprocess.Popen("zenity --entry --text='Enter the Plugin Name' --title='Plugin Installer'", shell=True, stdout=subprocess.PIPE).communicate()[0].replace('\n','')
         print "Installing: "+p
         lispeak.downloadPackage(p)
-        subprocess.Popen("zenity --info --text='Plugin Installed' --title='LiSpeak'", shell=True, stdout=subprocess.PIPE)
+        lispeak.dialogInfo("Plugin Installed",'LiSpeak')
         
-
     def callback(self):
         if os.path.exists("in_grey"):
             self.ind.set_icon(PWD + "/Indicator/mic.png")

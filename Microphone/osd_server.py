@@ -11,7 +11,7 @@ from gi.repository import Notify
 try:
     os.chdir("Microphone")
 except:
-    print "Currently in",os.getcwd()
+    pass
 PWD=str(os.getcwd()) # Our full path
 
 def transaText(text):
@@ -104,7 +104,8 @@ while True:
                 n.show()
             lispeak.writeSingleInfo("lastid",str(int(message['id'])))
         except:
-            print "Error with message system"
+            #Error with message system
+            pass
         updateCount = 0
         #old = currentWindow
     while os.path.exists("silence"):
@@ -173,7 +174,6 @@ while True:
             if os.path.exists("result_image"):
                 imf = open("result_image")
                 image = imf.read()
-                print "IMAGE: ",image.replace("\n","").replace("file://","")
                 imf.close()
             
             n.update(title,body,image.replace("\n","").replace("file://",""))
@@ -189,7 +189,7 @@ while True:
             try:
                 os.remove("result_image")
             except:
-                print "Can't Delete!"
+                pass
             if os.path.exists("speak"):
                 f = open("speak")
                 body = f.read()
@@ -201,7 +201,7 @@ while True:
                     lispeak.speak(title)
                     
         except:
-            print "Error Displaying Notification"
+            pass
     while os.path.exists("pycmd_stop"):
     
         n.update(lispeak.translate("Please wait"),"",PWD+"/Not_Ready/stop.png")
