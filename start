@@ -30,7 +30,7 @@ shopt -s nullglob
 for f in $HOME/.lispeak/services/*.service
 do
     echo $f
-    base=$(basename $f)t
+    base=$(basename $f)
     $f &disown
     echo $! > "$base.pid"
 done

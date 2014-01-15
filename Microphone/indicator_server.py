@@ -45,7 +45,8 @@ class indicator:
         gtk.main()
 
     def quit(self, widget):
-        sys.exit(0)
+        os.chdir("../")
+        subprocess.call(["./stop"])
     
     def restart(self,widget):
         os.chdir("../")
