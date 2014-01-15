@@ -69,17 +69,7 @@ updateCount = 50
 old = ""
 
 while True:
-    if updateCount > 10:
-        #os.chdir("../")
-        #os.system("./pm")
-        #os.system("./update")
-        #pid = subprocess.Popen("xprop -id `xdotool getwindowfocus` | grep '_NET_WM_PID' | grep -oE '[[:digit:]]*$'", shell=True, stdout=subprocess.PIPE).communicate()[0].replace('\n','')
-        #currentWindow = subprocess.Popen("ps -p "+pid+" -o comm=", shell=True, stdout=subprocess.PIPE).communicate()[0].replace('\n','')
-        #if old != currentWindow:
-        #    n.update(currentWindow)
-        #    n.show()
-        #print currentWindow
-        #os.chdir("Microphone")
+    if updateCount > 30:
         try:
             f = urllib2.urlopen("http://lispeak.bmandesigns.com/functions.php?f=messageUpdate")
             text = f.read()
@@ -122,7 +112,7 @@ while True:
             n.update(lispeak.translate("Listening"),"",PWD+"/Recording/thumbs/rec"+ str(64-i)+".gif")
         n.show()
         i += 8
-        time.sleep(.05)
+        time.sleep(.1)
     i = 0
     while os.path.exists("pycmd_wait"):
         n.update(lispeak.translate("Performing recognition"),"",PWD+"/Waiting/wait-"+str(i)+".png")
@@ -210,5 +200,5 @@ while True:
             os.rename("pycmd_stop","pycmd_nocmd")
         except:
             pass
-    time.sleep(.1)
+    time.sleep(.05)
     updateCount = updateCount + 1
