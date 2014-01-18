@@ -36,12 +36,12 @@ class InstallGUI:
         self.pButton = self.builder.get_object("btnBack")
         self.pButton.connect("clicked", self.prevPage)
         self.pButton.set_visible(False)
-        self.window.set_title("LiSpeak Installation")
+        self.window.set_title(translate("LiSpeak Installation"))
         self.window.show_all()
         self.window.connect("destroy", Gtk.main_quit)
         self.bxPlugins = self.builder.get_object("bxPlugins")
         self.notebook.append_page(self.bxPlugins,Gtk.Label("None"))
-        self.builder.get_object("lblWelcome").set_text("Welcome to LiSpeak v"+str(VERSION))
+        self.builder.get_object("lblWelcome").set_text(translate("Welcome to LiSpeak v"+str(VERSION)))
         self.bxDone = self.builder.get_object("bxDone")
         self.notebook.append_page(self.bxDone,Gtk.Label("None1"))
         
@@ -146,7 +146,7 @@ class InstallGUI:
             self.userinfo["TTS"] = str(self.builder.get_object("swEspeak").get_active())
             self.userinfo["TTSENGINE"] = str(self.builder.get_object("cbtTTS").get_active_text())
             lang = str(self.builder.get_object("cbtLang").get_active_text())
-            languages = {"English":"en","Polski":'pl',u'Español':'es'}
+            languages = {"English":"en","Polski":'pl',u'Español':'es',u'Français':'fr',"Italiano":"it"}
             self.userinfo['LANG'] = languages[lang]
             if self.userinfo["TTSENGINE"] == "pico2wave":
                 subprocess.check_call(["pkexec","apt-get","install","libttspico0","libttspico-utils","libttspico-data","aplay","-y"])
@@ -201,18 +201,18 @@ def speak(words):
 
 def setup():
     installDir = os.path.dirname(os.path.realpath(__file__))
-    displayOSWarning()
+    createDirectory([root,root+"/configs",root+"/modes"])
     touch(installDir+"/Recognition/dictionary.c")
     cd("Recognition")
     call("make")
     cd(installDir)
     delete([installDir+"/Recognition/modes/main.dic",installDir+"/Recognition/bin/",root,installDir+"/Recognition/dictionary.c"])
-    createDirectory([root,root+"/configs",root+"/modes"])
     touch([home+"/.lispeak/UserInfo",root+"/plugins.db",root+"/plugins.dic",installDir+"/Recognition/modes/main.dic",root+"/MODE"])
     copy([
         [installDir+"/Setup/defaults/bin/",      installDir+"/Recognition/bin/"],
         [installDir+"/Setup/languages/", root+"/configs/"]
     ])
+    displayOSWarning()  #translatable
     gui = displayInstaller()
     if gui.status == "good":
         os.system("nohup Recognition/bin/goto 'http://lispeak.bmandesigns.com/thanks' \"nohup.out\" &")
@@ -289,8 +289,14 @@ def translate(text,lang=False):
         try:
             lang = getSingleInfo("lang")
         except:
-            lang = "en"
-    if lang not in languages:
+            lang = ""
+        if lang == "":
+           if os.environ["LANG"] != None:
+                lang = os.environ["LANG"][0:2]
+           else:
+                lang = "en"
+    #print "text="+text+" lang="+lang
+    if lang not in languages or len(languages[lang.lower()]) == 1: # ==1 means that a single translation was performed with Google, not from file
         loadLanguage(lang)
     if text in languages[lang.lower()]:
         rtext = languages[lang.lower()][text]
@@ -543,7 +549,7 @@ def installPlugin(path,upgrading=False):
             isntall = False
             userLang = getSingleInfo("lang")
             if userLang in data['lang']:
-                output("This plugin is available in "+userLang)
+                output("This plugin is available in "+userLang)         #FIXME: why it is not translated !?!
                 install = True
                 installLang = userLang
             else:
@@ -907,3 +913,4 @@ else:
     quiet = True
     debugMode = True
     force = True
+
