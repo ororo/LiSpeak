@@ -201,7 +201,7 @@ def speak(words):
 
 def setup():
     installDir = os.path.dirname(os.path.realpath(__file__))
-    createDirectory([root,root+"/configs",root+"/modes"])
+    createDirectory([root, root+"/configs", root+"/modes", root+"bin", root+"services"])
     touch(installDir+"/Recognition/dictionary.c")
     cd("Recognition")
     call("make")
