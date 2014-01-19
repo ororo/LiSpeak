@@ -36,7 +36,7 @@ if [ -e "speech.pid" ];then
 	./pycmd done
     fi
 
-    rm speech.pid
+    rm -rf speech.pid
 else
     ./pycmd stop
     > speech.flac
