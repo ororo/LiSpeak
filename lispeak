@@ -243,7 +243,7 @@ def sudo(cmd):
         else:
             display = False
 def translate(text,lang=False):
-    text = str(text).replace("\n","_NL_").replace("\t","_TB_")
+    text = str(text).replace("\n"," _NL_ ").replace("\t"," _TB_ ")
     paths = []
     replaces = []
     x = 0
@@ -264,7 +264,7 @@ def translate(text,lang=False):
                 break
         if ntext != "":
             replaces.append(ntext)
-            text = text.replace(ntext2,"_NT"+str(x)+"_")
+            text = text.replace(ntext2," _NT"+str(x)+"_ ")
         x = x + 1
     x = 0
     while "/" in text:
@@ -281,7 +281,7 @@ def translate(text,lang=False):
                 break
         if path != "":
             paths.append(path)
-            text = text.replace(path,"_PATH"+str(x)+"_")
+            text = text.replace(path," _PATH"+str(x)+"_ ")
         x = x + 1
     
     #Add support later for predefined language packs
@@ -295,7 +295,7 @@ def translate(text,lang=False):
                 lang = os.environ["LANG"][0:2]
            else:
                 lang = "en"
-    #print "text="+text+" lang="+lang
+    #print "text="+text+" lang="+lang  #DEBUG
     if lang not in languages or len(languages[lang.lower()]) == 1: # ==1 means that a single translation was performed with Google, not from file
         loadLanguage(lang)
     if text in languages[lang.lower()]:
@@ -306,17 +306,17 @@ def translate(text,lang=False):
             touch(root+"/configs/Language-"+lang.lower(),False)
             print writeSingleInfo(text,rtext.replace("_END_",""),"Language-"+lang.lower(),False,False)
             print "Writing New Translation:",text
-        except:
+        except Exception:
             rtext = text
     x = 0
     for p in paths:
-        rtext = rtext.replace("_PATH"+str(x)+"_",p)
+        rtext = rtext.replace(" _PATH"+str(x)+"_ ",p)
         x = x + 1
     x = 0
     for p in replaces:
-        rtext = rtext.replace("_NT"+str(x)+"_",p)
+        rtext = rtext.replace(" _NT"+str(x)+"_ ",p)
         x = x + 1
-    return rtext.replace("_END_","").replace("_NL_","\n").replace("_TB_","\t")
+    return rtext.replace("_END_","").replace(" _NL_ ","\n").replace(" _TB_ ","\t")
 def dialogInfo(text,title="LiSpeak",notrans="",term=True):
     debug("Creating Info Dialog: "+text)
     if term == True:
@@ -495,7 +495,7 @@ def writeInfo(new,plugin="UserInfo",upper=True,t=True):
     data = new
     for e in orig:
         if e.upper() not in data:
-            data[e.upper()] = orig[e.upper()]
+            data[e] = orig[e]           #instead of e.upper()
     with open(path,'w') as info:
         info.write("#LiSpeak Config File: "+plugin)
         for each in data:
