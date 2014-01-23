@@ -149,7 +149,7 @@ class InstallGUI:
             languages = {"English":"en","Polski":'pl',u'Español':'es',u'Français':'fr',"Italiano":"it"}
             self.userinfo['LANG'] = languages[lang]
             if self.userinfo["TTSENGINE"] == "pico2wave":
-                subprocess.check_call(["pkexec","apt-get","install","libttspico0","libttspico-utils","libttspico-data","aplay","-y"])
+                checkDepends(["libttspico0","libttspico-utils","libttspico-data","aplay"])
             writeInfo(self.userinfo)
         elif self.notebook.get_current_page() == EXIT_PAGE:
             self.status = "good"
@@ -163,6 +163,31 @@ class InstallGUI:
         self.notebook.prev_page()
         new = self.notebook.get_current_page()
         self.processPage(new,False)
+
+def checkDepends(depends):
+    needs = []
+    try:
+        resp = commands.getstatusoutput("dpkg --get-selections | grep -v deinstall > packages")[1]
+        installed = []
+        with open("packages") as pack:
+            for l in pack:
+                if ":" in l:
+                    l = l.split(":")[0]
+                installed.append(l.replace("\t","").replace(" ","").replace("install","").replace("\n",""))
+        for d in depends:
+            if d not in installed:
+                needs.append(d)
+        start = ["pkexec","apt-get","install"]
+        for e in needs:
+            start.append(e)
+        subprocess.check_call(start.append("-y"))
+    except:
+        debug("Error Checking For Dependencies")
+    try:
+        delete("packages")
+    except:
+        debug("Could not delete \"packages\"")
+    
 
 def displayInstaller():
     from gi.repository import Gtk as gtk
@@ -182,7 +207,6 @@ def yn(text = "Continue?",exit=False):
                 return False
     else:
         return True
-
 def speak(words):
     if type(words) == list:
         for w in words:
@@ -196,6 +220,7 @@ def speak(words):
             os.system("wget -q -U Mozilla -O audio.mp3 \"http://translate.google.com/translate_tts?ie=UTF-8&tl="+getSingleInfo("LANG")+"&q="+words+"\"")
             os.system("mpg123 audio.mp3")
         elif engine == "pico2wave":
+            checkDepends(["libttspico0","libttspico-utils","libttspico-data","aplay"])
             os.system("pico2wave --wave=audio.wav \""+words+"\"")
             os.system("aplay audio.wav")
 
