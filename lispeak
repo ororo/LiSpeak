@@ -201,6 +201,7 @@ def speak(words):
 
 def setup():
     installDir = os.path.dirname(os.path.realpath(__file__))
+    displayOSWarning()
     createDirectory([root, root+"/configs", root+"/modes", root+"/bin", root+"/services"])
     touch(installDir+"/Recognition/dictionary.c")
     cd("Recognition")
@@ -212,7 +213,6 @@ def setup():
         [installDir+"/Setup/defaults/bin/",      installDir+"/Recognition/bin/"],
         [installDir+"/Setup/languages/", root+"/configs/"]
     ])
-    displayOSWarning()  #translatable
     gui = displayInstaller()
     if gui.status == "good":
         os.system("nohup Recognition/bin/goto 'http://lispeak.bmandesigns.com/thanks' \"nohup.out\" &")
@@ -549,7 +549,7 @@ def installPlugin(path,upgrading=False):
             isntall = False
             userLang = getSingleInfo("lang")
             if userLang in data['lang']:
-                output("This plugin is available in "+userLang)         #FIXME: why it is not translated !?!
+                output("This plugin is available in "+userLang)
                 install = True
                 installLang = userLang
             else:
