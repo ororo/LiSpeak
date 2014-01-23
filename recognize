@@ -32,6 +32,7 @@ do
 done <$USER_DIR/UserInfo
 
 # Try to run a command in ./Recognition/bin with useful errors.
+# This routine assumes $1 is not empty
 function run_command() {
     eval "./Recognition/bin/$1"
 
@@ -143,8 +144,10 @@ if [ $mode = "main" ]; then
     if [ "$EXIT" == 0 ];then
         if [ ! -z "$COMMAND" ];then
             run_command "$COMMAND"
+            exit 0
+        else
+            exit 7
         fi
-        exit 0
     elif [ "$EXIT" == 2 ];then
         ./Recognition/bin/result Error "'$speech'" "is not a recognized command" ""
 
