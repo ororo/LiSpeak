@@ -14,6 +14,10 @@
    #  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 # TODO, make this use the mode, context and custom sed script
 
+#
+# Usage: recognize "Text to be recognized"
+#
+
 cd ${0%/*}
 
 USER_DIR=$HOME/.lispeak
@@ -21,11 +25,14 @@ rm $HOME/.lispeak/bin/lispeak.py
 rm $HOME/.lispeak/services/lispeak.py
 
 while read line           
-do          
-	export "$line"        
+do
+  if [ ! "${line:0:1}" = "#" ];then
+	export "$line"
+  fi
 done <$USER_DIR/UserInfo
 
 # Try to run a command in ./Recognition/bin with useful errors.
+# This routine assumes $1 is not empty
 function run_command() {
     eval "./Recognition/bin/$1"
 
@@ -123,6 +130,11 @@ if [ $mode = "main" ]; then
         fi
     fi
 
+    if [ ! -e "./Recognition/modes/main.dic" ];then
+       echo "Installation error: main.dic not found"
+       exit 5
+    fi
+    
     COMMAND=$(./Recognition/dictionary "$speech" "./Recognition/modes/main.dic")
 
     echo $speech
@@ -130,8 +142,12 @@ if [ $mode = "main" ]; then
     EXIT=$?
 
     if [ "$EXIT" == 0 ];then
-        run_command "$COMMAND"
-        exit 0
+        if [ ! -z "$COMMAND" ];then
+            run_command "$COMMAND"
+            exit 0
+        else
+            exit 7
+        fi
     elif [ "$EXIT" == 2 ];then
         ./Recognition/bin/result Error "'$speech'" "is not a recognized command" ""
 
