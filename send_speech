@@ -19,7 +19,7 @@ fi
 
 wget -qO- --post-file "$1" --header 'Content-type: audio/x-flac; rate=16000' "$URL" > result.json
 
-if [ \( ! -z "$(cat result.json)" \) -a \( -z "$(cat result.json | sed 's/{\"utterance\"://')" \) ];
+if [ \( ! -z "$(cat result.json)" \) -a \( -z "$(cat result.json | sed 's/^[^[]*\[{\"utterance\".*//')" \) ];
 then
    RESULT="$(cat result.json | sed 's/^[^[]*\[{\"utterance\":\"\([^\"]*\)\".*/\1/')"
 else
