@@ -268,7 +268,7 @@ def sudo(cmd):
         else:
             display = False
 def translate(text,lang=False):
-    text = str(text).replace("\n"," _NL_ ").replace("\t"," _TB_ ")
+    text = str(text).replace("\n"," _NL_ ").replace("\t"," _TB_ ").strip()
     paths = []
     replaces = []
     x = 0
