@@ -227,12 +227,13 @@ def speak(words):
 def setup():
     installDir = os.path.dirname(os.path.realpath(__file__))
     displayOSWarning()
+    delete(root)
     createDirectory([root, root+"/configs", root+"/modes", root+"/bin", root+"/services"])
     touch(installDir+"/Recognition/dictionary.c")
     cd("Recognition")
     call("make")
     cd(installDir)
-    delete([installDir+"/Recognition/modes/main.dic",installDir+"/Recognition/bin/",root,installDir+"/Recognition/dictionary.c"])
+    delete([installDir+"/Recognition/modes/main.dic",installDir+"/Recognition/bin/",installDir+"/Recognition/dictionary.c"])
     touch([home+"/.lispeak/UserInfo",root+"/plugins.db",root+"/plugins.dic",installDir+"/Recognition/modes/main.dic",root+"/MODE"])
     copy([
         [installDir+"/Setup/defaults/bin/",      installDir+"/Recognition/bin/"],
