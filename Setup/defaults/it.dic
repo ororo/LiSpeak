@@ -1,0 +1,46 @@
+<dì,ripeti> (LINE words)
+  say "$words$"
+<scrivi> (LINE words)
+  type "$words$\\r"
+annulla
+  xType 'keydown Control_L' 'key z' 'keyup Control_L'
+rifai
+  xType 'keydown Shift_L' 'keydown Control_L' 'key z' 'keyup Shift_L' 'keyup Control_L'
+taglia
+  xType 'keydown Control_L' 'key x' 'keyup Control_L'
+incolla[ [il ]testo]
+  xType 'keydown Control_L' 'key v' 'keyup Control_L'
+copia[<[ il] testo],[ la] selezione>]
+  xType 'keydown Control_L' 'key c' 'keyup Control_L'
+seleziona tutto[[ il] testo]
+  xType 'keydown Control_L' 'key a' 'keyup Control_L'
+
+vai [a ](LINE site)
+  goto "$site$"
+  
+<open,show> [my ]<documents,files>[ folder]
+  open 'xdg-user-dir DOCUMENTS | xargs nautilus'
+<open,show> [my ]music[ folder]
+  open 'xdg-user-dir MUSIC | xargs nautilus'
+<open,show> [my ]home[ folder]
+  open 'xdg-user-dir | xargs nautilus'
+<open,show> [my ]videos[ folder]
+  open 'xdg-user-dir VIDEOS | xargs nautilus'
+<open,show> [my ]pictures[ folder]
+  open 'xdg-user-dir PICTURES | xargs nautilus'
+<open,show> [my ]downloads[ folder]
+  open 'xdg-user-dir DOWNLOAD | xargs nautilus'
+
+open [google ]chrome
+  open 'google-chrome'
+  
+open firefox
+  open 'firefox'
+
+[<show,display,what[ is]>][ the][ ]date[is it][ <today,[right ]now>]
+  date date
+[<show,display,what[ is]>][ the][ ]time[is it][ <today,[right ]now>]
+  date time
+  
+(LINE word)
+  wolf "$word$"
