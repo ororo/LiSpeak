@@ -37,10 +37,17 @@ open [google ]chrome
 open firefox
   open 'firefox'
 
+date
+  date date
+
 [<show,display,what[ is]>][ the][ ]date[is it][ <today,[right ]now>]
   date date
 [<show,display,what[ is]>][ the][ ]time[is it][ <today,[right ]now>]
   date time
+  
+[<show,display,what[ is]>][ the][ ]weather[ <is it,like>][ <today,[right ]now>]
+  weather
+
   
 (LINE word)
   wolf "$word$"

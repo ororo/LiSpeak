@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*- 
 VERSION = 1.1
 
-import subprocess,sys,platform,tarfile,os,argparse,shutil,urllib2,time
+import subprocess,sys,platform,tarfile,os,argparse,shutil,urllib2,time,json,socket
 
 import sqlite3 as sql
 
@@ -20,6 +20,33 @@ approvedDistros = {"Ubuntu":["13.10"]}
 
 languages = {}
 
+from urllib import urlencode
+
+class IPInfo() :
+    def __init__(self, apikey):
+        self.apikey = apikey
+
+    def get_ip_info(self, baseurl, ip=None):
+        passdict = {'format': 'json', 'key': self.apikey}
+        if ip:
+            try:
+                passdict['ip'] = socket.gethostbyaddr(ip)[2][0]
+            except socket.herror:
+                passdict['ip'] = ip
+        url = baseurl + "?" + urlencode(passdict)
+        urlobj = urllib2.urlopen(url)
+        data = urlobj.read()
+        urlobj.close()
+        datadict = json.loads(data)
+        return datadict
+
+    def get_country(self, ip=None):
+        baseurl = 'http://api.ipinfodb.com/v3/ip-country/'
+        return self.get_ip_info(baseurl, ip)
+
+    def get_city(self, ip=None):
+        baseurl = 'http://api.ipinfodb.com/v3/ip-city/'
+        return self.get_ip_info(baseurl, ip)
 
 class InstallGUI:
     def __init__(self):
@@ -447,9 +474,9 @@ def displayNotification(text,text2 = False,image=False,speak=None):
         else:
             os.system("echo \""+translate(text)+"\" >> "+installDir+"/Microphone/result")
     if text2 != False:
-        os.system("echo \""+translate(text2)+"\n\" >> "+installDir+"/Microphone/result")
+       os.system("echo \""+translate(text2)+"\n\" >> "+installDir+"/Microphone/result")
     if image != False:
-        os.system("echo \""+image+"\n\" >> "+installDir+"/Microphone/result_image")
+       os.system("echo \""+image+"\n\" >> "+installDir+"/Microphone/result_image")
     if speak != None:
         os.system("echo \""+translate(speak)+"\" >> "+installDir+"/Microphone/speak")
     os.system(installDir+"/pycmd result")
