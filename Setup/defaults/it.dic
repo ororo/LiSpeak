@@ -18,29 +18,30 @@ seleziona tutto[[ il] testo]
 vai [a ](LINE site)
   goto "$site$"
   
-<open,show> [my ]<documents,files>[ folder]
-  open 'xdg-user-dir DOCUMENTS | xargs nautilus'
-<open,show> [my ]music[ folder]
-  open 'xdg-user-dir MUSIC | xargs nautilus'
-<open,show> [my ]home[ folder]
-  open 'xdg-user-dir | xargs nautilus'
-<open,show> [my ]videos[ folder]
-  open 'xdg-user-dir VIDEOS | xargs nautilus'
-<open,show> [my ]pictures[ folder]
-  open 'xdg-user-dir PICTURES | xargs nautilus'
-<open,show> [my ]downloads[ folder]
-  open 'xdg-user-dir DOWNLOAD | xargs nautilus'
+<apri,mostra,visualizza><[ i][ miei] <documenti,files>, la cartella [dei [miei ]]documenti>
+  open 'xdg-open `xdg-user-dir DOCUMENTS`'
+<apri,mostra,visualizza><[ la][ mia] musica,[ i][ miei] <file,files> musicali,[ la] cartella <[della ][mia ]musica,[dei ][miei ]<file,files> musicali>>
+  open 'xdg-open `xdg-user-dir MUSIC`'
+<apri,mostra,visualizza><[ la][ mia][ cartella] home>
+  open 'xdg-open `xdg-user-dir`'
+<apri,mostra,visualizza><[ i][ miei] video,[ i][ miei] <file,files> video,[ la] cartella <[dei ][miei ]video,[dei ][miei ]<file,files> video>>
+  open 'xdg-open `xdg-user-dir VIDEOS`'
+<apri,mostra,visualizza><[ le][ mie] immagini,[i ][miei ]<file,files> immagine>, la cartella <[delle ][mie ]immagini,[dei ][miei ]<file,files> immagine>>
+  open 'xdg-open `xdg-user-dir PICTURES`'
+<apri,mostra,visualizza><[[ la][ mia] cartella dei[ miei]],[ i][ miei]> download
+  open 'xdg-open `xdg-user-dir DOWNLOAD`'
 
-open [google ]chrome
-  open 'google-chrome'
+apri [google ]<chrome, chromium>
+  open 'chromium-browser'
   
-open firefox
+apri [mozilla ]firefox
   open 'firefox'
 
-[<show,display,what[ is]>][ the][ ]date[is it][ <today,[right ]now>]
+[<dimmi,mostra,scrivi >]<che giorno è,che data è>[ <adesso,oggi, in questo momento>]
   date date
-[<show,display,what[ is]>][ the][ ]time[is it][ <today,[right ]now>]
+[<dimmi,mostra,scrivi >]<che ora è,che ore sono>[ <adesso,oggi, in questo momento>]
   date time
   
 (LINE word)
   wolf "$word$"
+ 
