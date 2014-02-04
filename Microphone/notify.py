@@ -101,6 +101,7 @@ class PopUp:
         gobject.timeout_add_seconds(30, self.message_system)
         while gtk.events_pending():
             gtk.main_iteration_do(True)
+        self.message_system()
             
     def speak(self,a=None,b=None,c=None):
         lispeak.speak(self.speech)
@@ -131,25 +132,21 @@ class PopUp:
         print "Checking for Message"
         f = urllib2.urlopen("http://lispeak.bmandesigns.com/functions.php?f=messageUpdate")
         text = f.read()
-        try:
-            message = json.loads(text)
-        except:
-            message = {}
-            message['id'],message['title'],message['text'] = text.split("||")
+        message = json.loads(text.replace('\r', '\\r').replace('\n', '\\n'),strict=False)
         lastId = lispeak.getSingleInfo("lastid")
         if lastId == "":
             lastId = message['id']
         try:
             go = int(message['id']) > int(lastId)
         except:
-            go = True
+            #go = True
         if go:
             if 'icon' in message:
                 urllib.urlretrieve(message['icon'], "/tmp/lsicon.png")
                 self.queue.append({'TITLE':"LiSpeak - "+message['title'],'MESSAGE':message['text'],'ICON':"/tmp/lsicon.png","SPEECH":message['text']})
             else:
                 self.queue.append({'TITLE':"LiSpeak - "+message['title'],'MESSAGE':message['text'],"SPEECH":message['text']})
-            n.show()
+        
         lispeak.writeSingleInfo("lastid",str(int(message['id'])))
         return True
         
@@ -207,7 +204,7 @@ class PopUp:
                     self.message.set_text("")
                     self.message_hide = True
                     self.message.set_text(data['MESSAGE'].replace("\\n","\n"))
-                    if data['MESSAGE'].count("\\n") < 3:
+                    if data['MESSAGE'].count("\\n") < 3 && data['MESSAGE'].count("\n") < 3:
                         self.message_hide = False
                 except:
                     pass
