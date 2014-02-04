@@ -1,0 +1,54 @@
+#!/usr/bin/env python
+
+import urllib2,sys,time,lispeak
+from HTMLParser import HTMLParser
+
+class MyHTMLParser(HTMLParser):
+    def handle_starttag(self, tag, attrs):
+        if len(attrs) > 0:
+            self.data[tag] = {}
+            for a in attrs:
+                self.data[tag][a[0]] = a[1]
+                
+class IPPageParser(HTMLParser):
+    def handle_data(self, data):
+        if data == "City:":
+            print "Recording"
+            self.record = True
+        elif self.record:
+            self.city = data
+            self.record = False
+            
+#import urllib
+#f = urllib.urlopen("http://icanhazip.com/")
+#extern = f.read()
+#f.close()
+opener = urllib2.build_opener()
+opener.addheaders = [('User-agent', 'Mozilla/5.0')]
+extern = opener.open("http://whatismyipaddress.com/")
+parser = IPPageParser()
+parser.record = False
+parser.feed(extern.read())
+city = parser.city.replace(" ","%20")
+
+print "CITY:",city
+
+response = urllib2.urlopen('http://api.openweathermap.org/data/2.5/weather?q='+city+'&mode=xml&units=metric')
+parser = MyHTMLParser()
+parser.data = {}
+parser.feed(response.read())
+d = parser.data
+
+#print "It is "+str(round(float(d['temperature']['value']),1))+" degrees in "+d['city']['name']
+#print "The wind is "+d['direction']['name']+" at "+str(d['speed']['value'])+" ("+d['speed']['name']+")"
+#print "Humidity: "+d['humidity']['value']+d['humidity']['unit']
+#print "Clouds: "+d['clouds']['name']+" ("+d['clouds']['value']+")"
+#print "Sunrise: "+d['sun']['rise'].split("T")[1]
+#print "Sunset: "+d['sun']['set'].split("T")[1]
+#print "Pressure: "+d['pressure']['value']+" "+d['pressure']['unit']
+
+title = "It is "+str(round(float(d['temperature']['value']),1))+"° in "+d['city']['name']
+message = "The wind is "+d['direction']['name']+" at "+str(d['speed']['value'])+" ("+d['speed']['name']+")\\nHumidity: "+d['humidity']['value']+d['humidity']['unit']+"\\nClouds: "+d['clouds']['name']+" ("+d['clouds']['value']+")\\nSunrise: "+d['sun']['rise'].split("T")[1]+"\\nSunset: "+d['sun']['set'].split("T")[1]+"\\nPressure: "+d['pressure']['value']+" "+d['pressure']['unit']     
+
+lispeak.displayNotification({'title':title,'message':message,'icon':'http://openweathermap.org/img/w/'+d['weather']['icon']+".png"})
+
