@@ -254,21 +254,12 @@ def speak(words):
 def setup():
     installDir = os.path.dirname(os.path.realpath(__file__))
     displayOSWarning()
-<<<<<<< Updated upstream
-    delete(root)
+    delete([installDir+"/Recognition/modes/main.dic",installDir+"/Recognition/bin/",root,installDir+"/Recognition/dictionary.c"])
     createDirectory([root, root+"/configs", root+"/modes", root+"/bin", root+"/services"])
-=======
->>>>>>> Stashed changes
     touch(installDir+"/Recognition/dictionary.c")
     cd("Recognition")
     call("make")
     cd(installDir)
-<<<<<<< Updated upstream
-    delete([installDir+"/Recognition/modes/main.dic",installDir+"/Recognition/bin/",installDir+"/Recognition/dictionary.c"])
-=======
-    delete([installDir+"/Recognition/modes/main.dic",installDir+"/Recognition/bin/",root,installDir+"/Recognition/dictionary.c"])
-    createDirectory([root,root+"/configs",root+"/modes"])
->>>>>>> Stashed changes
     touch([home+"/.lispeak/UserInfo",root+"/plugins.db",root+"/plugins.dic",installDir+"/Recognition/modes/main.dic",root+"/MODE"])
     copy([
         [installDir+"/Setup/defaults/bin/",      installDir+"/Recognition/bin/"],
@@ -304,11 +295,7 @@ def sudo(cmd):
         else:
             display = False
 def translate(text,lang=False):
-<<<<<<< Updated upstream
     text = str(text).replace("\n"," _NL_ ").replace("\t"," _TB_ ").strip()
-=======
-    text = str(text).replace("\n","_NL_").replace("\t","_TB_")
->>>>>>> Stashed changes
     paths = []
     replaces = []
     x = 0
@@ -363,14 +350,10 @@ def translate(text,lang=False):
         try:
             rtext = gt.translate(text+" _END_ _END_",lang).encode('utf8')
             touch(root+"/configs/Language-"+lang.lower(),False)
-<<<<<<< Updated upstream
-            writeSingleInfo(text,rtext.replace("_END_",""),"Language-"+lang.lower(),False,False)
         except Exception:
-=======
             print writeSingleInfo(text,rtext.replace("_END_",""),"Language-"+lang.lower(),False,False)
             print "Writing New Translation:",text
         except:
->>>>>>> Stashed changes
             rtext = text
     x = 0
     for p in paths:
