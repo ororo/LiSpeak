@@ -69,35 +69,6 @@ updateCount = 50
 old = ""
 
 while True:
-    if updateCount > 30:
-        try:
-            f = urllib2.urlopen("http://lispeak.bmandesigns.com/functions.php?f=messageUpdate")
-            text = f.read()
-            try:
-                message = json.loads(text)
-            except:
-                message = {}
-                message['id'],message['title'],message['text'] = text.split("||")
-            lastId = lispeak.getSingleInfo("lastid")
-            if lastId == "":
-                lastId = message['id']
-            try:
-                go = int(message['id']) > int(lastId)
-            except:
-                go = True
-            if go:
-                if 'icon' in message:
-                    urllib.urlretrieve(message['icon'], "/tmp/lsicon.png")
-                    n.update("LiSpeak - "+message['title'],message['text'],"/tmp/lsicon.png")
-                else:
-                    n.update("LiSpeak - "+message['title'],message['text'],"")
-                n.show()
-            lispeak.writeSingleInfo("lastid",str(int(message['id'])))
-        except:
-            #Error with message system
-            pass
-        updateCount = 0
-        #old = currentWindow
     while os.path.exists("silence"):
         sleep(.1)
     i = 0
@@ -126,10 +97,10 @@ while True:
         os.system("touch in_grey")
         n.update(lispeak.translate("Done"),"","")
         n.show()
-        try:
-            os.rename("pycmd_done","pycmd_nocmd")
-        except:
-            pass
+        #try:
+        #    os.rename("pycmd_done","pycmd_nocmd")
+        #except:
+        #    pass
     i = 0
     while os.path.exists("pycmd_result"):
         os.system("touch in_grey")
@@ -188,17 +159,16 @@ while True:
                 if body != "":
                     lispeak.speak(title+". "+body)
                 else:
-                    lispeak.speak(title)
-                    
+                    lispeak.speak(title)     
         except:
             pass
     while os.path.exists("pycmd_stop"):
     
         n.update(lispeak.translate("Please wait"),"",PWD+"/Not_Ready/stop.png")
         n.show()
-        try:
-            os.rename("pycmd_stop","pycmd_nocmd")
-        except:
-            pass
+        #try:
+        #    os.rename("pycmd_stop","pycmd_nocmd")
+        #except:
+        #    pass
     time.sleep(.05)
     updateCount = updateCount + 1

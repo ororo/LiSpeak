@@ -12,7 +12,6 @@
 
    #  You should have received a copy of the GNU General Public License
    #  along with this program.  If not, see <http://www.gnu.org/licenses/>.
-# TODO, make this use the mode, context and custom sed script
 
 #
 # Usage: recognize "Text to be recognized"
@@ -48,8 +47,6 @@ function run_command() {
 }
 
 cd $ROOTDIR
-
-echo $ROOTDIR
 
 cp "./lispeak" "$HOME/.lispeak/bin/lispeak.py"
 cp "./lispeak" "$HOME/.lispeak/services/lispeak.py"
@@ -99,7 +96,6 @@ if [ $mode = "main" ]; then
 
     process=$(ps -p `xdotool getwindowfocus getwindowpid` -o comm= |tr -d '\n')
     echo ${process}
-    echo "$USER_DIR/dictionaries/${process}.dic"
     if [ -e "$USER_DIR/dictionaries/${process}.dic" ];then
         COMMAND=$(./Recognition/dictionary "$speech" "$USER_DIR/dictionaries/${process}.dic")
 
@@ -137,8 +133,6 @@ if [ $mode = "main" ]; then
     
     COMMAND=$(./Recognition/dictionary "$speech" "./Recognition/modes/main.dic")
 
-    echo $speech
-
     EXIT=$?
 
     if [ "$EXIT" == 0 ];then
@@ -158,11 +152,7 @@ if [ $mode = "main" ]; then
     fi
 else
 
-    echo "NOT RUNNING MAIN"
-
     COMMAND=$(./Recognition/dictionary "$speech" "$USER_DIR/modes/$mode")
-
-    echo $speech
 
     EXIT=$?
 
