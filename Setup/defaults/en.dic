@@ -54,6 +54,10 @@ date
 [<show,display,what[ is]>][ the][ ]weather[ <is it,like>][ <today,[right ]now>]
   weather
 
+<what's,whats,what is> my <ip,internet[ protocol]>[ address]
+  UserInformation ip
+<what's,whats,what is> my name
+  UserInformation name
   
 (LINE word)
   wolf "$word$"
