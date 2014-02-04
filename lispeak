@@ -254,12 +254,13 @@ def speak(words):
 def setup():
     installDir = os.path.dirname(os.path.realpath(__file__))
     displayOSWarning()
+    delete(root)
     createDirectory([root, root+"/configs", root+"/modes", root+"/bin", root+"/services"])
     touch(installDir+"/Recognition/dictionary.c")
     cd("Recognition")
     call("make")
     cd(installDir)
-    delete([installDir+"/Recognition/modes/main.dic",installDir+"/Recognition/bin/",root,installDir+"/Recognition/dictionary.c"])
+    delete([installDir+"/Recognition/modes/main.dic",installDir+"/Recognition/bin/",installDir+"/Recognition/dictionary.c"])
     touch([home+"/.lispeak/UserInfo",root+"/plugins.db",root+"/plugins.dic",installDir+"/Recognition/modes/main.dic",root+"/MODE"])
     copy([
         [installDir+"/Setup/defaults/bin/",      installDir+"/Recognition/bin/"],
@@ -295,7 +296,7 @@ def sudo(cmd):
         else:
             display = False
 def translate(text,lang=False):
-    text = str(text).replace("\n"," _NL_ ").replace("\t"," _TB_ ")
+    text = str(text).replace("\n"," _NL_ ").replace("\t"," _TB_ ").strip()
     paths = []
     replaces = []
     x = 0
@@ -356,8 +357,7 @@ def translate(text,lang=False):
         try:
             rtext = gt.translate(text+" _END_ _END_",lang).encode('utf8')
             touch(root+"/configs/Language-"+lang.lower(),False)
-            print writeSingleInfo(text,rtext.replace("_END_",""),"Language-"+lang.lower(),False,False)
-            print "Writing New Translation:",text
+            writeSingleInfo(text,rtext.replace("_END_",""),"Language-"+lang.lower(),False,False)
         except Exception:
             rtext = text
     x = 0
@@ -368,7 +368,7 @@ def translate(text,lang=False):
     for p in replaces:
         rtext = rtext.replace(" _NT"+str(x)+"_ ",p)
         x = x + 1
-    return rtext.replace("_END_","").replace(" _NL_ ","\n").replace(" _TB_ ","\t")
+    return rtext.replace("_END_","").replace("_NL_","\n").replace("_TB_","\t")
 def dialogInfo(text,title="LiSpeak",notrans="",term=True):
     debug("Creating Info Dialog: "+text)
     if term == True:
@@ -903,7 +903,7 @@ except:
 if __name__ == "__main__": 
     from gi.repository import Gtk 
     #args = sys.argv
-    parser = argparse.ArgumentParser(description='LiSpeak - Linux Voice Command System')
+    parser = argparse.ArgumentParser(description=translate('LiSpeak - Linux Voice Command System'))
     parser.add_argument("--setup",dest='setup',action='store_true',default=False,help=translate('Setup LiSpeak'))
     parser.add_argument('-i', metavar='file', type=str,help=translate('Install a plugin - plugin .sp or .tar.gz file'),default="")
     parser.add_argument('-r', metavar='plugin', type=str,help=translate('Remove the specified plugin'),default="")
@@ -920,23 +920,31 @@ if __name__ == "__main__":
     debugMode = args.debug
     force = args.force
     debug(args)
+    something_done = False
     if args.warn:
         displayOSWarning()
     if args.ask:
+        something_done = True
         askInfo()
     if args.setup:
+        something_done = True
         setup()
     if args.r != "":
+        something_done = True
         removePlugin(args.r)
     if args.i != "":
+        something_done = True
         installPlugin(args.i)
     if args.p != "":
+        something_done = True
         downloadPackage(args.p)
     if args.listPlugins:
+        something_done = True
         listPlugins()
     if args.d != "":
+        something_done = True
         pluginInfo(args.p)
-    if 1 == 2:#args[1] in commands:
+    if 1 == 2:#args[1] in commands:             FIXME
         if len(args[2:]) > 2:
             r = commands[args[1]](args[2:])
             if r != None:
@@ -961,6 +969,9 @@ if __name__ == "__main__":
     #    print "Valid Commands:"
     #    for e in commands:
     #        print e
+    if not something_done:
+        print "No command to execute."
+        os.system("./lispeak --help");
 else:
     quiet = True
     debugMode = True

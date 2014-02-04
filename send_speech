@@ -2,7 +2,14 @@
 #
 # Usage: send_speech <filename.flac>
 #
+# Input file must be .flac, at rate 16000
+# Google returns a file is in the form
+# {"status":0,"id":"","hypotheses":[{"utterance":"some text here","confidence":0.7664485}]}
+# which can be empty:
+# {"status":5,"id":"","hypotheses":[]}
 
+ 
+#FIXME: using $LANG from environment
 URL="https://www.google.com/speech-api/v1/recognize?lang=$LANG&client=chromium"
 
 if [ -z "$1" ];then
@@ -12,6 +19,11 @@ fi
 
 wget -qO- --post-file "$1" --header 'Content-type: audio/x-flac; rate=16000' "$URL" > result.json
 
-RESULT="$(cat result.json | sed 's/^[^[]*\[{\"utterance\":\"\([^\"]*\)\".*/\1/')"
+if [ \( ! -z "$(cat result.json)" \) -a \( -z "$(cat result.json | sed 's/^[^[]*\[{\"utterance\".*//')" \) ];
+then
+   RESULT="$(cat result.json | sed 's/^[^[]*\[{\"utterance\":\"\([^\"]*\)\".*/\1/')"
+else
+   RESULT=""
+fi
 
 echo "$RESULT"

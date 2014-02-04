@@ -19,23 +19,29 @@ go[ ]to (LINE site)
   goto "$site$"
   
 <open,show> [my ]<documents,files>[ folder]
-  open 'xdg-user-dir DOCUMENTS | xargs nautilus'
+  open 'xdg-open `xdg-user-dir DOCUMENTS`'
 <open,show> [my ]music[ folder]
-  open 'xdg-user-dir MUSIC | xargs nautilus'
+  open 'xdg-open `xdg-user-dir MUSIC`'
 <open,show> [my ]home[ folder]
-  open 'xdg-user-dir | xargs nautilus'
+  open 'xdg-open `xdg-user-dir`'
 <open,show> [my ]videos[ folder]
-  open 'xdg-user-dir VIDEOS | xargs nautilus'
+  open 'xdg-open `xdg-user-dir VIDEOS`'
 <open,show> [my ]pictures[ folder]
-  open 'xdg-user-dir PICTURES | xargs nautilus'
+  open 'xdg-open `xdg-user-dir PICTURES`'
 <open,show> [my ]downloads[ folder]
-  open 'xdg-user-dir DOWNLOAD | xargs nautilus'
+  open 'xdg-open `xdg-user-dir DOWNLOAD`'
 
 open [google ]chrome
   open 'google-chrome'
   
 open firefox
   open 'firefox'
+
+open <word,excel,openoffice,libreoffice,liber office>
+  open 'libreoffice'
+
+open (WORD app)
+  open '$app$'
 
 date
   date date

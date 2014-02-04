@@ -1,0 +1,47 @@
+<dì,ripeti> (LINE words)
+  say "$words$"
+<scrivi> (LINE words)
+  type "$words$\\r"
+annulla
+  xType 'keydown Control_L' 'key z' 'keyup Control_L'
+rifai
+  xType 'keydown Shift_L' 'keydown Control_L' 'key z' 'keyup Shift_L' 'keyup Control_L'
+taglia
+  xType 'keydown Control_L' 'key x' 'keyup Control_L'
+incolla[ [il ]testo]
+  xType 'keydown Control_L' 'key v' 'keyup Control_L'
+copia[<[ il] testo],[ la] selezione>]
+  xType 'keydown Control_L' 'key c' 'keyup Control_L'
+seleziona tutto[[ il] testo]
+  xType 'keydown Control_L' 'key a' 'keyup Control_L'
+
+vai [a ](LINE site)
+  goto "$site$"
+  
+<apri,mostra,visualizza><[ i][ miei] <documenti,files>, la cartella [dei [miei ]]documenti>
+  open 'xdg-open `xdg-user-dir DOCUMENTS`'
+<apri,mostra,visualizza><[ la][ mia] musica,[ i][ miei] <file,files> musicali,[ la] cartella <[della ][mia ]musica,[dei ][miei ]<file,files> musicali>>
+  open 'xdg-open `xdg-user-dir MUSIC`'
+<apri,mostra,visualizza><[ la][ mia][ cartella] home>
+  open 'xdg-open `xdg-user-dir`'
+<apri,mostra,visualizza><[ i][ miei] video,[ i][ miei] <file,files> video,[ la] cartella <[dei ][miei ]video,[dei ][miei ]<file,files> video>>
+  open 'xdg-open `xdg-user-dir VIDEOS`'
+<apri,mostra,visualizza><[ le][ mie] immagini,[i ][miei ]<file,files> immagine>, la cartella <[delle ][mie ]immagini,[dei ][miei ]<file,files> immagine>>
+  open 'xdg-open `xdg-user-dir PICTURES`'
+<apri,mostra,visualizza><[[ la][ mia] cartella dei[ miei]],[ i][ miei]> download
+  open 'xdg-open `xdg-user-dir DOWNLOAD`'
+
+apri [google ]<chrome, chromium>
+  open 'chromium-browser'
+  
+apri [mozilla ]firefox
+  open 'firefox'
+
+[<dimmi,mostra,scrivi >]<che giorno è,che data è>[ <adesso,oggi, in questo momento>]
+  date date
+[<dimmi,mostra,scrivi >]<che ora è,che ore sono>[ <adesso,oggi, in questo momento>]
+  date time
+  
+(LINE word)
+  wolf "$word$"
+ 
