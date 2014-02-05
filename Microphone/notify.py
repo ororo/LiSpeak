@@ -139,7 +139,7 @@ class PopUp:
         try:
             go = int(message['id']) > int(lastId)
         except:
-            #go = True
+            go = True
         if go:
             if 'icon' in message:
                 urllib.urlretrieve(message['icon'], "/tmp/lsicon.png")
@@ -204,7 +204,7 @@ class PopUp:
                     self.message.set_text("")
                     self.message_hide = True
                     self.message.set_text(data['MESSAGE'].replace("\\n","\n"))
-                    if data['MESSAGE'].count("\\n") < 3 && data['MESSAGE'].count("\n") < 3:
+                    if data['MESSAGE'].count("\\n") < 3 and data['MESSAGE'].count("\n") < 3:
                         self.message_hide = False
                 except:
                     pass

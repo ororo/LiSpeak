@@ -39,15 +39,7 @@ parser.data = {}
 parser.feed(response.read())
 d = parser.data
 
-#print "It is "+str(round(float(d['temperature']['value']),1))+" degrees in "+d['city']['name']
-#print "The wind is "+d['direction']['name']+" at "+str(d['speed']['value'])+" ("+d['speed']['name']+")"
-#print "Humidity: "+d['humidity']['value']+d['humidity']['unit']
-#print "Clouds: "+d['clouds']['name']+" ("+d['clouds']['value']+")"
-#print "Sunrise: "+d['sun']['rise'].split("T")[1]
-#print "Sunset: "+d['sun']['set'].split("T")[1]
-#print "Pressure: "+d['pressure']['value']+" "+d['pressure']['unit']
-
-title = "It is "+str(round(float(d['temperature']['value']),1))+"° in "+d['city']['name']
+title = "It is "+str(round(float(d['temperature']['value']),1))+" degrees in "+d['city']['name']
 message = "The wind is "+d['direction']['name']+" at "+str(d['speed']['value'])+" ("+d['speed']['name']+")\\nHumidity: "+d['humidity']['value']+d['humidity']['unit']+"\\nClouds: "+d['clouds']['name']+" ("+d['clouds']['value']+")\\nSunrise: "+d['sun']['rise'].split("T")[1]+"\\nSunset: "+d['sun']['set'].split("T")[1]+"\\nPressure: "+d['pressure']['value']+" "+d['pressure']['unit']     
 
 lispeak.displayNotification({'title':title,'message':message,'icon':'http://openweathermap.org/img/w/'+d['weather']['icon']+".png"})
