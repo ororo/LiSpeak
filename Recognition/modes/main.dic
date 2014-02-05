@@ -19,23 +19,36 @@ go[ ]to (LINE site)
   goto "$site$"
   
 <open,show> [my ]<documents,files>[ folder]
-  open 'xdg-user-dir DOCUMENTS | xargs nautilus'
+  open 'xdg-open `xdg-user-dir DOCUMENTS`'
 <open,show> [my ]music[ folder]
-  open 'xdg-user-dir MUSIC | xargs nautilus'
+  open 'xdg-open `xdg-user-dir MUSIC`'
 <open,show> [my ]home[ folder]
-  open 'xdg-user-dir | xargs nautilus'
+  open 'xdg-open `xdg-user-dir`'
 <open,show> [my ]videos[ folder]
-  open 'xdg-user-dir VIDEOS | xargs nautilus'
+  open 'xdg-open `xdg-user-dir VIDEOS`'
 <open,show> [my ]pictures[ folder]
-  open 'xdg-user-dir PICTURES | xargs nautilus'
+  open 'xdg-open `xdg-user-dir PICTURES`'
 <open,show> [my ]downloads[ folder]
-  open 'xdg-user-dir DOWNLOAD | xargs nautilus'
+  open 'xdg-open `xdg-user-dir DOWNLOAD`'
+
+<search,google> (LINE question)
+  goto "http://www.google.com/search?q=$question$"
+<wolfram,wolf RAM>[ alpha] (LINE question)
+  goto "www.wolframalpha.com/input/?i=$question$"
+youtube (LINE video)
+  goto "https://www.youtube.com/results?search_query=$video$"
 
 open [google ]chrome
   open 'google-chrome'
   
 open firefox
   open 'firefox'
+
+open <word,excel,openoffice,libreoffice,liber office>
+  open 'libreoffice'
+
+open (WORD app)
+  open '$app$'
 
 date
   date date
@@ -48,6 +61,10 @@ date
 [<show,display,what[ is]>][ the][ ]weather[ <is it,like>][ <today,[right ]now>]
   weather
 
+<what's,whats,what is> my <ip,internet[ protocol]>[ address]
+  UserInformation ip
+<what's,whats,what is> my name
+  UserInformation name
   
 (LINE word)
   wolf "$word$"

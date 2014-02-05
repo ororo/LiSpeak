@@ -173,7 +173,7 @@ class InstallGUI:
             self.userinfo["TTS"] = str(self.builder.get_object("swEspeak").get_active())
             self.userinfo["TTSENGINE"] = str(self.builder.get_object("cbtTTS").get_active_text())
             lang = str(self.builder.get_object("cbtLang").get_active_text())
-            languages = {"English":"en","Polski":'pl',u'Español':'es'}
+            languages = {"English":"en","Polski":'pl',u'Español':'es',u'Français':'fr',"Italiano":"it"}
             self.userinfo['LANG'] = languages[lang]
             if self.userinfo["TTSENGINE"] == "pico2wave":
                 checkDepends(["libttspico0","libttspico-utils","libttspico-data","aplay"])
@@ -342,19 +342,21 @@ def translate(text,lang=False):
             lang = getSingleInfo("lang")
         except:
             lang = "en"
+    if lang == "":
+        lang = "en"
     if lang not in languages:
         loadLanguage(lang)
     if text in languages[lang.lower()]:
         rtext = languages[lang.lower()][text]
     else:
-        try:
-            rtext = gt.translate(text+" _END_ _END_",lang).encode('utf8')
-            touch(root+"/configs/Language-"+lang.lower(),False)
-            writeSingleInfo(text,rtext.replace("_END_",""),"Language-"+lang.lower(),False,False)
-            debug("Writing New Translation:",text)
-        except:
-            rtext = text
-            debug("ERROR WRITING TRANSLATION")
+        #try:
+        rtext = gt.translate(text+" _END_ _END_",lang).encode('utf8')
+        touch(root+"/configs/Language-"+lang.lower(),False)
+        writeSingleInfo(text,rtext.replace("_END_",""),"Language-"+lang.lower(),False,False)
+        debug("Writing New Translation: "+text,False)
+        #except:
+        #    rtext = text
+        #    print("ERROR WRITING TRANSLATION")
     x = 0
     for p in paths:
         rtext = rtext.replace("_PATH"+str(x)+"_",p)
@@ -423,11 +425,15 @@ def touch(path,out=True):
     elif type(path)==list:
         for p in path:
             touch(p)
-def output(text="",debugOnly=False):
-    if quiet == False and (debugOnly == False or (debugMode == True)):
-        print translate(text)
-def debug(text):
-    output(text,True)
+def output(text="",trans=True,debug=False):
+    if quiet == False:
+        if (debug == True and debugMode == True):
+            if trans:
+                print translate(text)
+            else:
+                print text
+def debug(text,trans=True):
+    output(text,trans,True)
         
 def parseData(text):
     oData = text.split("\n")
