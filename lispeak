@@ -350,11 +350,11 @@ def translate(text,lang=False):
         try:
             rtext = gt.translate(text+" _END_ _END_",lang).encode('utf8')
             touch(root+"/configs/Language-"+lang.lower(),False)
-        except Exception:
-            print writeSingleInfo(text,rtext.replace("_END_",""),"Language-"+lang.lower(),False,False)
-            print "Writing New Translation:",text
+            writeSingleInfo(text,rtext.replace("_END_",""),"Language-"+lang.lower(),False,False)
+            debug("Writing New Translation:",text)
         except:
             rtext = text
+            debug("ERROR WRITING TRANSLATION")
     x = 0
     for p in paths:
         rtext = rtext.replace("_PATH"+str(x)+"_",p)
@@ -561,7 +561,9 @@ def writeInfo(new,plugin="UserInfo",upper=True,t=True):
     data = new
     for e in orig:
         if e.upper() not in data:
-            data[e.upper()] = orig[e.upper()]
+            if upper:
+                e = e.upper()
+            data[e] = orig[e]
     with open(path,'w') as info:
         info.write("#LiSpeak Config File: "+plugin)
         for each in data:
