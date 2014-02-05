@@ -18,6 +18,13 @@ seleziona tutto[[ il] testo]
 vai [a ](LINE site)
   goto "$site$"
   
+[cerca su ]google (LINE question)
+  goto "http://www.google.com/search?q=$question$"
+[cerca su]<wolfram,wolf ram>[ alpha] (LINE question)
+  goto "www.wolframalpha.com/input/?i=$question$"
+[cerca su ]youtube (LINE video)
+  goto "https://www.youtube.com/results?search_query=$video$"
+  
 <apri,mostra,visualizza><[ i][ miei] <documenti,files>, la cartella [dei [miei ]]documenti>
   open 'xdg-open `xdg-user-dir DOCUMENTS`'
 <apri,mostra,visualizza><[ la][ mia] musica,[ i][ miei] <file,files> musicali,[ la] cartella <[della ][mia ]musica,[dei ][miei ]<file,files> musicali>>
