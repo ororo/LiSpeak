@@ -176,7 +176,7 @@ class InstallGUI:
             languages = {"English":"en","Polski":'pl',u'Español':'es',u'Français':'fr',"Italiano":"it"}
             self.userinfo['LANG'] = languages[lang]
             if self.userinfo["TTSENGINE"] == "pico2wave":
-                checkDepends(["libttspico0","libttspico-utils","libttspico-data","aplay"])
+                checkDepends(["libttspico0","libttspico-utils","libttspico-data"])
             writeInfo(self.userinfo)
         elif self.notebook.get_current_page() == EXIT_PAGE:
             self.status = "good"
@@ -193,23 +193,24 @@ class InstallGUI:
 
 def checkDepends(depends):
     needs = []
-    try:
-        resp = commands.getstatusoutput("dpkg --get-selections | grep -v deinstall > packages")[1]
-        installed = []
-        with open("packages") as pack:
-            for l in pack:
-                if ":" in l:
-                    l = l.split(":")[0]
-                installed.append(l.replace("\t","").replace(" ","").replace("install","").replace("\n",""))
-        for d in depends:
-            if d not in installed:
-                needs.append(d)
-        start = ["pkexec","apt-get","install"]
-        for e in needs:
-            start.append(e)
-        subprocess.check_call(start.append("-y"))
-    except:
-        debug("Error Checking For Dependencies")
+    #try:
+    resp = commands.getstatusoutput("dpkg --get-selections | grep -v deinstall > packages")[1]
+    installed = []
+    with open("packages") as pack:
+        for l in pack:
+            if ":" in l:
+                l = l.split(":")[0]
+            installed.append(l.replace("\t","").replace(" ","").replace("install","").replace("\n",""))
+    for d in depends:
+        if d not in installed:
+            needs.append(d)
+    start = ["pkexec","apt-get","install"]
+    for e in needs:
+        start.append(e)
+    start.append("-y")
+    subprocess.check_call(start)
+    #except:
+    #    debug("Error Checking For Dependencies")
     try:
         delete("packages")
     except:
@@ -247,7 +248,7 @@ def speak(words):
             os.system("wget -q -U Mozilla -O audio.mp3 \"http://translate.google.com/translate_tts?ie=UTF-8&tl="+getSingleInfo("LANG")+"&q="+words+"\"")
             os.system("mpg123 audio.mp3 &> /dev/null")
         elif engine == "pico2wave":
-            checkDepends(["libttspico0","libttspico-utils","libttspico-data","aplay"])
+            checkDepends(["libttspico0","libttspico-utils","libttspico-data"])
             os.system("pico2wave --wave=audio.wav \""+words+"\"")
             os.system("aplay audio.wav &> /dev/null")
 
@@ -255,7 +256,7 @@ def setup():
     installDir = os.path.dirname(os.path.realpath(__file__))
     displayOSWarning()
     delete([installDir+"/Recognition/modes/main.dic",installDir+"/Recognition/bin/",root,installDir+"/Recognition/dictionary.c"])
-    createDirectory([root, root+"/configs", root+"/modes", root+"/bin", root+"/services"])
+    createDirectory([root, root+"/modes", root+"/bin", root+"/services"])
     touch(installDir+"/Recognition/dictionary.c")
     cd("Recognition")
     call("make")
@@ -351,9 +352,10 @@ def translate(text,lang=False):
     else:
         #try:
         rtext = gt.translate(text+" _END_ _END_",lang).encode('utf8')
-        touch(root+"/configs/Language-"+lang.lower(),False)
-        writeSingleInfo(text,rtext.replace("_END_",""),"Language-"+lang.lower(),False,False)
-        debug("Writing New Translation: "+text,False)
+        if os.path.exists(root+"/configs/"):  
+            touch(root+"/configs/Language-"+lang.lower(),False)
+            writeSingleInfo(text,rtext.replace("_END_",""),"Language-"+lang.lower(),False,False)
+            debug("Writing New Translation: "+text,False)
         #except:
         #    rtext = text
         #    print("ERROR WRITING TRANSLATION")
@@ -432,6 +434,11 @@ def output(text="",trans=True,debug=False):
                 print translate(text)
             else:
                 print text
+        elif not debug:
+            if trans:
+                print translate(text)
+            else:
+                print text
 def debug(text,trans=True):
     output(text,trans,True)
         
@@ -472,13 +479,10 @@ def displayNotification(text,text2 = False,image=False,speech=None):
     else:
         data = text
     if image == False and type(text) == str:
-        print "Removing Image"
         del data['icon']
     if image == False and type(text) == str:
-        print "Removing Message"
         del data['message']
     if speech == None and type(text) == str:
-        print "Removing Speech"
         del data['speech']
     with open(path,'w') as info:
         for each in data:
@@ -944,6 +948,7 @@ if __name__ == "__main__":
     debug(args)
     something_done = False
     if args.warn:
+        something_done = True
         displayOSWarning()
     if args.ask:
         something_done = True
@@ -991,8 +996,7 @@ if __name__ == "__main__":
     #    print "Valid Commands:"
     #    for e in commands:
     #        print e
-    if not something_done:
-        print "No command to execute."
+    if not something_done and not quiet:
         os.system("./lispeak --help");
 else:
     quiet = True
