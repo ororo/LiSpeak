@@ -33,12 +33,13 @@ do
     fi 
 done
 
-if ps auxww |grep -v grep |grep osd_server > /dev/null 2>&1;then
+if ps auxww |grep -v grep |grep notify.py > /dev/null 2>&1;then
     : # we are good, the server is there
 else # otherwise start it
-    ./Microphone/osd_server.py 2>/dev/null & 
-	echo $! > "osd.pid"
-fi  
+    ./Microphone/notify.py 2>/dev/null & 
+    echo $! > "notify.pid"
+fi
+
 if ps auxww |grep -v grep |grep indicator_server.py > /dev/null 2>&1;then
     : # we are good, the server is there
 else # otherwise start it

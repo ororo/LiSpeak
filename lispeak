@@ -63,12 +63,12 @@ class InstallGUI:
         self.pButton = self.builder.get_object("btnBack")
         self.pButton.connect("clicked", self.prevPage)
         self.pButton.set_visible(False)
-        self.window.set_title(translate("LiSpeak Installation"))
+        self.window.set_title("LiSpeak Installation")
         self.window.show_all()
         self.window.connect("destroy", Gtk.main_quit)
         self.bxPlugins = self.builder.get_object("bxPlugins")
         self.notebook.append_page(self.bxPlugins,Gtk.Label("None"))
-        self.builder.get_object("lblWelcome").set_text(translate("Welcome to LiSpeak v"+str(VERSION)))
+        self.builder.get_object("lblWelcome").set_text("Welcome to LiSpeak v"+str(VERSION))
         self.bxDone = self.builder.get_object("bxDone")
         self.notebook.append_page(self.bxDone,Gtk.Label("None1"))
         
@@ -176,7 +176,7 @@ class InstallGUI:
             languages = {"English":"en","Polski":'pl',u'Español':'es',u'Français':'fr',"Italiano":"it"}
             self.userinfo['LANG'] = languages[lang]
             if self.userinfo["TTSENGINE"] == "pico2wave":
-                checkDepends(["libttspico0","libttspico-utils","libttspico-data","aplay"])
+                checkDepends(["libttspico0","libttspico-utils","libttspico-data"])
             writeInfo(self.userinfo)
         elif self.notebook.get_current_page() == EXIT_PAGE:
             self.status = "good"
@@ -193,23 +193,24 @@ class InstallGUI:
 
 def checkDepends(depends):
     needs = []
-    try:
-        resp = commands.getstatusoutput("dpkg --get-selections | grep -v deinstall > packages")[1]
-        installed = []
-        with open("packages") as pack:
-            for l in pack:
-                if ":" in l:
-                    l = l.split(":")[0]
-                installed.append(l.replace("\t","").replace(" ","").replace("install","").replace("\n",""))
-        for d in depends:
-            if d not in installed:
-                needs.append(d)
-        start = ["pkexec","apt-get","install"]
-        for e in needs:
-            start.append(e)
-        subprocess.check_call(start.append("-y"))
-    except:
-        debug("Error Checking For Dependencies")
+    #try:
+    resp = commands.getstatusoutput("dpkg --get-selections | grep -v deinstall > packages")[1]
+    installed = []
+    with open("packages") as pack:
+        for l in pack:
+            if ":" in l:
+                l = l.split(":")[0]
+            installed.append(l.replace("\t","").replace(" ","").replace("install","").replace("\n",""))
+    for d in depends:
+        if d not in installed:
+            needs.append(d)
+    start = ["pkexec","apt-get","install"]
+    for e in needs:
+        start.append(e)
+    start.append("-y")
+    subprocess.check_call(start)
+    #except:
+    #    debug("Error Checking For Dependencies")
     try:
         delete("packages")
     except:
@@ -245,22 +246,21 @@ def speak(words):
             os.system("espeak -a 200 \""+words+"\"")
         elif engine == "Google TTS":
             os.system("wget -q -U Mozilla -O audio.mp3 \"http://translate.google.com/translate_tts?ie=UTF-8&tl="+getSingleInfo("LANG")+"&q="+words+"\"")
-            os.system("mpg123 audio.mp3")
+            os.system("mpg123 audio.mp3 &> /dev/null")
         elif engine == "pico2wave":
-            checkDepends(["libttspico0","libttspico-utils","libttspico-data","aplay"])
+            checkDepends(["libttspico0","libttspico-utils","libttspico-data"])
             os.system("pico2wave --wave=audio.wav \""+words+"\"")
-            os.system("aplay audio.wav")
+            os.system("aplay audio.wav &> /dev/null")
 
 def setup():
     installDir = os.path.dirname(os.path.realpath(__file__))
     displayOSWarning()
-    delete(root)
-    createDirectory([root, root+"/configs", root+"/modes", root+"/bin", root+"/services"])
+    delete([installDir+"/Recognition/modes/main.dic",installDir+"/Recognition/bin/",root,installDir+"/Recognition/dictionary.c"])
+    createDirectory([root, root+"/modes", root+"/bin", root+"/services"])
     touch(installDir+"/Recognition/dictionary.c")
     cd("Recognition")
     call("make")
     cd(installDir)
-    delete([installDir+"/Recognition/modes/main.dic",installDir+"/Recognition/bin/",installDir+"/Recognition/dictionary.c"])
     touch([home+"/.lispeak/UserInfo",root+"/plugins.db",root+"/plugins.dic",installDir+"/Recognition/modes/main.dic",root+"/MODE"])
     copy([
         [installDir+"/Setup/defaults/bin/",      installDir+"/Recognition/bin/"],
@@ -317,7 +317,7 @@ def translate(text,lang=False):
                 break
         if ntext != "":
             replaces.append(ntext)
-            text = text.replace(ntext2," _NT"+str(x)+"_ ")
+            text = text.replace(ntext2,"_NT"+str(x)+"_")
         x = x + 1
     x = 0
     while "/" in text:
@@ -334,7 +334,7 @@ def translate(text,lang=False):
                 break
         if path != "":
             paths.append(path)
-            text = text.replace(path," _PATH"+str(x)+"_ ")
+            text = text.replace(path,"_PATH"+str(x)+"_")
         x = x + 1
     
     #Add support later for predefined language packs
@@ -342,31 +342,30 @@ def translate(text,lang=False):
         try:
             lang = getSingleInfo("lang")
         except:
-            lang = ""
-        if lang == "":
-           if os.environ["LANG"] != None:
-                lang = os.environ["LANG"][0:2]
-           else:
-                lang = "en"
-    #print "text="+text+" lang="+lang  #DEBUG
-    if lang not in languages or len(languages[lang.lower()]) == 1: # ==1 means that a single translation was performed with Google, not from file
+            lang = "en"
+    if lang == "":
+        lang = "en"
+    if lang not in languages:
         loadLanguage(lang)
     if text in languages[lang.lower()]:
         rtext = languages[lang.lower()][text]
     else:
-        try:
-            rtext = gt.translate(text+" _END_ _END_",lang).encode('utf8')
+        #try:
+        rtext = gt.translate(text+" _END_ _END_",lang).encode('utf8')
+        if os.path.exists(root+"/configs/"):  
             touch(root+"/configs/Language-"+lang.lower(),False)
             writeSingleInfo(text,rtext.replace("_END_",""),"Language-"+lang.lower(),False,False)
-        except Exception:
-            rtext = text
+            debug("Writing New Translation: "+text,False)
+        #except:
+        #    rtext = text
+        #    print("ERROR WRITING TRANSLATION")
     x = 0
     for p in paths:
-        rtext = rtext.replace(" _PATH"+str(x)+"_ ",p)
+        rtext = rtext.replace("_PATH"+str(x)+"_",p)
         x = x + 1
     x = 0
     for p in replaces:
-        rtext = rtext.replace(" _NT"+str(x)+"_ ",p)
+        rtext = rtext.replace("_NT"+str(x)+"_",p)
         x = x + 1
     return rtext.replace("_END_","").replace("_NL_","\n").replace("_TB_","\t")
 def dialogInfo(text,title="LiSpeak",notrans="",term=True):
@@ -428,11 +427,20 @@ def touch(path,out=True):
     elif type(path)==list:
         for p in path:
             touch(p)
-def output(text="",debugOnly=False):
-    if quiet == False and (debugOnly == False or (debugMode == True)):
-        print translate(text)
-def debug(text):
-    output(text,True)
+def output(text="",trans=True,debug=False):
+    if quiet == False:
+        if (debug == True and debugMode == True):
+            if trans:
+                print translate(text)
+            else:
+                print text
+        elif not debug:
+            if trans:
+                print translate(text)
+            else:
+                print text
+def debug(text,trans=True):
+    output(text,trans,True)
         
 def parseData(text):
     oData = text.split("\n")
@@ -464,22 +472,38 @@ def getInfo(plugin="UserInfo"):
 def homeDir():
     return home 
  
-def displayNotification(text,text2 = False,image=False,speak=None):
-    if type(text) == list:
-        for line in text:
-            os.system("echo \""+translate(line)+"\n\" >> "+installDir+"/Microphone/result")
+def displayNotification(text,text2 = False,image=False,speech=None):
+    path = installDir+"/Microphone/notification.lmf"
+    if type(text) != dict:
+        data = {'title':text,'message':text2,'icon':image,'speech':speech}
     else:
-        if text2 == False:
-            os.system("echo \""+translate(text)+"\n\" >> "+installDir+"/Microphone/result")
-        else:
-            os.system("echo \""+translate(text)+"\" >> "+installDir+"/Microphone/result")
-    if text2 != False:
-       os.system("echo \""+translate(text2)+"\n\" >> "+installDir+"/Microphone/result")
-    if image != False:
-       os.system("echo \""+image+"\n\" >> "+installDir+"/Microphone/result_image")
-    if speak != None:
-        os.system("echo \""+translate(speak)+"\" >> "+installDir+"/Microphone/speak")
-    os.system(installDir+"/pycmd result")
+        data = text
+    if image == False and type(text) == str:
+        del data['icon']
+    if image == False and type(text) == str:
+        del data['message']
+    if speech == None and type(text) == str:
+        del data['speech']
+    with open(path,'w') as info:
+        for each in data:
+            d = data[each]
+            each = each.upper()
+            info.write("\n"+str(each)+"="+str(d))
+    #if type(text) == list:
+    #    for line in text:
+    #        os.system("echo \""+translate(line)+"\n\" >> "+installDir+"/Microphone/result")
+    #else:
+    #    if text2 == False:
+    #        os.system("echo \""+translate(text)+"\n\" >> "+installDir+"/Microphone/result")
+    #    else:
+    #        os.system("echo \""+translate(text)+"\" >> "+installDir+"/Microphone/result")
+    #if text2 != False:
+    #   os.system("echo \""+translate(text2)+"\n\" >> "+installDir+"/Microphone/result")
+    #if image != False:
+    #   os.system("echo \""+image+"\n\" >> "+installDir+"/Microphone/result_image")
+    #if speak != None:
+    #    os.system("echo \""+translate(speak)+"\" >> "+installDir+"/Microphone/speak")
+    #os.system(installDir+"/pycmd result")
  
 def getSingleInfo(item,plugin="UserInfo"):
     try:
@@ -547,7 +571,9 @@ def writeInfo(new,plugin="UserInfo",upper=True,t=True):
     data = new
     for e in orig:
         if e.upper() not in data:
-            data[e] = orig[e]           #instead of e.upper()
+            if upper:
+                e = e.upper()
+            data[e] = orig[e]
     with open(path,'w') as info:
         info.write("#LiSpeak Config File: "+plugin)
         for each in data:
@@ -913,7 +939,7 @@ if __name__ == "__main__":
     parser.add_argument('-f', dest='force', action='store_true',default=False,help=translate('Force installation with no confirmation.'))
     parser.add_argument("-q",dest='quiet',action='store_true',default=False,help=translate('Run the program with no output'))
     parser.add_argument("--oswarn",dest='warn',action='store_true',default=False,help=translate('Warn the user if their operating system is not supported'))
-    parser.add_argument("--ask",dest='ask',action='store_true',default=False,help=translate('Ask the user to re-enter their info'))
+    #parser.add_argument("--ask",dest='ask',action='store_true',default=False,help=translate('Ask the user to re-enter their info'))
     parser.add_argument("--debug",dest='debug',action='store_true',default=False,help=translate('Debug the program'))
     args = parser.parse_args()
     quiet = args.quiet
@@ -922,10 +948,11 @@ if __name__ == "__main__":
     debug(args)
     something_done = False
     if args.warn:
-        displayOSWarning()
-    if args.ask:
         something_done = True
-        askInfo()
+        displayOSWarning()
+    #if args.ask:               NEEDS TO BE REWRITTEN FOR NEW INSTALLATION GUI
+    #    something_done = True
+    #    askInfo()
     if args.setup:
         something_done = True
         setup()
@@ -969,11 +996,9 @@ if __name__ == "__main__":
     #    print "Valid Commands:"
     #    for e in commands:
     #        print e
-    if not something_done:
-        print "No command to execute."
+    if not something_done and not quiet:
         os.system("./lispeak --help");
 else:
     quiet = True
     debugMode = True
     force = True
-

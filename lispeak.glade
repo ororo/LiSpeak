@@ -484,10 +484,12 @@ more-example</property>
                         <property name="active_id">1</property>
                         <items>
                           <item translatable="yes">English</item>
+                          <item translatable="yes">Italiano</item>
                           <item translatable="yes">Español</item>
                           <item translatable="yes">Français</item>
                           <item translatable="yes">Italiano</item>
                           <item translatable="yes">Polski</item>
+                          <item translatable="yes">Français</item>
                         </items>
                       </object>
                       <packing>
