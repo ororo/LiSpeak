@@ -3,6 +3,13 @@ LiSpeak
 
 A voice command system built on the base of Palaver
 
+Current Active Developers:
+    BmanDesignsCanada
+    ororo
+    
+Current Active Translators:
+    ororo - Italian
+
 How to Install
 ======
 1. Download and extract LiSpeak (we recommend your home folder)
