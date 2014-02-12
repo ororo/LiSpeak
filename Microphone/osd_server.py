@@ -86,6 +86,7 @@ while True:
         time.sleep(.1)
     i = 0
     while os.path.exists("pycmd_wait"):
+        os.system("touch in_progress")
         n.update(lispeak.translate("Performing recognition"),"",PWD+"/Waiting/wait-"+str(i)+".png")
         n.show()
         time.sleep(.1)
@@ -163,7 +164,7 @@ while True:
         except:
             pass
     while os.path.exists("pycmd_stop"):
-    
+        os.system("touch in_red")
         n.update(lispeak.translate("Please wait"),"",PWD+"/Not_Ready/stop.png")
         n.show()
         #try:

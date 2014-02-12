@@ -86,15 +86,15 @@ class PopUp:
         self.builder2 = Gtk.Builder()
         self.builder2.add_from_file("nonclose.glade")
         self.builder2.connect_signals(self)
-        self.nwindow = self.builder2.get_object("window1")
-        self.ntitle = self.builder2.get_object("title")
-        self.nimage = self.builder2.get_object("image")
-        self.nwindow.set_keep_above(True)
-        self.ntitle.set_text("Waiting...")
-        self.nwindow.show_all()
-        monitor = self.nwindow.get_screen().get_monitor_geometry(self.nwindow.get_screen().get_monitor_at_window(self.nwindow.get_screen().get_active_window()))
-        print("Heigh: %s, Width: %s" % (monitor.height, monitor.width))
-        self.nwindow.move(monitor.width-self.nwindow.get_size()[0],monitor.height-self.nwindow.get_size()[1])
+        #self.nwindow = self.builder2.get_object("window1")
+        #self.ntitle = self.builder2.get_object("title")
+        #self.nimage = self.builder2.get_object("image")
+        #self.nwindow.set_keep_above(True)
+        #self.ntitle.set_text("Waiting...")
+        #self.nwindow.show_all()
+        #monitor = self.nwindow.get_screen().get_monitor_geometry(self.nwindow.get_screen().get_monitor_at_window(self.nwindow.get_screen().get_active_window()))
+        #print("Heigh: %s, Width: %s" % (monitor.height, monitor.width))
+        #self.nwindow.move(monitor.width-self.nwindow.get_size()[0],monitor.height-self.nwindow.get_size()[1])
         
         gobject.timeout_add_seconds(1, self.timer)
         gobject.timeout_add_seconds(0.2, self.display_notify)
@@ -152,17 +152,17 @@ class PopUp:
         
     def display_notify(self):
         if os.path.exists("pycmd_done"):
-            self.ntitle.set_text("Done!")
+            #self.ntitle.set_text("Done!")
             os.system("touch in_grey")
         if os.path.exists("pycmd_record"):
             os.system("touch in_green")
-            self.ntitle.set_text("Listening...")
+            #self.ntitle.set_text("Listening...")
         if os.path.exists("pycmd_stop"):
-            self.ntitle.set_text("Please Wait...")
-            os.system("touch in_grey")
+            #self.ntitle.set_text("Please Wait...")
+            os.system("touch in_red")
         if os.path.exists("pycmd_wait"):
-            self.ntitle.set_text("Analyzing...")
-            os.system("touch in_grey")
+            #self.ntitle.set_text("Analyzing...")
+            os.system("touch in_progress")
         if os.path.exists("notification.lmf"):
             time.sleep(0.05)
             with open("notification.lmf") as f:

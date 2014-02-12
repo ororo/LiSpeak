@@ -16,6 +16,7 @@ class indicator:
 
         self.menu_setup()
         self.ind.set_menu(self.menu)
+        self.progress = 0
         
         gobject.timeout_add(100, self.callback)
 
@@ -59,12 +60,29 @@ class indicator:
         lispeak.dialogInfo("Plugin Installed",'LiSpeak')
         
     def callback(self):
+        reset = False
         if os.path.exists("in_grey"):
             self.ind.set_icon(PWD + "/Indicator/mic.png")
             os.remove('in_grey')
+            reset = True
         if os.path.exists("in_green"):
             self.ind.set_icon(PWD + "/Indicator/listen.png")
             os.remove("in_green")
+            reset = True
+        if os.path.exists("in_red"):
+            self.ind.set_icon(PWD + "/Indicator/wait.png")
+            os.remove("in_red")
+            reset = True
+        if reset == False and os.path.exists("in_progress"):
+            self.ind.set_icon(PWD + "/Indicator/analyzing/tmp-"+str(self.progress)+".gif")
+            self.progress += 1
+            if self.progress == 8:
+                self.progress = 0
+        else:
+            try:
+                os.remove("in_progress")
+            except:
+                pass
         return True
 ind = indicator()
 gtk.main()
