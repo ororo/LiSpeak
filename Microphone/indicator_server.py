@@ -1,5 +1,9 @@
 #!/usr/bin/env python
 
+#
+# Applet in system tray
+#
+
 import gtk,gobject,os,appindicator,subprocess,lispeak
 
 try:
