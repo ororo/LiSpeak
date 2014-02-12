@@ -1,9 +1,0 @@
-#!/bin/bash
-
-#
-# Usage: open 'any command here'
-# Allows execution of arbitrary commands
-#
-
-
-eval "$@ &disown"

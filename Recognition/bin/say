@@ -1,9 +1,0 @@
-#!/usr/bin/env python
-
-#
-# Usage: say "Any text"
-#
-
-import lispeak,sys
-
-lispeak.speak(sys.argv[1])
