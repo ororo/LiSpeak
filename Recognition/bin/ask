@@ -1,5 +1,8 @@
 #!/bin/bash
 
+#
+# Usage: ask "some question here"
+#
 
 
 if [ -z "$1" ];then

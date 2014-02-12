@@ -1,0 +1,7 @@
+[dimmi] <quale è, qual è> il mio ip
+  UserInformation ip
+[dimmi] qual è il nome <di questo,del> computer
+  UserInformation name
+[dimmi] come si chiama questo computer
+  UserInformation name
+

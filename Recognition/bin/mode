@@ -1,7 +1,10 @@
 #!/bin/bash
 
+#
+# Usage: mode [<new_mode>]
 # Change modes.
-
+# If omitted change to "main"
+#
 
 if [ -z "$1" ];then
     1="main" # Default mode is main

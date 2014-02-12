@@ -1,5 +1,8 @@
 #!/bin/bash
-
+#
+# Usage: pycmd <mode>
+# Run osd_server, indicator_server, all services, if needed. Then ask them to change mode to <mode>.
+#
 # right now it uses moving of files, but we may want to communicate with the
 # python script another way.
 
@@ -48,23 +51,23 @@ cd Microphone
 
 case "$1" in
     wait)
-	rm pycmd_*
+	rm -f pycmd_*
 	touch pycmd_wait
 	;;
     done)
-	rm pycmd_*
+	rm -f pycmd_*
 	touch pycmd_done
 	;;
     stop)
-	rm pycmd_*
+	rm -f pycmd_*
 	touch pycmd_stop
 	;;
     record)
-	rm pycmd_*
+	rm -f pycmd_*
 	touch pycmd_record
 	;;
     result)
-	rm pycmd_*
+	rm -f pycmd_*
 	touch pycmd_result
 	;;
     *)

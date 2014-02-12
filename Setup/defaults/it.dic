@@ -44,11 +44,34 @@ apri [google ]<chrome, chromium>
 apri [mozilla ]firefox
   open 'firefox'
 
+apri [mozilla ]thunderbird
+  open 'thunderbird'
+
+apri <word,excel,openoffice,libreoffice,liber office>
+  open 'libreoffice'
+
+apri (WORD app)
+  open '$app$'
+
+data
+  date date
+ora
+  date time
 [<dimmi,mostra,scrivi >]<che giorno è,che data è>[ <adesso,oggi, in questo momento>]
   date date
 [<dimmi,mostra,scrivi >]<che ora è,che ore sono>[ <adesso,oggi, in questo momento>]
   date time
   
+[<mostra,dimmi> ][<che tempo [che ]fa,come è il tempo, qual è il tempo,come fa>][ <oggi,adesso,ora>]
+  weather
+
+[dimmi] <quale è, qual è> il mio ip
+  UserInformation ip
+[dimmi] qual è il nome <di questo,del> computer
+  UserInformation name
+[dimmi] come si chiama questo computer
+  UserInformation name
+
 (LINE word)
   wolf "$word$"
  

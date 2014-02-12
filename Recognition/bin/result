@@ -1,5 +1,11 @@
 #!/bin/bash
 
+#
+# Usage: result "Any text here"
+#
+# Text will be shown to user using pycmd
+#
+
 > Microphone/result
 
 for i in "$@";do

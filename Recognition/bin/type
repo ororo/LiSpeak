@@ -1,5 +1,9 @@
 #!/bin/bash
 
+#
+# Usage: type "ant text here"
+#
+
 text=$(echo ${1//ñ/\\[dead_tilde]n})
 text=$(echo ${text//á/\\[dead_acute]a})
 text=$(echo ${text//é/\\[dead_acute]e})
