@@ -65,11 +65,9 @@ ora
 [<mostra,dimmi> ][<che tempo [che ]fa,come è il tempo, qual è il tempo,come fa>][ <oggi,adesso,ora>]
   weather
 
-[dimmi] <quale è, qual è> il mio ip
+[dimmi ]<quale è, qual è> il mio ip
   UserInformation ip
-[dimmi] qual è il nome <di questo,del> computer
-  UserInformation name
-[dimmi] come si chiama questo computer
+[dimmi ]<come mi chiamo,qual è il mio nome>
   UserInformation name
 
 (LINE word)
