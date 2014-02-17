@@ -298,6 +298,8 @@ def setup():
 def loadLanguage(lang="en"):
     languages[lang.lower()] = getInfo("Language-"+lang.lower())
 def copyLibraries():
+    if not os.path.exists(installDir+"/Recognition/bin"):
+        createDirectory(installDir+"/Recognition/bin")
     libraries = os.listdir(installDir+"/Setup/libraries")
     for l in libraries:
         copy(installDir+"/Setup/libraries/"+l,[installDir+"/"+l,installDir+"/Recognition/bin/"+l])
