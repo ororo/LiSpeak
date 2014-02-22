@@ -20,6 +20,33 @@ try:
 except:
     print "Currently in",os.getcwd()
 
+
+from dbus.mainloop.glib import DBusGMainLoop
+#there is also dbus.mainloop.qt.DBusQtMainLoop for KDE...
+DBusGMainLoop(set_as_default=True)
+
+import dbus
+bus = dbus.SessionBus()
+
+SIG_WAIT=1
+SIG_DONE=2
+SIG_STOP=3
+SIG_RECORD=4
+SIG_RESULT=5
+
+last_signal=None
+
+def msg_handler(*args,**keywords):
+    global last_signal
+    try:
+        last_signal=int(keywords['path'].split("/")[4])
+        print keywords['path'], last_signal #debug
+    except:
+        pass
+
+bus.add_signal_receiver(handler_function=msg_handler, dbus_interface='com.bmandesigns.lispeak', interface_keyword='iface',  member_keyword='member', path_keyword='path')
+
+
 # create a subclass and override the handler methods
 class MyHTMLParser(HTMLParser):
     def handle_starttag(self, tag, attrs):
@@ -134,6 +161,7 @@ class PopUp:
         text = f.read()
         message = json.loads(text.replace('\r', '\\r').replace('\n', '\\n'),strict=False)
         lastId = lispeak.getSingleInfo("lastid")
+        print "Checking done." #debug 14 seconds !?!
         if lastId == "":
             lastId = message['id']
         try:
@@ -151,19 +179,23 @@ class PopUp:
         return True
         
     def display_notify(self):
-        if os.path.exists("pycmd_done"):
+        #if os.path.exists("pycmd_done"):
+        if last_signal==SIG_DONE:
             #self.ntitle.set_text("Done!")
             os.system("touch in_grey")
-        if os.path.exists("pycmd_record"):
+        #if os.path.exists("pycmd_record"):
+        if last_signal==SIG_RECORD:
             os.system("touch in_green")
             #self.ntitle.set_text("Listening...")
-        if os.path.exists("pycmd_stop"):
+        #if os.path.exists("pycmd_stop"):
+        if last_signal==SIG_STOP:
             #self.ntitle.set_text("Please Wait...")
             os.system("touch in_red")
-        if os.path.exists("pycmd_wait"):
+        #if os.path.exists("pycmd_wait"):
+        if last_signal==SIG_WAIT:
             #self.ntitle.set_text("Analyzing...")
             os.system("touch in_progress")
-        if os.path.exists("notification.lmf"):
+        if os.path.exists("notification.lmf"):          #may use dbus instead of notification.lmf ?
             time.sleep(0.05)
             with open("notification.lmf") as f:
                 data = lispeak.parseData(f.read())

@@ -1,7 +1,7 @@
 #!/bin/bash
 #
 # Usage: pycmd <mode>
-# Run osd_server, indicator_server, all services, if needed. Then ask them to change mode to <mode>.
+# Run notify, indicator_server, all services, if needed. Then ask them to change mode to <mode>.
 #
 # right now it uses moving of files, but we may want to communicate with the
 # python script another way.
@@ -14,18 +14,30 @@ function error() {
     echo "stop"
     echo "record"
     echo "result"
+    exit -1
 }
+
+SIG_WAIT=1
+SIG_DONE=2
+SIG_STOP=3
+SIG_RECORD=4
+SIG_RESULT=5
+
 
 if [ -z "$1" ];then
     error
 fi
 
 shopt -s nullglob
+
+#It appears that "ps auxww" sometimes can stuck, waiting for keypress
+PSRESULT=$(echo "" | ps auxww)
+
 for f in $HOME/.lispeak/services/*.service
 do
     echo $f
     base=$(basename $f)
-	if ps auxww |grep -v grep |grep $base > /dev/null 2>&1;then
+	if echo $PSRESULT |grep -v grep |grep $base > /dev/null 2>&1;then
         : # we are good, the server is there
     else # otherwise start it
         $f 2>/dev/null & 
@@ -33,44 +45,42 @@ do
     fi 
 done
 
-if ps auxww |grep -v grep |grep notify.py > /dev/null 2>&1;then
+if echo $PSRESULT |grep -v grep |grep notify.py > /dev/null 2>&1;then
     : # we are good, the server is there
 else # otherwise start it
     ./Microphone/notify.py 2>/dev/null & 
     echo $! > "notify.pid"
 fi
 
-if ps auxww |grep -v grep |grep indicator_server.py > /dev/null 2>&1;then
+if echo $PSRESULT |grep -v grep |grep indicator_server.py > /dev/null 2>&1;then
     : # we are good, the server is there
 else # otherwise start it
     ./Microphone/indicator_server.py 2>/dev/null & 
     echo $! > "indicator.pid"
 fi      
 # This should be run from the base dir.
-cd Microphone
+#cd Microphone
 
 case "$1" in
     wait)
-	rm -f pycmd_*
-	touch pycmd_wait
+	SIGNAL=$SIG_WAIT
 	;;
     done)
-	rm -f pycmd_*
-	touch pycmd_done
+	SIGNAL=$SIG_DONE
 	;;
     stop)
-	rm -f pycmd_*
-	touch pycmd_stop
+	SIGNAL=$SIG_STOP
 	;;
     record)
-	rm -f pycmd_*
-	touch pycmd_record
+	SIGNAL=$SIG_RECORD
 	;;
     result)
-	rm -f pycmd_*
-	touch pycmd_result
+	SIGNAL=$SIG_RESULT
 	;;
     *)
 	error
 	;;
 esac
+
+dbus-send --session /com/bmandesigns/lispeak/$SIGNAL com.bmandesigns.lispeak.Notify
+
