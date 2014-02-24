@@ -373,7 +373,6 @@ def translate(text,lang=False):
             text = text.replace(path,"_PATH"+str(x)+"_")
         x = x + 1
     
-    #Add support later for predefined language packs
     if lang == False:
         try:
             lang = getSingleInfo("lang")
@@ -386,15 +385,15 @@ def translate(text,lang=False):
     if text in languages[lang.lower()]:
         rtext = languages[lang.lower()][text]
     else:
-        #try:
-        rtext = gt.translate(text+" _END_ _END_",lang).encode('utf8')
-        if os.path.exists(root+"/configs/"):  
-            touch(root+"/configs/Language-"+lang.lower(),False)
-            writeSingleInfo(text,rtext.replace("_END_",""),"Language-"+lang.lower(),False,False)
-            debug("Writing New Translation: "+text,False)
-        #except:
-        #    rtext = text
-        #    print("ERROR WRITING TRANSLATION")
+        try:
+            rtext = gt.translate(text+" _END_ _END_",lang).encode('utf8')
+            if os.path.exists(root+"/configs/"):  
+                touch(root+"/configs/Language-"+lang.lower(),False)
+                writeSingleInfo(text,rtext.replace("_END_",""),"Language-"+lang.lower(),False,False)
+                debug("Writing New Translation: "+text,False)
+        except:
+            rtext = text
+            print("ERROR WRITING TRANSLATION")
     x = 0
     for p in paths:
         rtext = rtext.replace("_PATH"+str(x)+"_",p)
@@ -968,7 +967,6 @@ except:
 
 if __name__ == "__main__": 
     from gi.repository import Gtk 
-    #args = sys.argv
     parser = argparse.ArgumentParser(description=translate('LiSpeak - Linux Voice Command System'))
     parser.add_argument("--setup",dest='setup',action='store_true',default=False,help=translate('Setup LiSpeak'))
     parser.add_argument('-i', metavar='file', type=str,help=translate('Install a plugin - plugin .sp or .tar.gz file'),default="")
