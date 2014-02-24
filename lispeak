@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*- 
 VERSION = 1.1
 
-import subprocess,sys,platform,tarfile,os,argparse,shutil,urllib2,time,json,socket
+import subprocess,sys,platform,tarfile,os,argparse,shutil,urllib2,time,json,socket,zipfile,serial
 
 import sqlite3 as sql
 
@@ -22,6 +22,13 @@ languages = {}
 
 from urllib import urlencode
 
+class arduino():
+    def __init__(self,com,speed=9600):
+        self.com = serial.Serial(com,speed)
+    def close(self,com):
+        self.com.close()
+    def sendText(self,text):
+        self.com.write(str(text))
 class IPInfo() :
     def __init__(self, apikey):
         self.apikey = apikey
@@ -172,6 +179,7 @@ class InstallGUI:
                 self.userinfo[e.upper()] = self.builder.get_object('ent'+e[0].upper()+e[1:]).get_text()
             self.userinfo["TTS"] = str(self.builder.get_object("swEspeak").get_active())
             self.userinfo["TTSENGINE"] = str(self.builder.get_object("cbtTTS").get_active_text())
+            self.userinfo["ARDUINO"] = "/dev/ttyACM0"
             lang = str(self.builder.get_object("cbtLang").get_active_text())
             languages = {"English":"en","Polski":'pl',u'Español':'es',u'Français':'fr',"Italiano":"it"}
             self.userinfo['LANG'] = languages[lang]
@@ -251,8 +259,10 @@ def speak(words):
         while "#" in out[start:]:
             loc = out.find("#",start)
             text = out[loc+1]
-            if out[loc+2] != " ":
-                text += out[loc+2]
+            plus = 2
+            while out[loc+plus] not in [" ","\n","D"]:
+                text += out[loc+plus]
+                plus = plus + 1
             print text
             locs.append(text)
             start = loc+1
@@ -273,7 +283,8 @@ def speak(words):
         for e in range(40000,65535,400):
             for text in locs:
                 subprocess.call(["pactl","set-sink-input-volume",text,str(e)])
-
+        for text in locs:
+            subprocess.call(["pactl","set-sink-input-volume",text,str(65535)])
 def setup():
     installDir = os.path.dirname(os.path.realpath(__file__))
     displayOSWarning()
@@ -610,6 +621,25 @@ def sqlCheck(cur):
     cur.execute("CREATE TABLE IF NOT EXISTS plugins(id INTEGER PRIMARY KEY, name TEXT, identifier TEXT,type TEXT, version TEXT, author TEXT, binFiles TEXT,services TEXT, dicts TEXT, actions TEXT)")
             
 def installPlugin(path,upgrading=False):
+    if path.endswith('.zip'):
+        zfile = zipfile.ZipFile(path)
+        tar = tarfile.open('tmp.tar.gz', 'w:gz')
+        for name in zfile.namelist():
+            print name
+            (dirname, filename) = os.path.split(name)
+            if "/" not in dirname:
+                dname = dirname
+            zfile.extract(name, installDir)
+            os.chdir(dname)
+            print name.split("/")
+            filea = '/'.join(name.split("/")[1:])
+            if filea != "":
+                tar.add(filea)
+            os.chdir('../')
+        tar.close() 
+        installPlugin("tmp.tar.gz")
+        delete(["tmp.tar.gz",dname])
+        return False
     dictionaries = []
     services = []
     executables = []

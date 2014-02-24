@@ -15,6 +15,13 @@ from gi.repository import GdkPixbuf as pixbuf
 from gi.repository import Gtk as gtk
 from gi.repository import GObject as gobject
 
+ar = lispeak.getSingleInfo("ARDUINO")
+if ar == "":
+    ar = '/dev/ttyACM1'
+    lispeak.writeSingleInfo('ARDUINO','/dev/ttyACM1')
+lcd = lispeak.arduino(lispeak.getSingleInfo("ARDUINO"))
+lcd.sendText("Welcome|LiSpeak LCD;")
+
 try:
     os.chdir("Microphone")
 except:
@@ -237,6 +244,7 @@ class PopUp:
                 self.counter = 0
                 self.counting = True
                 self.queue.pop(0)
+                lcd.sendText(self.title.get_text()+"|"+self.message.get_text()+";")
             return True
         except:
             print "AN ERROR OCCURED!"
