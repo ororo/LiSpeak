@@ -513,7 +513,6 @@ def homeDir():
  
 def displayNotification(text,text2 = False,image=False,speech=None):
     path = installDir+"/Microphone/notification.lmf"
-    print path
     if type(text) != dict:
         data = {'title':text,'message':text2,'icon':image,'speech':speech}
     else:
