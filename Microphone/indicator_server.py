@@ -12,8 +12,6 @@ except:
     print "Currently in",os.getcwd()
 PWD=str(os.getcwd())
 
-lcd = lispeak.arduino(lispeak.getSingleInfo("ARDUINO"))
-
 class indicator:
     def __init__(self):
         
