@@ -86,7 +86,7 @@ char *create_command(char *buf) {
 
   // First skip leading spaces
   if(*buf != ' ' && *buf != '\t') {
-    fprintf(stderr,"This line does not start with a space!\n");
+    fprintf(stderr,"Bad syntax in database command: line %i does not start with a space\n", LINE_IN_DATABASE);
     exit(EXIT_FAILURE);
   }
   while(*buf == ' ' || *buf == '\t') {
@@ -104,7 +104,7 @@ char *create_command(char *buf) {
     if(*buf == '\\') {
       buf++;
       if(*buf == '\n' || *buf == '\0' || *buf == '\r') {
-        fprintf(stderr,"Error, '\\' char at the end\n");
+        fprintf(stderr,"Bad syntax in database command: '\\' char at the end, line %i\n", LINE_IN_DATABASE);
       	exit(EXIT_FAILURE);
       }
       ret[i] = *buf;
@@ -113,8 +113,12 @@ char *create_command(char *buf) {
       ret[i] = *buf;
     } else {
       ++buf;
-      if(*buf == '$' || *buf == '\n' || *buf == '\0' || *buf == '\r') {
-      	printf("Bad syntax in create command!\n");
+      if(*buf == '$') {
+      	printf("Bad syntax in database command: unexpected '$', line %i\n", LINE_IN_DATABASE);
+      	exit(EXIT_FAILURE);
+      }
+      if(*buf == '\n' || *buf == '\0' || *buf == '\r') {
+      	printf("Bad syntax in database command: unexpected EOL, line %i\n", LINE_IN_DATABASE);
       	exit(EXIT_FAILURE);
       }
       startVarName = buf;
@@ -123,7 +127,7 @@ char *create_command(char *buf) {
       }
 
       if(*buf != '$') {
-        fprintf(stderr,"Bad syntax in create command!\n");
+        fprintf(stderr,"Bad syntax in database command: lacking '$', line %i\n", LINE_IN_DATABASE);
       	exit(EXIT_FAILURE);
       }
 
