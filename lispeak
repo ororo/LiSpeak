@@ -689,9 +689,7 @@ def installPlugin(path,upgrading=False):
                 actions = {}
                 if "depends" in data:
                     depend = data['depends']
-                    cmd = ["apt-get","install"]
-                    cmd.extend(depend)
-                    sudo(cmd)
+                    checkDepends(depend)
                 output("Installation is beginning")
                 delete(root+"/"+data['name'])
                 output("Extracting")
