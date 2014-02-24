@@ -27,9 +27,21 @@ try:
 except:
     print "Currently in",os.getcwd()
 
-
-from dbus.mainloop.glib import DBusGMainLoop
-#there is also dbus.mainloop.qt.DBusQtMainLoop for KDE...
+def check_and_import(module_name):
+    try:
+        __import__(module_name)
+    except ImportError:
+        return False
+    else:
+        return True
+        
+try:
+    from dbus.mainloop.glib import DBusGMainLoop
+except ImportError:
+    return False
+else:
+    from dbus.mainloop.qt.DBusQtMainLoop import DBusGMainLoop
+    #if none exists, an ImportError will be throw
 DBusGMainLoop(set_as_default=True)
 
 import dbus
