@@ -3,33 +3,33 @@
 <type,write> (LINE words)
   type "$words$\\r"
 undo
-  xType 'keydown Control_L' 'key z' 'keyup Control_L'
+  xType "keydown Control_L" "key z" "keyup Control_L"
 redo
-  xType 'keydown Shift_L' 'keydown Control_L' 'key z' 'keyup Shift_L' 'keyup Control_L'
+  xType "keydown Shift_L" "keydown Control_L" "key z" "keyup Shift_L" "keyup Control_L"
 cut
-  xType 'keydown Control_L' 'key x' 'keyup Control_L'
+  xType "keydown Control_L" "key x" "keyup Control_L"
 paste[ text]
-  xType 'keydown Control_L' 'key v' 'keyup Control_L'
+  xType "keydown Control_L" "key v" "keyup Control_L"
 copy[ text]
-  xType 'keydown Control_L' 'key c' 'keyup Control_L'
+  xType "keydown Control_L" "key c" "keyup Control_L"
 select all[ text]
-  xType 'keydown Control_L' 'key a' 'keyup Control_L'
+  xType "keydown Control_L" "key a" "keyup Control_L"
 
 go[ ]to (LINE site)
   goto "$site$"
   
 <open,show> [my ]<documents,files>[ folder]
-  open 'xdg-open `xdg-user-dir DOCUMENTS`'
+  open "xdg-open `xdg-user-dir DOCUMENTS`"
 <open,show> [my ]music[ folder]
-  open 'xdg-open `xdg-user-dir MUSIC`'
+  open "xdg-open `xdg-user-dir MUSIC`"
 <open,show> [my ]home[ folder]
-  open 'xdg-open `xdg-user-dir`'
+  open "xdg-open `xdg-user-dir`"
 <open,show> [my ]videos[ folder]
-  open 'xdg-open `xdg-user-dir VIDEOS`'
+  open "xdg-open `xdg-user-dir VIDEOS`"
 <open,show> [my ]pictures[ folder]
-  open 'xdg-open `xdg-user-dir PICTURES`'
+  open "xdg-open `xdg-user-dir PICTURES`"
 <open,show> [my ]downloads[ folder]
-  open 'xdg-open `xdg-user-dir DOWNLOAD`'
+  open "xdg-open `xdg-user-dir DOWNLOAD`"
 
 <search,google> (LINE question)
   goto "http://www.google.com/search?q=$question$"
@@ -42,16 +42,16 @@ where is (LINE place)
   goto "https://maps.google.com/maps?q=$place$&hl=\$LANG"
   
 open [google ]chrome
-  open 'google-chrome'
+  open "google-chrome"
   
 open firefox
-  open 'firefox'
+  open "firefox"
 
 open <word,excel,openoffice,libreoffice,liber office>
-  open 'libreoffice'
+  open "libreoffice"
 
 open (WORD app)
-  open '$app$'
+  open "$app$"
 
 date
   date date

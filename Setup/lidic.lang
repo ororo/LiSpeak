@@ -80,21 +80,9 @@
     <context id="decimal" style-ref="decimal">
       <match>\b[0-9]+\b</match>
     </context>
-    <context id="single-quoted-string" style-ref="string" class="string" class-disabled="no-spell-check">
-      <start>'</start>
-      <end>'</end>
-      <include>
-        <context style-ref="def:special-char">
-          <match>\\['\\]</match>
-        </context>
-        <context ref="string-var"/>
-        <context ref="def:line-continue"/>
-      </include>
-    </context>
     <context id="lidic">
       <include>
         <context ref="double-quoted-string"/>
-        <context ref="single-quoted-string"/>
         <context ref="def:shell-like-comment"/>
         <context ref="character"/>
         <context ref="keyword"/>
