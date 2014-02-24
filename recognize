@@ -58,7 +58,7 @@ function run_command() {
 
 cd $ROOTDIR
 
-speech=$(eval "echo $1 | tr '[:upper:]' '[:lower:]'")
+speech=$(eval "echo \"$1\" | tr '[:upper:]' '[:lower:]'")
 
 read mode < "$USER_DIR/MODE"
 
