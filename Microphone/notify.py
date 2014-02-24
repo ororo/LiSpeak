@@ -27,14 +27,7 @@ try:
 except:
     print "Currently in",os.getcwd()
 
-def check_and_import(module_name):
-    try:
-        __import__(module_name)
-    except ImportError:
-        return False
-    else:
-        return True
-        
+
 try:
     from dbus.mainloop.glib import DBusGMainLoop
 except ImportError:
