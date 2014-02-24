@@ -513,6 +513,7 @@ def homeDir():
  
 def displayNotification(text,text2 = False,image=False,speech=None):
     path = installDir+"/Microphone/notification.lmf"
+    print path
     if type(text) != dict:
         data = {'title':text,'message':text2,'icon':image,'speech':speech}
     else:
@@ -1011,31 +1012,6 @@ if __name__ == "__main__":
     if args.d != "":
         something_done = True
         pluginInfo(args.p)
-    if 1 == 2:#args[1] in commands:             FIXME
-        if len(args[2:]) > 2:
-            r = commands[args[1]](args[2:])
-            if r != None:
-                print r
-        else:
-            try:
-                r = commands[args[1]](args[2],args[3])
-                if r != None:
-                    print r
-            except IndexError as e:
-                try:
-                    r = commands[args[1]](args[2])
-                    if r != None:
-                      print r
-                except IndexError as e:
-                    r = commands[args[1]]()
-                    if r != None:
-                        print r
-    #else:
-    #    print "Invalid Argument:",args[1]
-    #    print
-    #    print "Valid Commands:"
-    #    for e in commands:
-    #        print e
     if not something_done and not quiet:
         os.system("./lispeak --help");
 else:

@@ -18,6 +18,9 @@ select all[ text]
 go[ ]to (LINE site)
   goto "$site$"
   
+read[ this][ text]
+  read
+  
 <open,show> [my ]<documents,files>[ folder]
   open "xdg-open `xdg-user-dir DOCUMENTS`"
 <open,show> [my ]music[ folder]
