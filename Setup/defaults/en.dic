@@ -21,6 +21,9 @@ go[ ]to (LINE site)
 read[ this][ text]
   read
   
+lock[ computer]
+  result_from_call "gnome-screensaver-command -l" "false"
+  
 <open,show> [my ]<documents,files>[ folder]
   open "xdg-open `xdg-user-dir DOCUMENTS`"
 <open,show> [my ]music[ folder]

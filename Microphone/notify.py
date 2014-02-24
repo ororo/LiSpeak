@@ -82,7 +82,6 @@ class PopUp:
         self.exit.connect("button-release-event",self.close_notify)
         self.icon = self.builder.get_object("imgIcon") 
         self.window.set_gravity(gdk.Gravity.NORTH_WEST)  
-        #self.window.show_all()
         self.display = False
         self.window.set_keep_above(True)
         color = gdk.color_parse('#F7A900')
@@ -92,10 +91,6 @@ class PopUp:
         self.counter2 = 0
         self.counting = False
         self.queue = []
-        
-        #print self.window.get_screen().get_active_window()
-        #monitor = self.window.get_screen().get_monitor_geometry(self.window.get_screen().get_monitor_at_window(self.window.get_screen().get_active_window()))
-        #print("Heigh: %s, Width: %s" % (monitor.height, monitor.width))
         
         gobject.timeout_add_seconds(1, self.timer)
         gobject.timeout_add_seconds(0.2, self.display_notify)

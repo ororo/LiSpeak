@@ -1,5 +1,7 @@
 #!/bin/bash
 
+## I NEED TO BE REWRITTEN FROM notification.lmf
+
 > Microphone/result
 
 for i in "$@";do
