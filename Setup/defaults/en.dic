@@ -64,9 +64,9 @@ date
 [<show,display,<what,how>[ is]>][ the][ ]weather[ <is it,like>][ <today,[right ]now>]
   weather
 
-<what's,whats,what is> my <ip,internet[ protocol]>[ address]
+<whats,what is> my <ip,internet[ protocol]>[ address]
   UserInformation ip
-<what's,whats,what is> my name
+<whats,what is> my name
   UserInformation name
   
 (LINE word)
