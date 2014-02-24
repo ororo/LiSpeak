@@ -201,24 +201,25 @@ class InstallGUI:
 
 def checkDepends(depends):
     needs = []
-    #try:
-    resp = commands.getstatusoutput("dpkg --get-selections | grep -v deinstall > packages")[1]
-    installed = []
-    with open("packages") as pack:
-        for l in pack:
-            if ":" in l:
-                l = l.split(":")[0]
-            installed.append(l.replace("\t","").replace(" ","").replace("install","").replace("\n",""))
-    for d in depends:
-        if d not in installed:
-            needs.append(d)
-    start = ["pkexec","apt-get","install"]
-    for e in needs:
-        start.append(e)
-    start.append("-y")
-    subprocess.check_call(start)
-    #except:
-    #    debug("Error Checking For Dependencies")
+    try:
+        resp = commands.getstatusoutput("dpkg --get-selections | grep -v deinstall > packages")[1]
+        installed = []
+        with open("packages") as pack:
+            for l in pack:
+                if ":" in l:
+                    l = l.split(":")[0]
+                installed.append(l.replace("\t","").replace(" ","").replace("install","").replace("\n",""))
+        for d in depends:
+            if d not in installed:
+                needs.append(d)
+        if len(needs) > 0:
+            start = ["pkexec","apt-get","install"]
+            for e in needs:
+                start.append(e)
+            start.append("-y")
+            subprocess.check_call(start)
+    except:
+        debug("Error Checking For Dependencies")
     try:
         delete("packages")
     except:
@@ -524,21 +525,6 @@ def displayNotification(text,text2 = False,image=False,speech=None):
             d = data[each]
             each = each.upper()
             info.write("\n"+str(each)+"="+str(d))
-    #if type(text) == list:
-    #    for line in text:
-    #        os.system("echo \""+translate(line)+"\n\" >> "+installDir+"/Microphone/result")
-    #else:
-    #    if text2 == False:
-    #        os.system("echo \""+translate(text)+"\n\" >> "+installDir+"/Microphone/result")
-    #    else:
-    #        os.system("echo \""+translate(text)+"\" >> "+installDir+"/Microphone/result")
-    #if text2 != False:
-    #   os.system("echo \""+translate(text2)+"\n\" >> "+installDir+"/Microphone/result")
-    #if image != False:
-    #   os.system("echo \""+image+"\n\" >> "+installDir+"/Microphone/result_image")
-    #if speak != None:
-    #    os.system("echo \""+translate(speak)+"\" >> "+installDir+"/Microphone/speak")
-    #os.system(installDir+"/pycmd result")
  
 def getSingleInfo(item,plugin="UserInfo"):
     try:
