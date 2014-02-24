@@ -38,6 +38,9 @@ go[ ]to (LINE site)
 youtube (LINE video)
   goto "https://www.youtube.com/results?search_query=$video$"
 
+where is (LINE place)
+  goto "https://maps.google.com/maps?q=$place$&hl=\$LANG"
+  
 open [google ]chrome
   open 'google-chrome'
   

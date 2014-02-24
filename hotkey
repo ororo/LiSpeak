@@ -19,8 +19,13 @@
 
 cd "$(dirname "$0")"
 
-if [ -e "speech.pid" ];then
-    read PID_OF_SPEECH < speech.pid
+FILEFOLDER=/tmp/lispeak_$USERNAME
+mkdir -p $FILEFOLDER
+PIDFILE=$FILEFOLDER/speech.pid
+FLACFILE=$FILEFOLDER/speech.flac
+
+if [ -e $PIDFILE ];then
+    read PID_OF_SPEECH < $PIDFILE
     sleep .1 # This is so the end of the speech doesn't get cut off.
     kill $PID_OF_SPEECH
 
@@ -28,23 +33,36 @@ if [ -e "speech.pid" ];then
     while kill -s 0 $PID_OF_SPEECH 2>/dev/null;do
     :
     done
-    RESULT="$(./send_speech speech.flac)"
+    RESULT="$(./send_speech ${FLACFILE})"
     ./recognize "$RESULT"
+    #bash -x    ./recognize "$RESULT"    #DEBUG
 
     # Only takes effect if a script did not use pycmd result
     #if [ ! -e "Microphone/result" ];then
 	./pycmd done
     #fi
 
-    rm -rf speech.pid
+    rm -f $PIDFILE
 else
     ./pycmd stop
-    > speech.flac
-    rec -r 16000 -q -b 16 speech.flac 2>/dev/null & 
-    echo $! > "speech.pid"
+    > $FLACFILE
+
+    #ORIGINAL VERSION:
+    rec -r 16000 -q -b 16 $FLACFILE 2>/dev/null & echo $! > $PIDFILE
+    
+    #BETA VERSION
+    #parameters may depend on microphone and language :(
+    #SOX_SILENCE_THRESHOLD="-32d"          #DON'T use %
+    #SOX_MIN_DURATION=0.1
+    #SOX_MIN_SILENCE_DURATION=0.7
+    #rec -q -r 16000 $FLACFILE silence 1 0.1 $SOX_SILENCE_THRESHOLD & echo $! > $PIDFILE
+
+    #BETA VERSION: continuous speech
+    #(rec -q -p silence 1 0.1 $SOX_SILENCE_THRESHOLD & echo $! > $PIDFILE) | sox -p -r 16000 -b 16 $FLACFILE silence 1 0.1 $SOX_SILENCE_THRESHOLD 1 0.7 $SOX_SILENCE_THRESHOLD : newfile : restart &
+    
     # Checks when recording starts
-    while [ "$(stat -c%s speech.flac)" == "0" ];do
-    	:
-    done
+    #while [ "$(stat -c%s speech.flac)" == "0" ];do
+    #	:
+    #done
     ./pycmd record
 fi

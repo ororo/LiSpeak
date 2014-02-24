@@ -84,7 +84,6 @@ int main(int argc, char *argv[]) {
   command = get_command(database,speech);
 
   free(speech); // No oppression allowed in this program.
-  free(database);
   if(command) {
     printf("%s\n",command);
     //print_arg_quoted(command);
@@ -101,10 +100,12 @@ int main(int argc, char *argv[]) {
     }
     
   } else {
-    fprintf(stderr,"No Command recognized.\n");
+    fprintf(stderr,"No Command recognized in %s.\n", database);   //Message really useful? Debug purpose?
+    free(database);
     exit(2);
   }
-
+  free(database);
+  
   return 0;
 }
 static void print_arg_quoted(char *string) {
