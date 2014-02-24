@@ -307,6 +307,9 @@ def setup():
         writeSingleInfo("ROOTDIR",installDir,"UserInfo",False,False)
     lang = getInfo()['LANG']
     copy(installDir+"/Setup/defaults/"+lang+".dic", installDir+"/Recognition/modes/main.dic")
+    if os.path.exists("/usr/share/gtksourceview-3.0/language-specs/"):
+        sudo(["cp",installDir+"/Setup/lidic.lang","/usr/share/gtksourceview-3.0/language-specs/"])
+    
 def loadLanguage(lang="en"):
     languages[lang.lower()] = getInfo("Language-"+lang.lower())
 def copyLibraries():
@@ -324,6 +327,7 @@ def downloadPackage(name,install=True):
     delete(installDir+"/tmp.tar.gz")
 def sudo(cmd):
     cmd.insert(0,"pkexec")
+    subprocess.check_call(cmd)
     if quiet:
         display = False
     else:
