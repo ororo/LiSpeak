@@ -1,11 +1,10 @@
-#!/usr/bin/python3
-
+#!/usr/bin/python
 # This module can accept many arguments. If the "" syntax is used, then the argument will be recognised as one,
 # else if no "" syntax is used, then the arguments will be recognised as different.
 # I did this to keep a steady syntax across all dictionaries
 
 import sys,lispeak
-from subprocess import Popen
+import subprocess
 
 args = sys.argv
 
@@ -15,11 +14,11 @@ if args.__len__() < 2:
 
 args.pop(0)  # Remove script name
 
-if args.__len__() == 1:  # If an item with "" was passed. I know this as it will be recognised as one argument
-    args = args[0].split()
-response = Popen(args, stdout=subprocess.PIPE)
+args2 = args[0].split()
+p = subprocess.Popen(args2, stdout=subprocess.PIPE)
 out, err = p.communicate()  # Store all output in to result file
-lispeak.displayNotification(" ".join(args),out)
-    
-
-
+try:
+    if args[-1].lower() != "false":
+        lispeak.displayNotification(" ".join(args),out)
+except:
+    lispeak.displayNotification(" ".join(args),out)

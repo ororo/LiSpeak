@@ -5,7 +5,10 @@ tmp.sp
 lispeak.py
 audio.mp3
 goslate.pyc
+
 /Recognition/bin/*
+/Recognition/dictionary
+/Recognition/modes/*
 
 #Process IDs
 *.pid

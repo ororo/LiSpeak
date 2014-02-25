@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*- 
 VERSION = 1.1
 
-import subprocess,sys,platform,tarfile,os,argparse,shutil,urllib2,time,json,socket
+import subprocess,sys,platform,tarfile,os,argparse,shutil,urllib2,time,json,socket,zipfile,serial
 
 import sqlite3 as sql
 
@@ -22,6 +22,13 @@ languages = {}
 
 from urllib import urlencode
 
+class arduino():
+    def __init__(self,com,speed=9600):
+        self.com = serial.Serial(com,speed)
+    def close(self,com):
+        self.com.close()
+    def sendText(self,text):
+        self.com.write(str(text))
 class IPInfo() :
     def __init__(self, apikey):
         self.apikey = apikey
@@ -172,6 +179,7 @@ class InstallGUI:
                 self.userinfo[e.upper()] = self.builder.get_object('ent'+e[0].upper()+e[1:]).get_text()
             self.userinfo["TTS"] = str(self.builder.get_object("swEspeak").get_active())
             self.userinfo["TTSENGINE"] = str(self.builder.get_object("cbtTTS").get_active_text())
+            self.userinfo["ARDUINO"] = "/dev/ttyACM0"
             lang = str(self.builder.get_object("cbtLang").get_active_text())
             languages = {"English":"en","Polski":'pl',u'Español':'es',u'Français':'fr',"Italiano":"it"}
             self.userinfo['LANG'] = languages[lang]
@@ -193,24 +201,25 @@ class InstallGUI:
 
 def checkDepends(depends):
     needs = []
-    #try:
-    resp = commands.getstatusoutput("dpkg --get-selections | grep -v deinstall > packages")[1]
-    installed = []
-    with open("packages") as pack:
-        for l in pack:
-            if ":" in l:
-                l = l.split(":")[0]
-            installed.append(l.replace("\t","").replace(" ","").replace("install","").replace("\n",""))
-    for d in depends:
-        if d not in installed:
-            needs.append(d)
-    start = ["pkexec","apt-get","install"]
-    for e in needs:
-        start.append(e)
-    start.append("-y")
-    subprocess.check_call(start)
-    #except:
-    #    debug("Error Checking For Dependencies")
+    try:
+        resp = commands.getstatusoutput("dpkg --get-selections | grep -v deinstall > packages")[1]
+        installed = []
+        with open("packages") as pack:
+            for l in pack:
+                if ":" in l:
+                    l = l.split(":")[0]
+                installed.append(l.replace("\t","").replace(" ","").replace("install","").replace("\n",""))
+        for d in depends:
+            if d not in installed:
+                needs.append(d)
+        if len(needs) > 0:
+            start = ["pkexec","apt-get","install"]
+            for e in needs:
+                start.append(e)
+            start.append("-y")
+            subprocess.check_call(start)
+    except:
+        debug("Error Checking For Dependencies")
     try:
         delete("packages")
     except:
@@ -251,8 +260,10 @@ def speak(words):
         while "#" in out[start:]:
             loc = out.find("#",start)
             text = out[loc+1]
-            if out[loc+2] != " ":
-                text += out[loc+2]
+            plus = 2
+            while out[loc+plus] not in [" ","\n","D"]:
+                text += out[loc+plus]
+                plus = plus + 1
             print text
             locs.append(text)
             start = loc+1
@@ -273,7 +284,8 @@ def speak(words):
         for e in range(40000,65535,400):
             for text in locs:
                 subprocess.call(["pactl","set-sink-input-volume",text,str(e)])
-
+        for text in locs:
+            subprocess.call(["pactl","set-sink-input-volume",text,str(65535)])
 def setup():
     installDir = os.path.dirname(os.path.realpath(__file__))
     displayOSWarning()
@@ -295,6 +307,9 @@ def setup():
         writeSingleInfo("ROOTDIR",installDir,"UserInfo",False,False)
     lang = getInfo()['LANG']
     copy(installDir+"/Setup/defaults/"+lang+".dic", installDir+"/Recognition/modes/main.dic")
+    if os.path.exists("/usr/share/gtksourceview-3.0/language-specs/"):
+        sudo(["cp",installDir+"/Setup/lidic.lang","/usr/share/gtksourceview-3.0/language-specs/"])
+    
 def loadLanguage(lang="en"):
     languages[lang.lower()] = getInfo("Language-"+lang.lower())
 def copyLibraries():
@@ -312,6 +327,7 @@ def downloadPackage(name,install=True):
     delete(installDir+"/tmp.tar.gz")
 def sudo(cmd):
     cmd.insert(0,"pkexec")
+    subprocess.check_call(cmd)
     if quiet:
         display = False
     else:
@@ -361,7 +377,6 @@ def translate(text,lang=False):
             text = text.replace(path,"_PATH"+str(x)+"_")
         x = x + 1
     
-    #Add support later for predefined language packs
     if lang == False:
         try:
             lang = getSingleInfo("lang")
@@ -374,15 +389,15 @@ def translate(text,lang=False):
     if text in languages[lang.lower()]:
         rtext = languages[lang.lower()][text]
     else:
-        #try:
-        rtext = gt.translate(text+" _END_ _END_",lang).encode('utf8')
-        if os.path.exists(root+"/configs/"):  
-            touch(root+"/configs/Language-"+lang.lower(),False)
-            writeSingleInfo(text,rtext.replace("_END_",""),"Language-"+lang.lower(),False,False)
-            debug("Writing New Translation: "+text,False)
-        #except:
-        #    rtext = text
-        #    print("ERROR WRITING TRANSLATION")
+        try:
+            rtext = gt.translate(text+" _END_ _END_",lang).encode('utf8')
+            if os.path.exists(root+"/configs/"):  
+                touch(root+"/configs/Language-"+lang.lower(),False)
+                writeSingleInfo(text,rtext.replace("_END_",""),"Language-"+lang.lower(),False,False)
+                debug("Writing New Translation: "+text,False)
+        except:
+            rtext = text
+            print("ERROR WRITING TRANSLATION")
     x = 0
     for p in paths:
         rtext = rtext.replace("_PATH"+str(x)+"_",p)
@@ -513,21 +528,6 @@ def displayNotification(text,text2 = False,image=False,speech=None):
             d = data[each]
             each = each.upper()
             info.write("\n"+str(each)+"="+str(d))
-    #if type(text) == list:
-    #    for line in text:
-    #        os.system("echo \""+translate(line)+"\n\" >> "+installDir+"/Microphone/result")
-    #else:
-    #    if text2 == False:
-    #        os.system("echo \""+translate(text)+"\n\" >> "+installDir+"/Microphone/result")
-    #    else:
-    #        os.system("echo \""+translate(text)+"\" >> "+installDir+"/Microphone/result")
-    #if text2 != False:
-    #   os.system("echo \""+translate(text2)+"\n\" >> "+installDir+"/Microphone/result")
-    #if image != False:
-    #   os.system("echo \""+image+"\n\" >> "+installDir+"/Microphone/result_image")
-    #if speak != None:
-    #    os.system("echo \""+translate(speak)+"\" >> "+installDir+"/Microphone/speak")
-    #os.system(installDir+"/pycmd result")
  
 def getSingleInfo(item,plugin="UserInfo"):
     try:
@@ -610,6 +610,25 @@ def sqlCheck(cur):
     cur.execute("CREATE TABLE IF NOT EXISTS plugins(id INTEGER PRIMARY KEY, name TEXT, identifier TEXT,type TEXT, version TEXT, author TEXT, binFiles TEXT,services TEXT, dicts TEXT, actions TEXT)")
             
 def installPlugin(path,upgrading=False):
+    if path.endswith('.zip'):
+        zfile = zipfile.ZipFile(path)
+        tar = tarfile.open('tmp.tar.gz', 'w:gz')
+        for name in zfile.namelist():
+            print name
+            (dirname, filename) = os.path.split(name)
+            if "/" not in dirname:
+                dname = dirname
+            zfile.extract(name, installDir)
+            os.chdir(dname)
+            print name.split("/")
+            filea = '/'.join(name.split("/")[1:])
+            if filea != "":
+                tar.add(filea)
+            os.chdir('../')
+        tar.close() 
+        installPlugin("tmp.tar.gz")
+        delete(["tmp.tar.gz",dname])
+        return False
     dictionaries = []
     services = []
     executables = []
@@ -670,9 +689,7 @@ def installPlugin(path,upgrading=False):
                 actions = {}
                 if "depends" in data:
                     depend = data['depends']
-                    cmd = ["apt-get","install"]
-                    cmd.extend(depend)
-                    sudo(cmd)
+                    checkDepends(depend)
                 output("Installation is beginning")
                 delete(root+"/"+data['name'])
                 output("Extracting")
@@ -952,7 +969,6 @@ except:
 
 if __name__ == "__main__": 
     from gi.repository import Gtk 
-    #args = sys.argv
     parser = argparse.ArgumentParser(description=translate('LiSpeak - Linux Voice Command System'))
     parser.add_argument("--setup",dest='setup',action='store_true',default=False,help=translate('Setup LiSpeak'))
     parser.add_argument('-i', metavar='file', type=str,help=translate('Install a plugin - plugin .sp or .tar.gz file'),default="")
@@ -995,31 +1011,6 @@ if __name__ == "__main__":
     if args.d != "":
         something_done = True
         pluginInfo(args.p)
-    if 1 == 2:#args[1] in commands:             FIXME
-        if len(args[2:]) > 2:
-            r = commands[args[1]](args[2:])
-            if r != None:
-                print r
-        else:
-            try:
-                r = commands[args[1]](args[2],args[3])
-                if r != None:
-                    print r
-            except IndexError as e:
-                try:
-                    r = commands[args[1]](args[2])
-                    if r != None:
-                      print r
-                except IndexError as e:
-                    r = commands[args[1]]()
-                    if r != None:
-                        print r
-    #else:
-    #    print "Invalid Argument:",args[1]
-    #    print
-    #    print "Valid Commands:"
-    #    for e in commands:
-    #        print e
     if not something_done and not quiet:
         os.system("./lispeak --help");
 else:
