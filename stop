@@ -2,12 +2,15 @@
 
 cd ${0%/*}
 
+FILEFOLDER=/tmp/lispeak_$USERNAME
+
 shopt -s nullglob
-for f in *.pid
+for f in $FILEFOLDER/*.pid
 do
     echo $f
     base=$(basename $f)
 	read PID < $f
-	kill $PID
-	rm $f
+	kill $PID 2&>/dev/null
+	rm -f $f
 done
+
