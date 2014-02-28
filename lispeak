@@ -667,7 +667,7 @@ def installPlugin(path,upgrading=False):
                     removePlugin(name,True)
                     installPlugin(path)
         except:
-            isntall = False
+            install = False
             userLang = getSingleInfo("lang")
             if userLang in data['lang']:
                 output("This plugin is available in "+userLang)
@@ -831,44 +831,43 @@ def pluginInfo(plugin):
     with con:
         cur = con.cursor()
         sqlCheck(cur)
-        cur.execute("SELECT * FROM plugins")
+        cur.execute("SELECT * FROM plugins WHERE name='" + plugin + "'")
         pluginList = cur.fetchall()
         for line in pluginList:
             pid,name,identifier,types,version,author,cmdfile,servicefiles,dictionaries,actions = line
-            if name == plugin:
-                output()
-                output (name)
-                output()
-                output ("Author: "+author)
-                output ("Version: "+version)
-                output ("Types: "+str(types))
-                if "commands" in types:
-                    output ("Command(s): "+str(cmdfile))
-                if "service" in types:
-                    output ("Service(s): "+str(servicefiles))
-                output ("Dictionaries: "+str(dictionaries))
-                output ("Actions:")
-                actions = eval(actions)
-                for each in actions:
-                    output ("\t"+each+"\t\t"+actions[each].replace('\n',''))
-                output ("Commands:")
-                dictionary = open(root+"/plugins.dic")
-                adding = False
-                for line in dictionary:
-                    if adding == False:
-                        add = False
-                        if line.startswith('#PLUGIN: '):
-                            if line.replace('#PLUGIN: ','').replace('\n','') == name:
-                                add = False
-                                adding = True
-                    else:
-                        add = True
-                        if line == "#END\n":
-                            adding = False
+            output()
+            output (name)
+            output()
+            output ("Author: "+author)
+            output ("Version: "+version)
+            output ("Types: "+str(types))
+            if "commands" in types:
+                output ("Command(s): "+str(cmdfile))
+            if "service" in types:
+                output ("Service(s): "+str(servicefiles))
+            output ("Dictionaries: "+str(dictionaries))
+            output ("Actions:")
+            actions = eval(actions)
+            for each in actions:
+                output ("\t"+each+"\t\t"+actions[each].replace('\n',''))
+            output ("Commands:")
+            dictionary = open(root+"/plugins.dic")
+            adding = False
+            for line in dictionary:
+                if adding == False:
+                    add = False
+                    if line.startswith('#PLUGIN: '):
+                        if line.replace('#PLUGIN: ','').replace('\n','') == name:
                             add = False
-                    if add == True:
-                            output ("\t"+line.replace('\n',''))
-                dictionary.close()
+                            adding = True
+                else:
+                    add = True
+                    if line == "#END\n":
+                        adding = False
+                        add = False
+                if add == True:
+                        output ("\t"+line.replace('\n',''))
+            dictionary.close()
 def listPlugins():
     output()
     con = sql.connect(root+"/plugins.db")
@@ -889,47 +888,24 @@ def removePlugin(rname,saveConfig=False):
     with con:
         cur = con.cursor()
         sqlCheck(cur)
-        cur.execute("SELECT * FROM plugins")
+        cur.execute("SELECT * FROM plugins WHERE name='" + rname + "'")
         pluginList = cur.fetchall()
+        if len(pluginList) == 0:
+            output("Plugin not found.")
         for line in pluginList:
             pid,name,identifier,types,version,author,cmdfile,servicefiles,dictionaries,actions = line
-            if name == rname:
-                output("Removing "+name)
-                for cmd in eval(cmdfile):
-                    output("Removing Executable: "+cmd)
-                    delete(root+"/bin/"+cmd)
-                for ser in eval(servicefiles):
-                    output("Removing Service: "+ser)
-                    delete(root+"/services/"+ser)
-                if saveConfig == False:
-                    output("Removing Config File")
-                    delete(root+"/configs/"+name)
-                output("Removng Dictionaries")
-                for dic in eval(dictionaries):
-                    dictionary = open(root+'/dictionaries/'+dic+'.dic')
-                    text = ""
-                    deleting = False
-                    for line in dictionary:
-                        if deleting == False:
-                            add = True
-                            if line.startswith('#PLUGIN: '):
-                                if line.replace('#PLUGIN: ','').replace('\n','') == name:
-                                    add = False
-                                    deleting = True
-                        else:
-                            add = False
-                            if line == "#END\n":
-                                deleting = False
-                        if add == True:
-                            text = text + line
-                    dictionary.close()
-                    try:
-                        dictionary = open(root+'/dictionaries/'+dic+'.dic','w')
-                        dictionary.write(text)
-                    except:
-                        output("Error Cleaning "+dic+'.dic')
-                    dictionary.close()
-                dictionary = open(root+'/plugins.dic')
+            output("Removing "+name)
+            for cmd in eval(cmdfile):
+                output("Removing Executable: "+cmd)
+                delete(root+"/bin/"+cmd)
+            for ser in eval(servicefiles):
+                delete(root+"/services/"+ser+".service")
+            if saveConfig == False:
+                output("Removing Config File")
+                delete(root+"/configs/"+name)
+            output("Removing Dictionaries")
+            for dic in eval(dictionaries):
+                dictionary = open(root+'/dictionaries/'+dic+'.dic')
                 text = ""
                 deleting = False
                 for line in dictionary:
@@ -947,12 +923,35 @@ def removePlugin(rname,saveConfig=False):
                         text = text + line
                 dictionary.close()
                 try:
-                    dictionary = open(root+'/plugins.dic','w')
+                    dictionary = open(root+'/dictionaries/'+dic+'.dic','w')
                     dictionary.write(text)
                 except:
-                    output("Error Cleaning plugins.dic")
+                    output("Error Cleaning "+dic+'.dic')
                 dictionary.close()
-                cur.execute("DELETE FROM plugins WHERE id = "+str(pid))
+            dictionary = open(root+'/plugins.dic')
+            text = ""
+            deleting = False
+            for line in dictionary:
+                if deleting == False:
+                    add = True
+                    if line.startswith('#PLUGIN: '):
+                        if line.replace('#PLUGIN: ','').replace('\n','') == name:
+                            add = False
+                            deleting = True
+                else:
+                    add = False
+                    if line == "#END\n":
+                        deleting = False
+                if add == True:
+                    text = text + line
+            dictionary.close()
+            try:
+                dictionary = open(root+'/plugins.dic','w')
+                dictionary.write(text)
+            except:
+                output("Error Cleaning plugins.dic")
+            dictionary.close()
+            cur.execute("DELETE FROM plugins WHERE id = "+str(pid))
 quiet = False
 debugMode = False
 if __name__ == "__main__": 
