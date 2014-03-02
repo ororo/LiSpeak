@@ -31,8 +31,6 @@ except:
 try:
     from dbus.mainloop.glib import DBusGMainLoop
 except ImportError:
-    return False
-else:
     from dbus.mainloop.qt.DBusQtMainLoop import DBusGMainLoop
     #if none exists, an ImportError will be throw
 DBusGMainLoop(set_as_default=True)
@@ -52,7 +50,6 @@ def msg_handler(*args,**keywords):
     global last_signal
     try:
         last_signal=int(keywords['path'].split("/")[4])
-        #print keywords['path'], last_signal #debug
         if last_signal==SIG_DONE:
             os.system("touch in_grey")
         if last_signal==SIG_RECORD:

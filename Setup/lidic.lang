@@ -53,7 +53,7 @@
       </include>
     </context>
     <context id="command" style-ref="keyword">
-        <match>^  (goto|open|say|type|xType|UserInformation|wolf|date|weather|result_from_call|read)</match>
+        <match>^  (goto|open|say|type|xType|UserInformation|wolf|date|weather|result_from_call|read|mode|result)</match>
     </context>
     <context id="var-define-end" style-ref="function">
         <match>(\w+)[)]</match>

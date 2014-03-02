@@ -75,5 +75,8 @@ date
 <whats,what is> my name
   UserInformation name
   
+<start,enter,begin> dictation mode
+    mode dictation
+  
 (LINE word)
   wolf "$word$"

@@ -287,6 +287,7 @@ def speak(words):
         for text in locs:
             subprocess.call(["pactl","set-sink-input-volume",text,str(65535)])
 def setup():
+    call("./stop")
     installDir = os.path.dirname(os.path.realpath(__file__))
     displayOSWarning()
     delete([installDir+"/Recognition/modes/main.dic",installDir+"/Recognition/bin/",root,installDir+"/Recognition/dictionary.c"])
@@ -306,7 +307,7 @@ def setup():
         os.system("./start")
         writeSingleInfo("ROOTDIR",installDir,"UserInfo",False,False)
     lang = getInfo()['LANG']
-    copy(installDir+"/Setup/defaults/"+lang+".dic", installDir+"/Recognition/modes/main.dic")
+    copy(installDir+"/Setup/defaults/modes/"+lang+"/", root+"/modes/")
     if os.path.exists("/usr/share/gtksourceview-3.0/language-specs/"):
         sudo(["cp",installDir+"/Setup/lidic.lang","/usr/share/gtksourceview-3.0/language-specs/"])
     
