@@ -71,7 +71,7 @@ class MyHTMLParser(HTMLParser):
                 self.data[tag][a[0]] = a[1] 
 class PopUp:
     def __init__(self):
-        filename = "popup.glade"
+        filename = "../Setup/templates/popup.glade"
         self.builder = Gtk.Builder()
         self.builder.add_from_file(filename)
         self.builder.connect_signals(self)
