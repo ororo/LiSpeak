@@ -23,6 +23,8 @@ SIG_STOP=3
 SIG_RECORD=4
 SIG_RESULT=5
 
+FILEFOLDER=/tmp/lispeak_$USERNAME
+mkdir -p $FILEFOLDER
 
 if [ -z "$1" ];then
     error
@@ -41,7 +43,7 @@ do
         : # we are good, the server is there
     else # otherwise start it
         $f 2>/dev/null & 
-	    echo $! > "$base.pid"
+	    echo $! > $FILEFOLDER/$base.pid
     fi 
 done
 
@@ -49,14 +51,14 @@ if echo $PSRESULT |grep -v grep |grep notify.py > /dev/null 2>&1;then
     : # we are good, the server is there
 else # otherwise start it
     ./Microphone/notify.py 2>/dev/null & 
-    echo $! > "notify.pid"
+    echo $! > $FILEFOLDER/notify.pid
 fi
 
 if echo $PSRESULT |grep -v grep |grep indicator_server.py > /dev/null 2>&1;then
     : # we are good, the server is there
 else # otherwise start it
     ./Microphone/indicator_server.py 2>/dev/null & 
-    echo $! > "indicator.pid"
+    echo $! > $FILEFOLDER/indicator.pid
 fi      
 # This should be run from the base dir.
 #cd Microphone

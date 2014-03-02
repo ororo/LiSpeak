@@ -18,6 +18,12 @@ seleziona tutto[[ il] testo]
 vai [a ](LINE site)
   goto "$site$"
   
+leggi[ questo][ testo]
+  read
+  
+blocca[[ il] computer]
+  result_from_call "gnome-screensaver-command -l" "false"
+  
 [cerca su ]google (LINE question)
   goto "http://www.google.com/search?q=$question$"
 [cerca su]<wolfram,wolf ram>[ alpha] (LINE question)
