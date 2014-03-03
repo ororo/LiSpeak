@@ -3,6 +3,12 @@
 # Usage: autostart [on|off]
 #
 
+if [ ! \( "$1" = "on" \) -a ! \( "$1" = "off" \) ] ;
+then
+echo "Usage: $0 [on|off]"
+exit 1
+fi
+
 if [ "$1" = "on" ] ;
 then
 
@@ -12,7 +18,7 @@ echo "[Desktop Entry]
 Name=LiSpeak
 GenericName=LiSpeak server
 Comment=LiSpeak server
-Exec=/home/luca/Documenti/src/LiSpeak/wait_and_start
+Exec=/home/luca/Documenti/src/LiSpeak/start -wait &
 Terminal=false
 Type=Application
 X-GNOME-Autostart-enabled=true

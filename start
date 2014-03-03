@@ -2,6 +2,11 @@
 
 cd ${0%/*}
 
+if [ "$1" = "-wait" ] ;
+then
+  sleep 10s
+fi
+
 ./stop
 
 cp "./lispeak" "$HOME/.lispeak/bin/lispeak.py"
