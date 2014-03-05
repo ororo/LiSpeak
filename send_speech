@@ -12,7 +12,7 @@
 #FIXME: using $LANG from environment
 URL="https://www.google.com/speech-api/v1/recognize?lang=$LANG&client=chromium"
 
-FILEFOLDER=/tmp/lispeak_$USERNAME
+FILEFOLDER=/tmp/lispeak_$(id -un)
 FILE=$FILEFOLDER/result.json
 
 mkdir -p $FILEFOLDER

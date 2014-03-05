@@ -23,7 +23,7 @@ SIG_STOP=3
 SIG_RECORD=4
 SIG_RESULT=5
 
-FILEFOLDER=/tmp/lispeak_$USERNAME
+FILEFOLDER=/tmp/lispeak_$(id -un)
 mkdir -p $FILEFOLDER
 
 if [ -z "$1" ];then
@@ -31,37 +31,6 @@ if [ -z "$1" ];then
 fi
 
 shopt -s nullglob
-
-#It appears that "ps auxww" sometimes can stuck, waiting for keypress
-PSRESULT=$(echo "" | ps auxww)
-
-for f in $HOME/.lispeak/services/*.service
-do
-    echo $f
-    base=$(basename $f)
-	if echo $PSRESULT |grep -v grep |grep $base > /dev/null 2>&1;then
-        : # we are good, the server is there
-    else # otherwise start it
-        $f 2>/dev/null & 
-	    echo $! > $FILEFOLDER/$base.pid
-    fi 
-done
-
-if echo $PSRESULT |grep -v grep |grep notify.py > /dev/null 2>&1;then
-    : # we are good, the server is there
-else # otherwise start it
-    ./Microphone/notify.py 2>/dev/null & 
-    echo $! > $FILEFOLDER/notify.pid
-fi
-
-if echo $PSRESULT |grep -v grep |grep indicator_server.py > /dev/null 2>&1;then
-    : # we are good, the server is there
-else # otherwise start it
-    ./Microphone/indicator_server.py 2>/dev/null & 
-    echo $! > $FILEFOLDER/indicator.pid
-fi      
-# This should be run from the base dir.
-#cd Microphone
 
 case "$1" in
     wait)

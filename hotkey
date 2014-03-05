@@ -19,7 +19,7 @@
 
 cd "$(dirname "$0")"
 
-FILEFOLDER=/tmp/lispeak_$USERNAME
+FILEFOLDER=/tmp/lispeak_$(id -un)
 mkdir -p $FILEFOLDER
 PIDFILE=$FILEFOLDER/speech.pid
 FLACFILE=$FILEFOLDER/speech.flac

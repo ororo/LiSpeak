@@ -2,7 +2,7 @@
 
 cd ${0%/*}
 
-FILEFOLDER=/tmp/lispeak_$USERNAME
+FILEFOLDER=/tmp/lispeak_$(id -un)
 
 shopt -s nullglob
 for f in $FILEFOLDER/*.pid
