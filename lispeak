@@ -56,7 +56,7 @@ class IPInfo() :
         return self.get_ip_info(baseurl, ip)
 
 class InstallGUI:
-    def __init__(self):
+    def __init__(self, userinfo = None):
         filename = "lispeak.glade"
         self.builder = Gtk.Builder()
         self.builder.add_from_file(filename)
@@ -70,6 +70,8 @@ class InstallGUI:
         self.pButton = self.builder.get_object("btnBack")
         self.pButton.connect("clicked", self.prevPage)
         self.pButton.set_visible(False)
+        self.aButton = self.builder.get_object("btnAbort")
+        self.aButton.connect("clicked", Gtk.main_quit)
         self.window.set_title("LiSpeak Installation")
         self.window.show_all()
         self.window.connect("destroy", Gtk.main_quit)
@@ -83,6 +85,9 @@ class InstallGUI:
         self.processPage(0)
         self.loadedPlugins = False
         self.status = "cancel"
+        
+        if userinfo != None:
+            self.fillFields(userinfo)
         
     def centerClick(self,widget):
         num = self.notebook.get_current_page()
@@ -193,12 +198,18 @@ class InstallGUI:
         new = self.notebook.get_current_page()
         
         self.processPage(new,True)
-        
+    
     def prevPage(self,widget):
         self.notebook.prev_page()
         new = self.notebook.get_current_page()
         self.processPage(new,False)
-
+    
+    def fillFields(self, userinfo):
+        for e in ['first','last','email','wolf']:
+            if e.upper() in userinfo:
+                self.builder.get_object('ent'+e[0].upper()+e[1:]).set_text(self.userinfo[e.upper()])
+        
+    
 def checkDepends(depends):
     needs = []
     try:
@@ -226,9 +237,9 @@ def checkDepends(depends):
         debug("Could not delete \"packages\"")
     
 
-def displayInstaller():
+def displayInstaller(userinfo= None):
     from gi.repository import Gtk as gtk
-    app = InstallGUI()
+    app = InstallGUI(userinfo)
     Gtk.main()
     return app
 
@@ -305,11 +316,24 @@ def setup():
         os.system("nohup Recognition/bin/goto 'http://lispeak.bmandesigns.com/thanks' \"nohup.out\" &")
         os.system("./start")
         writeSingleInfo("ROOTDIR",installDir,"UserInfo",False,False)
-    lang = getInfo()['LANG']
-    copy(installDir+"/Setup/defaults/"+lang+".dic", installDir+"/Recognition/modes/main.dic")
-    if os.path.exists("/usr/share/gtksourceview-3.0/language-specs/"):
-        sudo(["cp",installDir+"/Setup/lidic.lang","/usr/share/gtksourceview-3.0/language-specs/"])
-    
+        lang = getInfo()['LANG']
+        copy(installDir+"/Setup/defaults/"+lang+".dic", installDir+"/Recognition/modes/main.dic")
+        if os.path.exists("/usr/share/gtksourceview-3.0/language-specs/"):
+                sudo(["cp",installDir+"/Setup/lidic.lang","/usr/share/gtksourceview-3.0/language-specs/"])
+    else:
+        output("Installation failed.")
+        
+def askInfo():
+    gui = displayInstaller(getInfo())
+    if gui.status == "good":
+        os.system("nohup Recognition/bin/goto 'http://lispeak.bmandesigns.com/thanks' \"nohup.out\" &")
+        os.system("./start")
+        writeSingleInfo("ROOTDIR",installDir,"UserInfo",False,False)
+        lang = getInfo()['LANG']
+        copy(installDir+"/Setup/defaults/"+lang+".dic", installDir+"/Recognition/modes/main.dic")
+    else:
+        output("Installation failed.")
+
 def loadLanguage(lang="en"):
     languages[lang.lower()] = getInfo("Language-"+lang.lower())
 def copyLibraries():
@@ -978,7 +1002,7 @@ if __name__ == "__main__":
     parser.add_argument('-f', dest='force', action='store_true',default=False,help=translate('Force installation with no confirmation.'))
     parser.add_argument("-q",dest='quiet',action='store_true',default=False,help=translate('Run the program with no output'))
     parser.add_argument("--oswarn",dest='warn',action='store_true',default=False,help=translate('Warn the user if their operating system is not supported'))
-    #parser.add_argument("--ask",dest='ask',action='store_true',default=False,help=translate('Ask the user to re-enter their info'))
+    parser.add_argument("--ask",dest='ask',action='store_true',default=False,help=translate('Ask the user to re-enter their info'))
     parser.add_argument("--debug",dest='debug',action='store_true',default=False,help=translate('Debug the program'))
     args = parser.parse_args()
     quiet = args.quiet
@@ -989,9 +1013,9 @@ if __name__ == "__main__":
     if args.warn:
         something_done = True
         displayOSWarning()
-    #if args.ask:               NEEDS TO BE REWRITTEN FOR NEW INSTALLATION GUI
-    #    something_done = True
-    #    askInfo()
+    if args.ask:
+        something_done = True
+        askInfo()
     if args.setup:
         something_done = True
         setup()
