@@ -18,7 +18,7 @@ echo "[Desktop Entry]
 Name=LiSpeak
 GenericName=LiSpeak server
 Comment=LiSpeak server
-Exec=/home/luca/Documenti/src/LiSpeak/start -wait &
+Exec=/home/luca/Documenti/src/LiSpeak/start -wait
 Terminal=false
 Type=Application
 X-GNOME-Autostart-enabled=true
@@ -28,6 +28,6 @@ fi
 
 if [ "$1" = "off" ] ;
 then
-rm ~/.config/autostart/lispeak.desktop
+rm -f ~/.config/autostart/lispeak.desktop
 fi
 

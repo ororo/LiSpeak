@@ -190,7 +190,12 @@ class InstallGUI:
             self.userinfo['LANG'] = languages[lang]
             if self.userinfo["TTSENGINE"] == "pico2wave":
                 checkDepends(["libttspico0","libttspico-utils","libttspico-data"])
+            self.userinfo["AUTOSTART"] = str(self.builder.get_object("swAutostart").get_active())
             writeInfo(self.userinfo)
+            if self.userinfo["AUTOSTART"] == "True":
+                os.system("./Setup/defaults/bin/autostart on");
+            else:
+                os.system("./Setup/defaults/bin/autostart off");
         elif self.notebook.get_current_page() == EXIT_PAGE:
             self.status = "good"
             Gtk.main_quit()
@@ -207,8 +212,25 @@ class InstallGUI:
     def fillFields(self, userinfo):
         for e in ['first','last','email','wolf']:
             if e.upper() in userinfo:
-                self.builder.get_object('ent'+e[0].upper()+e[1:]).set_text(self.userinfo[e.upper()])
-        
+                self.builder.get_object('ent'+e[0].upper()+e[1:]).set_text(userinfo[e.upper()])
+        if "LANG" in userinfo:
+            combo = self.builder.get_object("cbtLang")
+            languages_back = {"en":"English","pl":"Polski",'es':u'Español','fr':u'Français',"it":"Italiano"}
+            set_combo_active_text(combo, languages_back[userinfo["LANG"]])
+        if "TTS" in userinfo:
+            self.builder.get_object("swEspeak").set_active(userinfo["TTS"] == "True")
+        if "TTSENGINE" in userinfo:
+            combo = self.builder.get_object("cbtTTS")
+            set_combo_active_text(combo, userinfo["TTSENGINE"])
+        if "AUTOSTART" in userinfo:
+            self.builder.get_object("swAutostart").set_active(userinfo["AUTOSTART"] == "True")
+        #ARDUINO will be overwritten with default
+    
+def set_combo_active_text(combo, text):
+    model = combo.get_model()
+    for i in range(len(model)):
+        if model[i][0] == text:
+            combo.set_active(i)
     
 def checkDepends(depends):
     needs = []
