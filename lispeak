@@ -56,8 +56,13 @@ class IPInfo() :
         return self.get_ip_info(baseurl, ip)
 
 class InstallGUI:
+<<<<<<< HEAD
     def __init__(self, userinfo = None):
         filename = "lispeak.glade"
+=======
+    def __init__(self):
+        filename = installDir+"/Setup/templates/setup.glade"
+>>>>>>> upstream/master
         self.builder = Gtk.Builder()
         self.builder.add_from_file(filename)
         self.builder.connect_signals(self)
@@ -320,6 +325,7 @@ def speak(words):
         for text in locs:
             subprocess.call(["pactl","set-sink-input-volume",text,str(65535)])
 def setup():
+    call("./stop")
     installDir = os.path.dirname(os.path.realpath(__file__))
     displayOSWarning()
     delete([installDir+"/Recognition/modes/main.dic",installDir+"/Recognition/bin/",root,installDir+"/Recognition/dictionary.c"])
@@ -339,12 +345,11 @@ def setup():
         os.system("./start")
         writeSingleInfo("ROOTDIR",installDir,"UserInfo",False,False)
         lang = getInfo()['LANG']
-        copy(installDir+"/Setup/defaults/"+lang+".dic", installDir+"/Recognition/modes/main.dic")
+        copy(installDir+"/Setup/defaults/modes/"+lang+"/", root+"/modes/")
         if os.path.exists("/usr/share/gtksourceview-3.0/language-specs/"):
-                sudo(["cp",installDir+"/Setup/lidic.lang","/usr/share/gtksourceview-3.0/language-specs/"])
+            sudo(["cp",installDir+"/Setup/lidic.lang","/usr/share/gtksourceview-3.0/language-specs/"])
     else:
         output("Installation failed.")
-        
 def askInfo():
     gui = displayInstaller(getInfo())
     if gui.status == "good":
@@ -355,7 +360,6 @@ def askInfo():
         copy(installDir+"/Setup/defaults/"+lang+".dic", installDir+"/Recognition/modes/main.dic")
     else:
         output("Installation failed.")
-
 def loadLanguage(lang="en"):
     languages[lang.lower()] = getInfo("Language-"+lang.lower())
 def copyLibraries():

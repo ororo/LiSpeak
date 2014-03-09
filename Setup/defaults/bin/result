@@ -1,11 +1,5 @@
-#!/bin/bash
+#!/usr/bin/env python
 
-## I NEED TO BE REWRITTEN FROM notification.lmf
+import lispeak,sys
 
-> Microphone/result
-
-for i in "$@";do
-    echo $i >> Microphone/result
-done
-
-./pycmd result
+lispeak.displayNotification({'title':sys.argv[1],'message':sys.argv[2]})

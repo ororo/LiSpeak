@@ -132,7 +132,7 @@ if [ $mode = "main" ]; then
        exit 5
     fi
     
-    COMMAND=$(./Recognition/dictionary "$speech" "./Recognition/modes/main.dic")
+    COMMAND=$(./Recognition/dictionary "$speech" "$HOME/.lispeak/modes/main.dic")
 
     EXIT=$?
 
@@ -153,7 +153,7 @@ if [ $mode = "main" ]; then
     fi
 else
 
-    COMMAND=$(./Recognition/dictionary "$speech" "$USER_DIR/modes/$mode")
+    COMMAND=$(./Recognition/dictionary "$speech" "$USER_DIR/modes/$mode.dic")
 
     EXIT=$?
 

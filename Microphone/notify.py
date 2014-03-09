@@ -50,7 +50,6 @@ def msg_handler(*args,**keywords):
     global last_signal
     try:
         last_signal=int(keywords['path'].split("/")[4])
-        #print keywords['path'], last_signal #debug
         if last_signal==SIG_DONE:
             os.system("touch in_grey")
         if last_signal==SIG_RECORD:
@@ -72,7 +71,7 @@ class MyHTMLParser(HTMLParser):
                 self.data[tag][a[0]] = a[1] 
 class PopUp:
     def __init__(self):
-        filename = "popup.glade"
+        filename = "../Setup/templates/popup.glade"
         self.builder = Gtk.Builder()
         self.builder.add_from_file(filename)
         self.builder.connect_signals(self)
