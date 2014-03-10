@@ -24,16 +24,6 @@ leggi[ questo][ testo]
 blocca[[ il] computer]
   result_from_call "gnome-screensaver-command -l" "false"
   
-[cerca su ]google (LINE question)
-  goto "http://www.google.com/search?q=$question$"
-[cerca su]<wolfram,wolf ram>[ alpha] (LINE question)
-  goto "www.wolframalpha.com/input/?i=$question$"
-[cerca su ]youtube (LINE video)
-  goto "https://www.youtube.com/results?search_query=$video$"
-  
-<dove è,dov'è,dove si trova,dove sta> (LINE place)
-  goto "https://maps.google.com/maps?q=$place$&hl=\$LANG"
-  
 <apri,mostra,visualizza><[ i][ miei] <documenti,files>, la cartella [dei [miei ]]documenti>
   open "xdg-open `xdg-user-dir DOCUMENTS`"
 <apri,mostra,visualizza><[ la][ mia] musica,[ i][ miei] <file,files> musicali,[ la] cartella <[della ][mia ]musica,[dei ][miei ]<file,files> musicali>>
@@ -47,10 +37,20 @@ blocca[[ il] computer]
 <apri,mostra,visualizza><[[ la][ mia] cartella dei[ miei]],[ i][ miei]> download
   open "xdg-open `xdg-user-dir DOWNLOAD`"
 
+<cerca,google,cerca su google> (LINE question)
+  goto "http://www.google.com/search?q=$question$"
+[cerca su]<wolfram,wolf ram>[ alpha] (LINE question)
+  goto "www.wolframalpha.com/input/?i=$question$"
+[cerca su ]youtube (LINE video)
+  goto "https://www.youtube.com/results?search_query=$video$"
+  
+<dove è,dov'è,dove si trova,dove sta> (LINE place)
+  goto "https://maps.google.com/maps?q=$place$&hl=\$LANG"
+  
 apri [google ]<chrome, chromium>
   open "chromium-browser"
   
-apri [mozilla ]firefox
+apri <mozilla[ firefox],firefox>
   open "firefox"
 
 apri [mozilla ]thunderbird
