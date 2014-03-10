@@ -56,13 +56,8 @@ class IPInfo() :
         return self.get_ip_info(baseurl, ip)
 
 class InstallGUI:
-<<<<<<< HEAD
     def __init__(self, userinfo = None):
-        filename = "lispeak.glade"
-=======
-    def __init__(self):
         filename = installDir+"/Setup/templates/setup.glade"
->>>>>>> upstream/master
         self.builder = Gtk.Builder()
         self.builder.add_from_file(filename)
         self.builder.connect_signals(self)
