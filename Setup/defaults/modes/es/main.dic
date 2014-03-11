@@ -8,14 +8,14 @@ rehacer
   xType "keydown Shift_L" "keydown Control_L" "key z" "keyup Shift_L" "keyup Control_L"
 cortar
   xType "keydown Control_L" "key x" "keyup Control_L"
-pegar[ text]
+pegar[ texto]
   xType "keydown Control_L" "key v" "keyup Control_L"
-copiar[ text]
+copiar[ texto]
   xType "keydown Control_L" "key c" "keyup Control_L"
 seleccionar todo[ text]
   xType "keydown Control_L" "key a" "keyup Control_L"
 
-ir[ ]a (LINE site)
+ir a[la][pagina][web] (LINE site)
   goto "$site$"
   
 leer[ este][ texto]
@@ -44,7 +44,7 @@ bloquear[ computadora,sesion]
 <youtube,buscar en youtube,ver en youtube,buscame en youtube> (LINE video)
   goto "https://www.youtube.com/results?search_query=$video$"
 
-<donde es,mostrar direccion,bsucame la direccion>[en el mapa] (LINE place)
+<donde es,mostrar direccion,buscame la direccion>[en el mapa] (LINE place)
   goto "https://maps.google.com/maps?q=$place$&hl=\$LANG"
   
 <abrir,ejecutar> [google]chrome

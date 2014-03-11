@@ -7,10 +7,12 @@ Current Active Developers:
     
     BmanDesignsCanada
     ororo
+    Coco2233
     
 Current Active Translators:
     
     ororo - Italian
+    Coco2233 - Spanish
 
 How to Install
 ======
