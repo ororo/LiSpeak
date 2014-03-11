@@ -25,7 +25,8 @@ try:
     appid = lispeak.getInfo()['WOLF']
 except:
     appid = ""
-if appid != "":
+#if appid != "":
+if 1==1:
     q = sys.argv[1]
     response = urllib2.urlopen("http://api.wolframalpha.com/v1/query?input="+q.replace(" ","%20")+"&appid="+appid)
 
