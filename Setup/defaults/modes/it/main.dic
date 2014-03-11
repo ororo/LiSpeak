@@ -79,6 +79,9 @@ ora
 [dimmi ]<come mi chiamo,qual è il mio nome>
   UserInformation name
 
+[<inizia,avvia,attiva> ]<[il ]modo,[la ]modalità> dettato
+    mode dictation
+  
 (LINE word)
   wolf "$word$"
  

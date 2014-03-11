@@ -71,6 +71,9 @@ date
 [<montre,dit moi> ]<mon mon,comment je m'appelle>
   UserInformation name
   
+<mode,modalité> dictation
+    mode dictation
+  
 (LINE word)
   wolf "$word$"
 
