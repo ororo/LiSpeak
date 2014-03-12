@@ -186,12 +186,11 @@ class InstallGUI:
             self.userinfo = {}
             for e in ['first','last','email','wolf']:
                 self.userinfo[e.upper()] = self.builder.get_object('ent'+e[0].upper()+e[1:]).get_text()
-            self.userinfo["TTS"] = str(self.builder.get_object("swEspeak").get_active())
             self.userinfo["TTSENGINE"] = str(self.builder.get_object("cbtTTS").get_active_text())
+            self.userinfo["TTS"] = str(self.builder.get_object("swEspeak").get_active())
             self.userinfo["ARDUINO"] = "/dev/ttyACM0"
             lang = str(self.builder.get_object("cbtLang").get_active_text())
-            #languages = {"English":"en","Polski":'pl',u'Español':'es',u'Français':'fr',"Italiano":"it"}
-            languages = {"English":"en","Polski":'pl',"Espa\xc3\xb1ol":'es',"Fran\xc3\xa7ais":'fr',"Italiano":"it"}
+            languages = {"English":"en","Polski":'pl',"Español":'es',"Français":'fr',"Italiano":"it"}
             self.userinfo['LANG'] = languages[lang]
             if self.userinfo["TTSENGINE"] == "pico2wave":
                 checkDepends(["libttspico0","libttspico-utils","libttspico-data"])
@@ -220,8 +219,7 @@ class InstallGUI:
                 self.builder.get_object('ent'+e[0].upper()+e[1:]).set_text(userinfo[e.upper()])
         if "LANG" in userinfo:
             combo = self.builder.get_object("cbtLang")
-            #languages_back = {"en":"English","pl":"Polski",'es':u'Español','fr':u'Français',"it":"Italiano"}
-            languages_back = {"en":"English","pl":"Polski",'es':"Espa\xc3\xb1ol",'fr':"Fran\xc3\xa7ais","it":"Italiano"}
+            languages_back = {"en":"English","pl":"Polski",'es':'Español','fr':'Français',"it":"Italiano"}
             set_combo_active_text(combo, languages_back[userinfo["LANG"]])
         if "TTS" in userinfo:
             self.builder.get_object("swEspeak").set_active(userinfo["TTS"] == "True")
