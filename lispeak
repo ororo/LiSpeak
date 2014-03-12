@@ -101,7 +101,7 @@ class InstallGUI:
             cmd.insert(1,"apt-get")
             cmd.insert(2,"install")
             cmd.append("-y")
-            print "Installing dependencies..." #could be a message in some status bar
+            output("Installing dependencies...") #could be a message in some status bar
             subprocess.check_call(cmd)
             self.nextPage()   
         elif num == PLUGIN_PAGE:
@@ -123,13 +123,14 @@ class InstallGUI:
             self.cButton.set_visible(False)
         if num == EXIT_PAGE:
             self.nButton.set_label("Exit")
+            self.aButton.set_visible(False)
         elif num == PLUGIN_PAGE:
             self.nButton.set_label("Skip")
         else:
             self.nButton.set_label("Continue")
         if num == DEPENDS_PAGE:
             self.nButton.set_label("Skip Dependencies")
-            print "Calculating dependencies..." #could be a message in some status bar
+            output("Calculating dependencies...")   #could be a message in some status bar
             depends = ["sox","libpython2.7-stdlib","wget","espeak","xautomation","xvkbd","python-appindicator","xdotool","mpg123"]
             self.needs = []
             try:
@@ -159,10 +160,10 @@ class InstallGUI:
             except:
                 debug("Error Checking For Dependencies")
                 self.notebook.next_page()
-        
+            
         elif num == PLUGIN_PAGE and self.loadedPlugins == False:
             self.newPlugins = []
-            print "Fetching plugins list..." #could be a message in some status bar
+            output("Fetching plugins list...")   #could be a message in some status bar
             plugins = urllib2.urlopen("http://lispeak.bmandesigns.com/functions.php?f=corePlugins").read().split("|#|")
             for p in plugins:
                 if p != "":
@@ -379,7 +380,10 @@ def downloadPackage(name,install=True):
     delete(installDir+"/tmp.tar.gz")
 def sudo(cmd):
     cmd.insert(0,"pkexec")
-    subprocess.check_call(cmd)
+    try:
+        subprocess.check_call(cmd)
+    except subprocess.CalledProcessError, e:
+        output("Command terminated with error: %s. Return code: %d",True,False, " ".join(cmd), e.returncode)
     if quiet:
         display = False
     else:
@@ -388,7 +392,7 @@ def sudo(cmd):
         else:
             display = False
 def translate(text,lang=False):
-    text = str(text).replace("\n"," _NL_ ").replace("\t"," _TB_ ").strip()
+    text = str(text).replace("\n"," _NL_ ").replace("\t"," _TB_ ").replace("%s"," _VS_ ").replace("%d"," _VD_ ").strip()
     paths = []
     replaces = []
     x = 0
@@ -458,14 +462,14 @@ def translate(text,lang=False):
     for p in replaces:
         rtext = rtext.replace("_NT"+str(x)+"_",p)
         x = x + 1
-    return rtext.replace("_END_","").replace("_NL_","\n").replace("_TB_","\t")
-def dialogInfo(text,title="LiSpeak",notrans="",term=True):
+    return rtext.replace("_END_","").replace("_NL_","\n").replace("_TB_","\t").replace("_VD_","%d").replace("_VS_","%s")
+def dialogInfo(text,title="LiSpeak",notrans="",term=True,*args):
     debug("Creating Info Dialog: "+text)
     if term == True:
-        output(text)
-    call(["zenity","--info","--text="+translate(text)+notrans,"--title="+translate(title)+""])
-def dialogPrompt(text="Continue",title="LiSpeak",exit=False):
-    text = translate(text)
+        output(text,args)
+    call(["zenity","--info","--text="+translate(text)%args+notrans,"--title="+translate(title)+""])
+def dialogPrompt(text="Continue",title="LiSpeak",exit=False,*args):
+    text = translate(text)%args
     p = subprocess.Popen("zenity --question --text='"+text+"' --title="+translate(title)+"",shell=True,stderr=subprocess.PIPE)
     error = p.stderr.read()
     p.communicate()
@@ -498,12 +502,12 @@ def displayOSWarning():
     if d != "":
         if d in approvedDistros:
             if v in approvedDistros[d]:
-                output(d+" "+v+" is a supported operating system")
+                output("%s %s is a supported operating system",True,False,d,v)
             else:
-                dialogInfo(d+" is a supported operating system, but has not been tested on "+v+"\nLiSpeak may not work properly")
+                dialogInfo("%s is a supported operating system, but has not been tested on %s\nLiSpeak may not work properly","LiSpeak","",True,d,v)
                 dialogPrompt(exit=True)
         else:
-            dialogInfo(d+" is NOT a supported operating system\nLiSpeak may not work properly")
+            dialogInfo("%s is NOT a supported operating system\nLiSpeak may not work properly","LiSpeak","",True,d)
             dialogPrompt(exit=True)
     else:
         dialogInfo("Your operating system could not be detected\nLiSpeak may not work properly")
@@ -518,20 +522,25 @@ def touch(path,out=True):
     elif type(path)==list:
         for p in path:
             touch(p)
-def output(text="",trans=True,debug=False):
+
+#Ororo: this should be discussed.
+#I would like to have "variables" in translated labels, similar to gettext
+#e.g. text="%s %s is a supported operating system"
+#see https://www.gnu.org/software/gettext/manual/gettext.html#Preparing-Strings
+#However, parameters trans and debug become compulsory! Can be avoided?
+def output(text="",trans=True,debug=False,*args):
     if quiet == False:
-        if (debug == True and debugMode == True):
+        if (debug == True and debugMode == True) or (not debug):
+            result = ""
             if trans:
-                print translate(text)
+                result = translate(text)
             else:
-                print text
-        elif not debug:
-            if trans:
-                print translate(text)
-            else:
-                print text
-def debug(text,trans=True):
-    output(text,trans,True)
+                result = text
+            result = result % args
+            print result
+        
+def debug(text,trans=True,*args):
+    output(text,trans,True,args)
         
 def parseData(text):
     oData = text.split("\n")
@@ -722,17 +731,17 @@ def installPlugin(path,upgrading=False):
             install = False
             userLang = getSingleInfo("lang")
             if userLang in data['lang']:
-                output("This plugin is available in "+userLang)
+                output("This plugin is available in %s",True,False,userLang)
                 install = True
                 installLang = userLang
             else:
                 if len(data['lang']):
-                    output("This plugin is only available in "+data['lang'][0])
+                    output("This plugin is only available in %s",True,False,data['lang'][0])
                     installLang = data['lang'][0]
-                    install = dialogPrompt("This plugin is only available in "+(",".join(data['lang']))+"\nInstall Anyway?")
+                    install = dialogPrompt("This plugin is only available in %s\nInstall Anyway?","LiSpeak",False,(",".join(data['lang'])))
                 else:
                     while install == False:
-                        output("This plugin is only available in "+data['lang'])
+                        output("This plugin is only available in %s",True,False,data['lang'])
                         l = raw_input("Which language would you like to install it in?")
                         if l in data['lang']:
                             installLang = l
@@ -755,7 +764,7 @@ def installPlugin(path,upgrading=False):
                         existing = os.listdir(root+"/bin")
                         for f in new:
                             if f in existing:
-                                output("Conflict Found: "+f)
+                                output("Conflict Found: %s",True,False,f)
                                 install = False
                         if install == False:
                             break
@@ -806,7 +815,7 @@ def installPlugin(path,upgrading=False):
                                     dictionary.write("#END\n")
                                     dictionary.write(text)
                                 except:
-                                    output("Error Installing Plugin In "+f+".dic")
+                                    output("Error Installing Plugin In %s.dic",True,False,f)
                                 dictionaries.append(f)
                     except:
                         output("Error Scanning Dictionaries")
@@ -827,7 +836,7 @@ def installPlugin(path,upgrading=False):
                     existing = os.listdir(root+"/services")
                     for f in new:
                         if f in existing:
-                            output("Conflict Found: "+f)
+                            output("Conflict Found: %s",True,False,f)
                             install = False
                     if install == False:
                         break
@@ -857,7 +866,7 @@ def installPlugin(path,upgrading=False):
                                 dictionary.write("#END\n")
                                 dictionary.write(text)
                             except:
-                                output("Error Installing Plugin In "+f)
+                                output("Error Installing Plugin In %s",True,False,f)
                 createDirectory(root+"/configs/")
                 touch(root+"/configs/"+data['name'])
                 con = sql.connect(root+"/plugins.db")
@@ -890,14 +899,14 @@ def pluginInfo(plugin):
             output()
             output (name)
             output()
-            output ("Author: "+author)
-            output ("Version: "+version)
-            output ("Types: "+str(types))
+            output ("Author: %s",True,False,author)
+            output ("Version: %s",True,False,version)
+            output ("Types: %s",True,False,str(types))
             if "commands" in types:
-                output ("Command(s): "+str(cmdfile))
+                output ("Command(s): %s",True,False,str(cmdfile))
             if "service" in types:
-                output ("Service(s): "+str(servicefiles))
-            output ("Dictionaries: "+str(dictionaries))
+                output ("Service(s): %s",True,False,str(servicefiles))
+            output ("Dictionaries: %s",True,False,str(dictionaries))
             output ("Actions:")
             actions = eval(actions)
             for each in actions:
@@ -946,9 +955,9 @@ def removePlugin(rname,saveConfig=False):
             output("Plugin not found.")
         for line in pluginList:
             pid,name,identifier,types,version,author,cmdfile,servicefiles,dictionaries,actions = line
-            output("Removing "+name)
+            output("Removing %s",True,False,name)
             for cmd in eval(cmdfile):
-                output("Removing Executable: "+cmd)
+                output("Removing Executable: %s",True,False,cmd)
                 delete(root+"/bin/"+cmd)
             for ser in eval(servicefiles):
                 delete(root+"/services/"+ser+".service")
@@ -978,7 +987,7 @@ def removePlugin(rname,saveConfig=False):
                     dictionary = open(root+'/dictionaries/'+dic+'.dic','w')
                     dictionary.write(text)
                 except:
-                    output("Error Cleaning "+dic+'.dic')
+                    output("Error Cleaning %s.dic",True,False,dic)
                 dictionary.close()
             dictionary = open(root+'/plugins.dic')
             text = ""
