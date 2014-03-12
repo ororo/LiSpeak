@@ -1,9 +1,11 @@
 #!/usr/bin/env python
 
-
-import lispeak,sys,urllib2
+import lispeak,sys,urllib2,getpass,os
 
 from HTMLParser import HTMLParser
+
+FILEFOLDER="/tmp/lispeak_" + getpass.getuser()
+os.system("mkdir -p " + FILEFOLDER)
 
 # create a subclass and override the handler methods
 class MyHTMLParser(HTMLParser):
@@ -25,12 +27,13 @@ try:
     appid = lispeak.getInfo()['WOLF']
 except:
     appid = ""
-if appid != "":
+#if appid != "":
+if 1==1:
     q = sys.argv[1]
     response = urllib2.urlopen("http://api.wolframalpha.com/v1/query?input="+q.replace(" ","%20")+"&appid="+appid)
 
     html = response.read() 
-    data = open("data.html",'w')
+    data = open(FILEFOLDER + "/data.html",'w')
     data.write(html)
     data.close()
     parser = MyHTMLParser()
