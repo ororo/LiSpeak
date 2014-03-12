@@ -188,7 +188,7 @@ class InstallGUI:
     def nextPage(self,widget=None):
         if self.notebook.get_current_page() == USER_INFO_PAGE:
             self.userinfo = {}
-            for e in ['first','last','email','wolf']:
+            for e in ['first','last','email']:
                 self.userinfo[e.upper()] = self.builder.get_object('ent'+e[0].upper()+e[1:]).get_text()
             self.userinfo["TTSENGINE"] = str(self.builder.get_object("cbtTTS").get_active_text())
             self.userinfo["TTS"] = str(self.builder.get_object("swEspeak").get_active())
@@ -201,9 +201,9 @@ class InstallGUI:
             self.userinfo["AUTOSTART"] = str(self.builder.get_object("swAutostart").get_active())
             writeInfo(self.userinfo)
             if self.userinfo["AUTOSTART"] == "True":
-                os.system("./Setup/defaults/bin/autostart on");
+                self.autostart(True)
             else:
-                os.system("./Setup/defaults/bin/autostart off");
+                self.autostart(False)
         elif self.notebook.get_current_page() == EXIT_PAGE:
             self.status = "good"
             Gtk.main_quit()
@@ -218,7 +218,7 @@ class InstallGUI:
         self.processPage(new,False)
     
     def fillFields(self, userinfo):
-        for e in ['first','last','email','wolf']:
+        for e in ['first','last','email']:
             if e.upper() in userinfo:
                 self.builder.get_object('ent'+e[0].upper()+e[1:]).set_text(userinfo[e.upper()])
         if "LANG" in userinfo:
@@ -270,6 +270,7 @@ def checkDepends(depends):
 def displayInstaller(userinfo= None):
     from gi.repository import Gtk as gtk
     app = InstallGUI(userinfo)
+    app.autostart = autostart
     Gtk.main()
     return app
 
@@ -666,6 +667,26 @@ def writeInfo(new,plugin="UserInfo",upper=True,t=True):
             if upper:
                 each = each.upper()
             info.write("\n"+str(each)+"="+str(d))
+     
+def autostart(state):
+    if state:
+        touch(home+"/.config/autostart/lispeak.desktop")
+        #copy(installDir+"/Setup/defaults/autostart",home+"/.config/autostart")
+        with open(home+"/.config/autostart/lispeak.desktop","w") as f:
+            f.write("""
+[Desktop Entry]\n
+Version=1.0\n
+Name=LiSpeak\n
+GenericName=LiSpeak\n
+Name[en_CA]=LiSpeak\n
+Comment=LiSpeak is a voice command system\n
+Exec="""+home+"""/LiSpeak/start\n
+Path="""+home+"""/LiSpeak\n
+Terminal=false\n
+Type=Application\n
+Categories=Application;\n""")
+    elif state == False:
+        delete(home+"/.config/autostart/lispeak.desktop")
             
 def sqlCheck(cur):
     cur.execute("CREATE TABLE IF NOT EXISTS plugins(id INTEGER PRIMARY KEY, name TEXT, identifier TEXT,type TEXT, version TEXT, author TEXT, binFiles TEXT,services TEXT, dicts TEXT, actions TEXT)")
@@ -1036,6 +1057,7 @@ if __name__ == "__main__":
     from gi.repository import Gtk 
     parser = argparse.ArgumentParser(description=translate('LiSpeak - Linux Voice Command System'))
     parser.add_argument("--setup",dest='setup',action='store_true',default=False,help=translate('Setup LiSpeak'))
+    parser.add_argument("--autostart",metavar='state', type=bool,default="",help=translate('Setup LiSpeak'))
     parser.add_argument('-i', metavar='file', type=str,help=translate('Install a plugin - plugin .sp or .tar.gz file'),default="")
     parser.add_argument('-r', metavar='plugin', type=str,help=translate('Remove the specified plugin'),default="")
     parser.add_argument('-p', metavar='name', type=str,help=translate('Install a plugin from the repo'),default="")
@@ -1076,6 +1098,9 @@ if __name__ == "__main__":
     if args.d != "":
         something_done = True
         pluginInfo(args.p)
+    if args.autostart != "":
+        something_done = True
+        autostart(args.autostart)
     if not something_done and not quiet:
         os.system("./lispeak --help");
 else:
