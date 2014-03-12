@@ -607,7 +607,7 @@ more-example</property>
                 <property name="use_underline">True</property>
               </object>
               <packing>
-                <property name="x">330</property>
+                <property name="x">350</property>
               </packing>
             </child>
           </object>

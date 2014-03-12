@@ -16,7 +16,7 @@ EXIT_PAGE = 4
 home = subprocess.Popen("echo $HOME", shell=True, stdout=subprocess.PIPE).communicate()[0].replace('\n','')
 root = home + "/.lispeak"
 
-approvedDistros = {"Ubuntu":["13.10"]}
+approvedDistros = {"Ubuntu":["13.10"],"LinuxMint":["15"]}
 
 languages = {}
 
@@ -101,6 +101,7 @@ class InstallGUI:
             cmd.insert(1,"apt-get")
             cmd.insert(2,"install")
             cmd.append("-y")
+            print "Installing dependencies..." #could be a message in some status bar
             subprocess.check_call(cmd)
             self.nextPage()   
         elif num == PLUGIN_PAGE:
@@ -128,6 +129,7 @@ class InstallGUI:
             self.nButton.set_label("Continue")
         if num == DEPENDS_PAGE:
             self.nButton.set_label("Skip Dependencies")
+            print "Calculating dependencies..." #could be a message in some status bar
             depends = ["sox","libpython2.7-stdlib","wget","espeak","xautomation","xvkbd","python-appindicator","xdotool","mpg123"]
             self.needs = []
             try:
@@ -160,6 +162,7 @@ class InstallGUI:
         
         elif num == PLUGIN_PAGE and self.loadedPlugins == False:
             self.newPlugins = []
+            print "Fetching plugins list..." #could be a message in some status bar
             plugins = urllib2.urlopen("http://lispeak.bmandesigns.com/functions.php?f=corePlugins").read().split("|#|")
             for p in plugins:
                 if p != "":
