@@ -16,7 +16,7 @@ EXIT_PAGE = 4
 home = subprocess.Popen("echo $HOME", shell=True, stdout=subprocess.PIPE).communicate()[0].replace('\n','')
 root = home + "/.lispeak"
 
-approvedDistros = {"Ubuntu":["13.10"],"LinuxMint":["15"]}
+approvedDistros = {"Ubuntu":["13.10"],"LinuxMint":["17"]}
 
 languages = {}
 
@@ -437,7 +437,10 @@ def translate(text,lang=False):
         try:
             lang = getSingleInfo("lang")
         except:
-            lang = "en"
+            try:
+                lang = os.environ['LANG'][0:2]
+            except:
+                lang = "en"
     if lang == "":
         lang = "en"
     if lang not in languages:
