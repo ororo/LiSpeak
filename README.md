@@ -13,7 +13,11 @@ Current Active Translators:
     
     ororo - Italian
     Coco2233 - Spanish
-
+    
+======
+    
+[![ScreenShot](http://developer.android.com/images/brand/en_generic_rgb_wo_45.png)](https://play.google.com/store/apps/details?id=com.bmandesigns.lispeak)
+    
 How to Install
 ======
 1. Download and extract LiSpeak (we recommend your home folder)
