@@ -74,7 +74,7 @@ if [ $mode = "main" ]; then
     # Use sed scripts here.
     if [ -z "$speech" ];then
         echo "Speech unable to be transcribed."
-        ./Recognition/bin/result "Speech unable to be transcribed"
+        ./Recognition/bin/result Error "Speech unable to be transcribed"
         exit 1
     fi
 

@@ -85,6 +85,7 @@ class InstallGUI:
         self.bxDone = self.builder.get_object("bxDone")
         self.notebook.append_page(self.bxDone,Gtk.Label("None1"))
         
+        set_combo_active_text(self.builder.get_object("cbtLang"), "English")
         self.pButton.set_visible(False)
         self.processPage(0)
         self.loadedPlugins = False
@@ -434,15 +435,17 @@ def translate(text,lang=False):
             text = text.replace(path,"_PATH"+str(x)+"_")
         x = x + 1
     
-    if lang == False:
+    if lang == False or lang == "":
         try:
             lang = getSingleInfo("lang")
         except:
-            try:
-                lang = os.environ['LANG'][0:2]
-            except:
-                lang = "en"
-    if lang == "":
+            pass
+    if lang == False or lang == "":
+        try:
+            lang = os.environ['LANG'][0:2]
+        except:
+            pass
+    if lang == False or lang == "":
         lang = "en"
     if lang not in languages:
         loadLanguage(lang)
@@ -470,7 +473,7 @@ def translate(text,lang=False):
 def dialogInfo(text,title="LiSpeak",notrans="",term=True,*args):
     debug("Creating Info Dialog: "+text)
     if term == True:
-        output(text,args)
+        output(text,True,False,*args)
     call(["zenity","--info","--text="+translate(text)%args+notrans,"--title="+translate(title)+""])
 def dialogPrompt(text="Continue",title="LiSpeak",exit=False,*args):
     text = translate(text)%args
@@ -544,7 +547,7 @@ def output(text="",trans=True,debug=False,*args):
             print result
         
 def debug(text,trans=True,*args):
-    output(text,trans,True,args)
+    output(text,trans,True,*args)
         
 def parseData(text):
     oData = text.split("\n")
