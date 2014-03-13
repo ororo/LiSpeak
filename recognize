@@ -43,6 +43,7 @@ done <$USER_DIR/UserInfo
 # Try to run a command in ./Recognition/bin with useful errors.
 # This routine assumes $1 is not empty
 function run_command() {
+    echo "Running command: $1 $2 $3"  #debug
     eval "./Recognition/bin/$1"
 
     if [ $? != 0 ];then
@@ -127,12 +128,12 @@ if [ $mode = "main" ]; then
         fi
     fi
 
-    if [ ! -e "./Recognition/modes/main.dic" ];then
+    if [ ! -e "$USER_DIR/modes/main.dic" ];then
        echo "Installation error: main.dic not found"
        exit 5
     fi
     
-    COMMAND=$(./Recognition/dictionary "$speech" "$HOME/.lispeak/modes/main.dic")
+    COMMAND=$(./Recognition/dictionary "$speech" "$USER_DIR/modes/main.dic")
 
     EXIT=$?
 
