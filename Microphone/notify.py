@@ -38,30 +38,16 @@ DBusGMainLoop(set_as_default=True)
 import dbus
 bus = dbus.SessionBus()
 
-SIG_WAIT=1
-SIG_DONE=2
-SIG_STOP=3
-SIG_RECORD=4
-SIG_RESULT=5
-
-last_signal=None
-
 def msg_handler(*args,**keywords):
-    global last_signal
     try:
-        last_signal=int(keywords['path'].split("/")[4])
-        if last_signal==SIG_DONE:
-            os.system("touch in_grey")
-        if last_signal==SIG_RECORD:
-            os.system("touch in_green")
-        if last_signal==SIG_STOP:
-            os.system("touch in_red")
-        if last_signal==SIG_WAIT:
-            os.system("touch in_progress")
+        json_data = keywords['path'][24:]
+        data = json.loads(json_data)
+        self.queue.append(data)
+        print data,"ADDED TO QUEUE"
     except:
         pass
 
-bus.add_signal_receiver(handler_function=msg_handler, dbus_interface='com.bmandesigns.lispeak', interface_keyword='iface',  member_keyword='member', path_keyword='path')
+bus.add_signal_receiver(handler_function=msg_handler, dbus_interface='com.bmandesigns.lispeak', signal_name='Notification', interface_keyword='iface',  member_keyword='member', path_keyword='path')
 
 class MyHTMLParser(HTMLParser):
     def handle_starttag(self, tag, attrs):
@@ -95,7 +81,6 @@ class PopUp:
         self.queue = []
         
         gobject.timeout_add_seconds(1, self.timer)
-        gobject.timeout_add_seconds(0.2, self.display_notify)
         gobject.timeout_add_seconds(30, self.message_system)
         while gtk.events_pending():
             gtk.main_iteration_do(True)
@@ -147,17 +132,6 @@ class PopUp:
                 self.queue.append({'TITLE':"LiSpeak - "+message['title'],'MESSAGE':message['text'],"SPEECH":message['text']})
         
         lispeak.writeSingleInfo("lastid",str(int(message['id'])))
-        return True
-        
-    def display_notify(self):      
-        if os.path.exists("notification.lmf"):          #may use dbus instead of notification.lmf ?
-            print "Notification"
-            time.sleep(0.05)
-            with open("notification.lmf") as f:
-                data = lispeak.parseData(f.read())
-                self.queue.append(data)
-                print data,"ADDED TO QUEUE"
-            os.remove("notification.lmf")
         return True
         
     def timer(self):

@@ -2,11 +2,19 @@
 # -*- coding: utf-8 -*- 
 VERSION = 1.1
 
-import subprocess,sys,platform,tarfile,os,argparse,shutil,urllib2,time,json,socket,zipfile,serial
+import subprocess,sys,platform,tarfile,os,argparse,shutil,urllib2,time,json,socket,zipfile,serial,dbus
 
 import sqlite3 as sql
 
 import commands
+
+try:
+    from dbus.mainloop.glib import DBusGMainLoop
+except ImportError:
+    from dbus.mainloop.qt.DBusQtMainLoop import DBusGMainLoop
+    #if none exists, an ImportError will be throw
+DBusGMainLoop(set_as_default=True)
+bus = dbus.SessionBus()
 
 DEPENDS_PAGE = 1
 USER_INFO_PAGE = 2
@@ -578,9 +586,15 @@ def getInfo(plugin="UserInfo"):
     
 def homeDir():
     return home 
- 
+
 def displayNotification(text,text2 = False,image=False,speech=None):
-    path = installDir+"/Microphone/notification.lmf"
+    json_data = formatNotification(text,text2,image,speech)
+    proxy_obj = bus.get_object("com.bmandesigns.lispeak.notify", "/com/bmandesigns/lispeak/Notification")
+    #player = dbus.Interface(proxy_obj, "com.bmandesigns.lispeak.Notification")
+    #player.Pause() 
+    #bus.send_message(path="/com/bmandesigns/lispeak/" + json_data, interface="com.bmandesigns.lispeak", member="Notification")
+    
+def formatNotification(text,text2 = False,image=False,speech=None):
     if type(text) != dict:
         data = {'title':text,'message':text2,'icon':image,'speech':speech}
     else:
@@ -591,12 +605,8 @@ def displayNotification(text,text2 = False,image=False,speech=None):
         del data['message']
     if speech == None and type(text) == str:
         del data['speech']
-    with open(path,'w') as info:
-        for each in data:
-            d = data[each]
-            each = each.upper()
-            info.write("\n"+str(each)+"="+str(d))
- 
+    return json.dumps(data)
+        
 def getSingleInfo(item,plugin="UserInfo"):
     try:
         return getInfo(plugin)[item.upper()]
