@@ -14,7 +14,7 @@ except ImportError:
     from dbus.mainloop.qt.DBusQtMainLoop import DBusGMainLoop
     #if none exists, an ImportError will be throw
 DBusGMainLoop(set_as_default=True)
-bus = dbus.SessionBus()
+bus = None
 
 DEPENDS_PAGE = 1
 USER_INFO_PAGE = 2
@@ -588,11 +588,13 @@ def homeDir():
     return home 
 
 def displayNotification(text,text2 = False,image=False,speech=None):
-    json_data = formatNotification(text,text2,image,speech)
-    proxy_obj = bus.get_object("com.bmandesigns.lispeak.notify", "/com/bmandesigns/lispeak/Notification")
-    #player = dbus.Interface(proxy_obj, "com.bmandesigns.lispeak.Notification")
-    #player.Pause() 
-    #bus.send_message(path="/com/bmandesigns/lispeak/" + json_data, interface="com.bmandesigns.lispeak", member="Notification")
+    global bus
+    data = formatNotification(text,text2,image,speech)
+    if bus == None:
+        bus = dbus.SessionBus()
+    proxy_obj = bus.get_object("com.bmandesigns.lispeak.notify", "/com/bmandesigns/lispeak/notify")
+    proxy_iface = dbus.Interface(proxy_obj, "com.bmandesigns.lispeak.notify")
+    proxy_iface.receive_data(data)
     
 def formatNotification(text,text2 = False,image=False,speech=None):
     if type(text) != dict:
@@ -605,7 +607,7 @@ def formatNotification(text,text2 = False,image=False,speech=None):
         del data['message']
     if speech == None and type(text) == str:
         del data['speech']
-    return json.dumps(data)
+    return data
         
 def getSingleInfo(item,plugin="UserInfo"):
     try:

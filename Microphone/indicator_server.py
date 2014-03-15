@@ -4,7 +4,7 @@
 # Applet in system tray
 #
 
-import gtk,gobject,os,appindicator,subprocess,lispeak
+import gtk,gobject,os,appindicator,subprocess,lispeak,dbus
 
 try:
     os.chdir("Microphone")
@@ -20,8 +20,8 @@ except ImportError:
     #if none exists, an ImportError will be throw
 DBusGMainLoop(set_as_default=True)
 
-import dbus
 bus = dbus.SessionBus()
+bus.request_name("com.bmandesigns.lispeak.appStatus")
 
 SIG_WAIT=1
 SIG_DONE=2
