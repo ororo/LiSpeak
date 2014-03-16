@@ -6,7 +6,7 @@ import math
 
 import cairo
 
-import urllib2,sys,time,os,lispeak,json
+import urllib2,sys,time,os,lispeak,json,dbus,dbus.service
 from HTMLParser import HTMLParser
 
 from gi.repository import Gtk
@@ -35,33 +35,30 @@ except ImportError:
     #if none exists, an ImportError will be throw
 DBusGMainLoop(set_as_default=True)
 
-import dbus
-bus = dbus.SessionBus()
+class MyDBUSService(dbus.service.Object):
+    """ This is a service that waits for somebody call receive_data(data) """
+    def __init__(self):
+        global gbus
+        bus_name = dbus.service.BusName('com.bmandesigns.lispeak.notify', bus=dbus.SessionBus())
+        dbus.service.Object.__init__(self, bus_name, '/com/bmandesigns/lispeak/notify')
 
-SIG_WAIT=1
-SIG_DONE=2
-SIG_STOP=3
-SIG_RECORD=4
-SIG_RESULT=5
+    @dbus.service.method('com.bmandesigns.lispeak.notify')
+    def receive_data(self, data):
+        try:
+            popup.queue.append(data)
+            print data,"ADDED TO QUEUE"
+        except:
+            pass
 
-last_signal=None
+    @dbus.service.method('com.bmandesigns.lispeak.notify')
+    def Quit(self):
+        """Removes this object from the DBUS connection and exits"""
+        self.remove_from_connection()
+        Gtk.main_quit()
+        return
+        
+MyDBUSService()
 
-def msg_handler(*args,**keywords):
-    global last_signal
-    try:
-        last_signal=int(keywords['path'].split("/")[4])
-        if last_signal==SIG_DONE:
-            os.system("touch in_grey")
-        if last_signal==SIG_RECORD:
-            os.system("touch in_green")
-        if last_signal==SIG_STOP:
-            os.system("touch in_red")
-        if last_signal==SIG_WAIT:
-            os.system("touch in_progress")
-    except:
-        pass
-
-bus.add_signal_receiver(handler_function=msg_handler, dbus_interface='com.bmandesigns.lispeak', interface_keyword='iface',  member_keyword='member', path_keyword='path')
 
 class MyHTMLParser(HTMLParser):
     def handle_starttag(self, tag, attrs):
@@ -95,7 +92,6 @@ class PopUp:
         self.queue = []
         
         gobject.timeout_add_seconds(1, self.timer)
-        gobject.timeout_add_seconds(0.2, self.display_notify)
         gobject.timeout_add_seconds(30, self.message_system)
         while gtk.events_pending():
             gtk.main_iteration_do(True)
@@ -142,22 +138,11 @@ class PopUp:
         if go:
             if 'icon' in message:
                 urllib.urlretrieve(message['icon'], "/tmp/lsicon.png")
-                self.queue.append({'TITLE':"LiSpeak - "+message['title'],'MESSAGE':message['text'],'ICON':"/tmp/lsicon.png","SPEECH":message['text']})
+                self.queue.append({'title':"LiSpeak - "+message['title'],'message':message['text'],'icon':"/tmp/lsicon.png","speech":message['text']})
             else:
-                self.queue.append({'TITLE':"LiSpeak - "+message['title'],'MESSAGE':message['text'],"SPEECH":message['text']})
+                self.queue.append({'title':"LiSpeak - "+message['title'],'message':message['text'],"speech":message['text']})
         
         lispeak.writeSingleInfo("lastid",str(int(message['id'])))
-        return True
-        
-    def display_notify(self):      
-        if os.path.exists("notification.lmf"):          #may use dbus instead of notification.lmf ?
-            print "Notification"
-            time.sleep(0.05)
-            with open("notification.lmf") as f:
-                data = lispeak.parseData(f.read())
-                self.queue.append(data)
-                print data,"ADDED TO QUEUE"
-            os.remove("notification.lmf")
         return True
         
     def timer(self):
@@ -191,15 +176,15 @@ class PopUp:
                 try:
                     self.message.set_text("")
                     self.message_hide = True
-                    self.message.set_text(data['MESSAGE'].replace("\\n","\n"))
-                    if data['MESSAGE'].count("\\n") < 3 and data['MESSAGE'].count("\n") < 3:
+                    self.message.set_text(data['message'].replace("\\n","\n"))
+                    if data['message'].count("\\n") < 3 and data['message'].count("\n") < 3:
                         self.message_hide = False
                 except:
                     pass
-                self.title.set_text(data['TITLE'])
-                if 'ICON' in data:
-                    if data['ICON'].startswith("http"):
-                        f2 = urllib2.urlopen(data['ICON'])
+                self.title.set_text(data['title'])
+                if 'icon' in data:
+                    if data['icon'].startswith("http"):
+                        f2 = urllib2.urlopen(data['icon'])
                         output = open('/tmp/lispeak-image','wb')
                         output.write(f2.read())
                         output.close()
@@ -207,31 +192,32 @@ class PopUp:
                         self.icon.set_from_pixbuf(buf)
                     else:
                         try:
-                            buf = pixbuf.Pixbuf.new_from_file_at_size(data['ICON'].replace("file://",""),75,75)
+                            buf = pixbuf.Pixbuf.new_from_file_at_size(data['icon'].replace("file://",""),75,75)
                             self.icon.set_from_pixbuf(buf)
                         except:
-                            print "Invalid Image:",data['ICON']
+                            print "Invalid Image:",data['icon']
                     self.image_hide = False
                 else:
                     self.image_hide = True
-                if "SPEECH" in data:
-                    print data['SPEECH']
-                    if data["SPEECH"] != "None":
-                        self.speech = data['SPEECH']
+                if "speech" in data:
+                    print data['speech']
+                    if data["speech"] != "None":
+                        self.speech = data['speech']
                     else:
-                        self.speech = data['TITLE']
+                        self.speech = data['title']
                 else:
-                    self.speech = data['TITLE']
+                    self.speech = data['title']
                 self.counter = 0
                 self.counting = True
                 self.queue.pop(0)
-                lcd.sendText(self.title.get_text()+"|"+self.message.get_text()+";")
+                #lcd.sendText(self.title.get_text()+"|"+self.message.get_text()+";")
             return True
         except:
-            print "AN ERROR OCCURED!"
+            print "AN ERROR OCCURED!", sys.exc_info()
             return True
         
 
 
-PopUp()
+popup = PopUp()
 Gtk.main()
+

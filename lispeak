@@ -2,11 +2,19 @@
 # -*- coding: utf-8 -*- 
 VERSION = 1.1
 
-import subprocess,sys,platform,tarfile,os,argparse,shutil,urllib2,time,json,socket,zipfile,serial
+import subprocess,sys,platform,tarfile,os,argparse,shutil,urllib2,time,json,socket,zipfile,serial,dbus
 
 import sqlite3 as sql
 
 import commands
+
+try:
+    from dbus.mainloop.glib import DBusGMainLoop
+except ImportError:
+    from dbus.mainloop.qt.DBusQtMainLoop import DBusGMainLoop
+    #if none exists, an ImportError will be throw
+DBusGMainLoop(set_as_default=True)
+bus = None
 
 DEPENDS_PAGE = 1
 USER_INFO_PAGE = 2
@@ -85,6 +93,7 @@ class InstallGUI:
         self.bxDone = self.builder.get_object("bxDone")
         self.notebook.append_page(self.bxDone,Gtk.Label("None1"))
         
+        set_combo_active_text(self.builder.get_object("cbtLang"), "English")
         self.pButton.set_visible(False)
         self.processPage(0)
         self.loadedPlugins = False
@@ -434,12 +443,17 @@ def translate(text,lang=False):
             text = text.replace(path,"_PATH"+str(x)+"_")
         x = x + 1
     
-    if lang == False:
+    if lang == False or lang == "":
         try:
             lang = getSingleInfo("lang")
         except:
-            lang = "en"
-    if lang == "":
+            pass
+    if lang == False or lang == "":
+        try:
+            lang = os.environ['LANG'][0:2]
+        except:
+            pass
+    if lang == False or lang == "":
         lang = "en"
     if lang not in languages:
         loadLanguage(lang)
@@ -467,7 +481,7 @@ def translate(text,lang=False):
 def dialogInfo(text,title="LiSpeak",notrans="",term=True,*args):
     debug("Creating Info Dialog: "+text)
     if term == True:
-        output(text,args)
+        output(text,True,False,*args)
     call(["zenity","--info","--text="+translate(text)%args+notrans,"--title="+translate(title)+""])
 def dialogPrompt(text="Continue",title="LiSpeak",exit=False,*args):
     text = translate(text)%args
@@ -541,7 +555,7 @@ def output(text="",trans=True,debug=False,*args):
             print result
         
 def debug(text,trans=True,*args):
-    output(text,trans,True,args)
+    output(text,trans,True,*args)
         
 def parseData(text):
     oData = text.split("\n")
@@ -572,9 +586,17 @@ def getInfo(plugin="UserInfo"):
     
 def homeDir():
     return home 
- 
+
 def displayNotification(text,text2 = False,image=False,speech=None):
-    path = installDir+"/Microphone/notification.lmf"
+    global bus
+    data = formatNotification(text,text2,image,speech)
+    if bus == None:
+        bus = dbus.SessionBus()
+    proxy_obj = bus.get_object("com.bmandesigns.lispeak.notify", "/com/bmandesigns/lispeak/notify")
+    proxy_iface = dbus.Interface(proxy_obj, "com.bmandesigns.lispeak.notify")
+    proxy_iface.receive_data(data)
+    
+def formatNotification(text,text2 = False,image=False,speech=None):
     if type(text) != dict:
         data = {'title':text,'message':text2,'icon':image,'speech':speech}
     else:
@@ -585,12 +607,8 @@ def displayNotification(text,text2 = False,image=False,speech=None):
         del data['message']
     if speech == None and type(text) == str:
         del data['speech']
-    with open(path,'w') as info:
-        for each in data:
-            d = data[each]
-            each = each.upper()
-            info.write("\n"+str(each)+"="+str(d))
- 
+    return data
+        
 def getSingleInfo(item,plugin="UserInfo"):
     try:
         return getInfo(plugin)[item.upper()]
