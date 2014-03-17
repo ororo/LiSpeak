@@ -81,7 +81,6 @@ class InstallGUI:
         self.cButton.connect("clicked", self.centerClick)
         self.pButton = self.builder.get_object("btnBack")
         self.pButton.connect("clicked", self.prevPage)
-        self.pButton.set_visible(False)
         self.aButton = self.builder.get_object("btnAbort")
         self.aButton.connect("clicked", Gtk.main_quit)
         self.window.set_title("LiSpeak Installation")
@@ -95,7 +94,13 @@ class InstallGUI:
         
         set_combo_active_text(self.builder.get_object("cbtLang"), "English")
         self.pButton.set_visible(False)
-        self.processPage(0)
+        self.askOnly = False
+        if userinfo == None:
+            self.processPage(0)
+        else:
+            self.notebook.set_current_page(USER_INFO_PAGE)
+            self.askOnly = True
+            self.processPage(USER_INFO_PAGE) 
         self.loadedPlugins = False
         self.status = "cancel"
         
@@ -122,7 +127,11 @@ class InstallGUI:
             self.nextPage()
         
     def processPage(self,num,forward=True):
-        if num != 0:
+        if self.askOnly and num != USER_INFO_PAGE:
+            self.status = "saved"
+            Gtk.main_quit()
+            return
+        if num != 0 and not self.askOnly:
             self.pButton.set_visible(True)
         else:
             self.pButton.set_visible(False)
@@ -132,6 +141,9 @@ class InstallGUI:
             self.cButton.set_visible(False)
         if num == EXIT_PAGE:
             self.nButton.set_label("Exit")
+            self.aButton.set_visible(False)
+        elif self.askOnly:
+            self.nButton.set_label("Save")
             self.aButton.set_visible(False)
         elif num == PLUGIN_PAGE:
             self.nButton.set_label("Skip")
@@ -168,8 +180,7 @@ class InstallGUI:
                     self.dlist.set_text(text)
             except:
                 debug("Error Checking For Dependencies")
-                self.notebook.next_page()
-            
+                self.notebook.next_page()   
         elif num == PLUGIN_PAGE and self.loadedPlugins == False:
             self.newPlugins = []
             output("Fetching plugins list...")   #could be a message in some status bar
@@ -361,7 +372,7 @@ def setup():
         copy(installDir+"/Setup/defaults/modes/"+lang+"/", root+"/modes/")
         if os.path.exists("/usr/share/gtksourceview-3.0/language-specs/"):
             sudo(["cp",installDir+"/Setup/lidic.lang","/usr/share/gtksourceview-3.0/language-specs/"])
-    else:
+    elif gui.status != "saved":
         output("Installation failed.")
 def askInfo():
     gui = displayInstaller(getInfo())
