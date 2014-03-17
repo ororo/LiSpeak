@@ -605,7 +605,7 @@ def displayNotification(text,text2 = False,image=False,speech=None):
         bus = dbus.SessionBus()
     proxy_obj = bus.get_object("com.bmandesigns.lispeak.notify", "/com/bmandesigns/lispeak/notify")
     proxy_iface = dbus.Interface(proxy_obj, "com.bmandesigns.lispeak.notify")
-    proxy_iface.receive_data(data)
+    proxy_iface.create_notification(data)
     
 def formatNotification(text,text2 = False,image=False,speech=None):
     if type(text) != dict:

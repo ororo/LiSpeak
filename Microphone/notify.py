@@ -36,14 +36,14 @@ except ImportError:
 DBusGMainLoop(set_as_default=True)
 
 class MyDBUSService(dbus.service.Object):
-    """ This is a service that waits for somebody call receive_data(data) """
+    """ This is a service that waits for somebody call create_notification(data) """
     def __init__(self):
         global gbus
         bus_name = dbus.service.BusName('com.bmandesigns.lispeak.notify', bus=dbus.SessionBus())
         dbus.service.Object.__init__(self, bus_name, '/com/bmandesigns/lispeak/notify')
 
     @dbus.service.method('com.bmandesigns.lispeak.notify')
-    def receive_data(self, data):
+    def create_notification(self, data):
         try:
             popup.queue.append(data)
             print data,"ADDED TO QUEUE"
