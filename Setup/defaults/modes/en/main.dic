@@ -58,7 +58,7 @@ date
 [<show,display,what[ is]>][ the][ ]time[is it][ <today,[right ]now>]
   date time
   
-[<show,display,<what,how>[ is]>][ the][ ]weather[ <is it,like>][ <today,[right ]now>]
+[show,display,what,how][ is][ the][ ]weather[ ][is it,like][ ][today,[right ]now]
   weather
 
 <whats,what is> my <ip,internet[ protocol]>[ address]
@@ -66,7 +66,7 @@ date
 <whats,what is> my name
   UserInformation name
   
-<start,enter,begin> dictation mode
+[start,enter,begin][ ]dictation mode
   mode dictation
   
 (LINE word)
