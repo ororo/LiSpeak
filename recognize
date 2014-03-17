@@ -51,11 +51,12 @@ done <$USER_DIR/UserInfo
 # Try to run a command in ./Recognition/bin with useful errors.
 # This routine assumes $1 is not empty
 function run_command() {
-    echo "Running command: $1 $2 $3"  #debug
-    eval "./Recognition/bin/$1"
+    eval "./Recognition/recognized.py \"$1\" \"$2\""
+    
+    eval "./Recognition/bin/$2"
 
     if [ $? != 0 ];then
-        eval "~/.lispeak/bin/$1"
+        eval "~/.lispeak/bin/$2"
     fi
 
     if [ $? != 0 ];then
@@ -97,7 +98,7 @@ if [ $dicmode = "reg" ]; then
             EXIT=$?
             if [ "$EXIT" == 0 ];then
 
-	        run_command "$COMMAND"
+	        run_command "$speech" "$COMMAND"
 
 	        exit 0
             fi
@@ -114,7 +115,7 @@ if [ $dicmode = "reg" ]; then
             EXIT=$?
             if [ "$EXIT" == 0 ];then
 
-	        run_command "$COMMAND"
+	        run_command "$speech" "$COMMAND"
 
 	        exit 0
             fi
@@ -129,7 +130,7 @@ if [ $dicmode = "reg" ]; then
             EXIT=$?
             if [ "$EXIT" == 0 ];then
 
-	        run_command "$COMMAND"
+	        run_command "$speech" "$COMMAND"
 
 	        exit 0
             fi
@@ -149,7 +150,7 @@ if [ $dicmode = "reg" ]; then
 
         if [ "$EXIT" == 0 ];then
             if [ ! -z "$COMMAND" ];then
-                run_command "$COMMAND"
+                run_command "$speech" "$COMMAND"
                 exit 0
             else
                 exit 7
@@ -169,7 +170,7 @@ if [ $dicmode = "reg" ]; then
         EXIT=$?
 
         if [ "$EXIT" == 0 ];then
-            run_command "$COMMAND"
+            run_command "$speech" "$COMMAND"
             exit 0
         elif [ "$EXIT" == 2 ];then
             ./Recognition/bin/result Error "'$speech'" "is not a recognized command" ""
@@ -185,7 +186,7 @@ else
     
     EXIT=$?
     if [ "$EXIT" == 0 ];then
-        run_command "$COMMAND"
+        run_command "$speech" "$COMMAND"
         exit 0
     elif [ "$EXIT" == 2 ];then
         ./Recognition/bin/result Error "'$speech'" "is not a recognized command" ""

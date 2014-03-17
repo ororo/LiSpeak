@@ -40,7 +40,6 @@ def msg_handler(*args,**keywords):
 
 bus.add_signal_receiver(handler_function=msg_handler, dbus_interface='com.bmandesigns.lispeak', signal_name='AppStatus', interface_keyword='iface',  member_keyword='member', path_keyword='path')
 
-
 class indicator:
     def __init__(self):
         

@@ -49,6 +49,10 @@ class MyDBUSService(dbus.service.Object):
             print data,"ADDED TO QUEUE"
         except:
             pass
+            
+    @dbus.service.method('com.bmandesigns.lispeak.notify')
+    def new_command(self, speech, command):
+        self.CommandRecognized(speech, command)
 
     @dbus.service.method('com.bmandesigns.lispeak.notify')
     def Quit(self):
@@ -56,6 +60,11 @@ class MyDBUSService(dbus.service.Object):
         self.remove_from_connection()
         Gtk.main_quit()
         return
+        
+    @dbus.service.signal('com.bmandesigns.lispeak.notify')
+    def CommandRecognized(self, speech, command):
+        return str(speech),str(command)
+
         
 MyDBUSService()
 
