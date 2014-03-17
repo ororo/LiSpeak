@@ -17,6 +17,14 @@
 # Usage: recognize "Text to be recognized"
 #
 
+if [ -z "$2" ]
+  then
+    dicmode="reg"
+  else
+    dicmode="$2"
+fi
+echo $dicmode
+
 cd ${0%/*}
 
 USER_DIR=$HOME/.lispeak
@@ -61,103 +69,121 @@ cd $ROOTDIR
 
 speech=$(eval "echo \"$1\" | tr '[:upper:]' '[:lower:]'")
 
-read mode < "$USER_DIR/MODE"
+if [ $dicmode = "reg" ]; then
 
-if [ -z "$mode" ]; then
-    mode="main"
-fi
+    read mode < "$USER_DIR/MODE"
 
-echo "MODE IS: $mode"
-
-if [ $mode = "main" ]; then
-
-    # Use sed scripts here.
-    if [ -z "$speech" ];then
-        echo "Speech unable to be transcribed."
-        ./Recognition/bin/result Error "Speech unable to be transcribed"
-        exit 1
+    if [ -z "$mode" ]; then
+        mode="main"
     fi
 
-    rm Microphone/result 2>/dev/null
+    echo "MODE IS: $mode"
+
+    if [ $mode = "main" ]; then
+
+        # Use sed scripts here.
+        if [ -z "$speech" ];then
+            echo "Speech unable to be transcribed."
+            ./Recognition/bin/result Error "Speech unable to be transcribed"
+            exit 1
+        fi
+
+        rm Microphone/result 2>/dev/null
 
 
-    if [ -e "$USER_DIR/personal.dic" ];then
-        COMMAND=$(./Recognition/dictionary "$speech" "$USER_DIR/personal.dic")
+        if [ -e "$USER_DIR/personal.dic" ];then
+            COMMAND=$(./Recognition/dictionary "$speech" "$USER_DIR/personal.dic")
+
+            EXIT=$?
+            if [ "$EXIT" == 0 ];then
+
+	        run_command "$COMMAND"
+
+	        exit 0
+            fi
+            if [ "$EXIT" != 2 ];then
+	        echo "There is an error in $USER_DIR/personal.dic"
+            fi
+        fi
+
+        process=$(ps -p `xdotool getwindowfocus getwindowpid` -o comm= |tr -d '\n')
+        echo ${process}
+        if [ -e "$USER_DIR/dictionaries/${process}.dic" ];then
+            COMMAND=$(./Recognition/dictionary "$speech" "$USER_DIR/dictionaries/${process}.dic")
+
+            EXIT=$?
+            if [ "$EXIT" == 0 ];then
+
+	        run_command "$COMMAND"
+
+	        exit 0
+            fi
+            if [ "$EXIT" != 2 ];then
+	        echo "There is an error in $USER_DIR/dictionaries/${process}.dic"
+            fi
+        fi
+
+        if [ -e "$USER_DIR/plugins.dic" ];then
+            COMMAND=$(./Recognition/dictionary "$speech" "$USER_DIR/plugins.dic")
+
+            EXIT=$?
+            if [ "$EXIT" == 0 ];then
+
+	        run_command "$COMMAND"
+
+	        exit 0
+            fi
+            if [ "$EXIT" != 2 ];then
+	        echo "There is an error in $USER_DIR/plugins.dic"
+            fi
+        fi
+
+        if [ ! -e "$USER_DIR/modes/main.dic" ];then
+           echo "Installation error: main.dic not found"
+           exit 5
+        fi
+        
+        COMMAND=$(./Recognition/dictionary "$speech" "$USER_DIR/modes/main.dic")
 
         EXIT=$?
+
         if [ "$EXIT" == 0 ];then
+            if [ ! -z "$COMMAND" ];then
+                run_command "$COMMAND"
+                exit 0
+            else
+                exit 7
+            fi
+        elif [ "$EXIT" == 2 ];then
+            ./Recognition/bin/result Error "'$speech'" "is not a recognized command" ""
 
-	    run_command "$COMMAND"
-
-	    exit 0
+        else 
+            echo "There is an error in ${mode}.dic"
+            ./Recognition/bin/result Error "There was an error while reading main.dic" \
+	        "$COMMAND" ""
         fi
-        if [ "$EXIT" != 2 ];then
-	    echo "There is an error in $USER_DIR/personal.dic"
-        fi
-    fi
+    else
 
-    process=$(ps -p `xdotool getwindowfocus getwindowpid` -o comm= |tr -d '\n')
-    echo ${process}
-    if [ -e "$USER_DIR/dictionaries/${process}.dic" ];then
-        COMMAND=$(./Recognition/dictionary "$speech" "$USER_DIR/dictionaries/${process}.dic")
+        COMMAND=$(./Recognition/dictionary "$speech" "$USER_DIR/modes/$mode.dic")
 
         EXIT=$?
+
         if [ "$EXIT" == 0 ];then
-
-	    run_command "$COMMAND"
-
-	    exit 0
-        fi
-        if [ "$EXIT" != 2 ];then
-	    echo "There is an error in $USER_DIR/dictionaries/${process}.dic"
-        fi
-    fi
-
-    if [ -e "$USER_DIR/plugins.dic" ];then
-        COMMAND=$(./Recognition/dictionary "$speech" "$USER_DIR/plugins.dic")
-
-        EXIT=$?
-        if [ "$EXIT" == 0 ];then
-
-	    run_command "$COMMAND"
-
-	    exit 0
-        fi
-        if [ "$EXIT" != 2 ];then
-	    echo "There is an error in $USER_DIR/plugins.dic"
-        fi
-    fi
-
-    if [ ! -e "$USER_DIR/modes/main.dic" ];then
-       echo "Installation error: main.dic not found"
-       exit 5
-    fi
-    
-    COMMAND=$(./Recognition/dictionary "$speech" "$USER_DIR/modes/main.dic")
-
-    EXIT=$?
-
-    if [ "$EXIT" == 0 ];then
-        if [ ! -z "$COMMAND" ];then
             run_command "$COMMAND"
             exit 0
-        else
-            exit 7
-        fi
-    elif [ "$EXIT" == 2 ];then
-        ./Recognition/bin/result Error "'$speech'" "is not a recognized command" ""
+        elif [ "$EXIT" == 2 ];then
+            ./Recognition/bin/result Error "'$speech'" "is not a recognized command" ""
 
-    else 
-        echo "There is an error in ${mode}.dic"
-        ./Recognition/bin/result Error "There was an error while reading main.dic" \
-	    "$COMMAND" ""
+        else 
+            echo "There is an error in ${mode}.dic"
+            ./Recognition/bin/result Error "There was an error while reading $mode" \
+	        "$COMMAND" ""
+        fi
     fi
 else
-
-    COMMAND=$(./Recognition/dictionary "$speech" "$USER_DIR/modes/$mode.dic")
-
+    COMMAND=$(./Recognition/dictionary "$speech" "$USER_DIR/modes/$dicmode.dic")
+    
     EXIT=$?
-
     if [ "$EXIT" == 0 ];then
         run_command "$COMMAND"
         exit 0
@@ -167,6 +193,6 @@ else
     else 
         echo "There is an error in ${mode}.dic"
         ./Recognition/bin/result Error "There was an error while reading $mode" \
-	    "$COMMAND" ""
+        "$COMMAND" ""
     fi
 fi

@@ -46,18 +46,9 @@ youtube (LINE video)
 
 where is (LINE place)
   goto "https://maps.google.com/maps?q=$place$&hl=\$LANG"
-  
-open [google ]chrome
-  open "google-chrome"
-  
-open firefox
-  open "firefox"
 
-open <word,excel,openoffice,libreoffice,liber office>
-  open "libreoffice"
-
-open (WORD app)
-  open "$app$"
+<open,launch>[ application] (LINE app)
+  program "$app$"
 
 date
   date date
@@ -76,7 +67,7 @@ date
   UserInformation name
   
 <start,enter,begin> dictation mode
-    mode dictation
+  mode dictation
   
 (LINE word)
   wolf "$word$"
