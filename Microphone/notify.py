@@ -101,6 +101,7 @@ class PopUp:
         self.queue = []
         
         gobject.timeout_add_seconds(1, self.timer)
+        gobject.timeout_add_seconds(0.2, self.display_notify)
         gobject.timeout_add_seconds(30, self.message_system)
         while gtk.events_pending():
             gtk.main_iteration_do(True)
@@ -150,6 +151,18 @@ class PopUp:
         lispeak.writeSingleInfo("lastid",str(int(message['id'])))
         return True
         
+    def display_notify(self):
+         if os.path.exists("notification.lmf"):
+             print "Notification"
+             time.sleep(0.05)
+             with open("notification.lmf") as f:
+                 data = lispeak.parseData(f.read())
+                 self.queue.append(data)
+                 print data,"ADDED TO QUEUE"
+             os.remove("notification.lmf")
+         return True
+         
+ 
     def timer(self):
         try:
             if self.counting:
