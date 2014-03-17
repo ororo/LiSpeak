@@ -397,7 +397,7 @@ def downloadPackage(name,key="name",install=True):
     with open('/tmp/LiSpeak_FILES/tmp.tar.gz', "wb") as local_file:
         local_file.write(f.read())
     time.sleep(0.2)
-    installPlugin(/tmp/LiSpeak_FILES/tmp.tar.gz')
+    installPlugin('/tmp/LiSpeak_FILES/tmp.tar.gz')
     delete("/tmp/LiSpeak_FILES/tmp.tar.gz")
 def sudo(cmd):
     cmd.insert(0,"pkexec")
