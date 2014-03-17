@@ -53,15 +53,6 @@ apri [google ]<chrome, chromium>
 apri <mozilla[ firefox],firefox>
   open "firefox"
 
-apri [mozilla ]thunderbird
-  open "thunderbird"
-
-apri <word,excel,openoffice,libreoffice,liber office>
-  open "libreoffice"
-
-apri <gedit,g edit,[un ]editor[ <di testo,testuale>]>
-  open gedit
-
 apri (WORD app)
   open "$app$"
 

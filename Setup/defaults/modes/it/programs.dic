@@ -1,0 +1,115 @@
+###########################
+#   INTERNET BROWSERS
+###########################
+[<internet,web> ]browser
+  open xdg-open http://
+  
+[<apri,lancia> ][google ]<chome,chromium>
+  open chromium
+#we should support both chromium and google chrome...
+
+[<apri,lancia> ]<mozilla[ firefox],firefox>
+  open firefox
+  
+[<apri,lancia> ][mozilla ]thunderbird
+  open thunderbird
+
+###########################
+#   OFFICE PROGRAMS
+###########################
+[[<liber[ ],libre[ ],open[ ]>]office ]<writer,word>
+  open "/usr/lib/libreoffice/program/soffice.bin" --writer
+  
+[[<liber[ ],libre[ ],open[ ]>]office ]<impress,power[ ]point>
+  open "/usr/lib/libreoffice/program/soffice.bin" --impress
+  
+[[<liber[ ],libre[ ],open[ ]>]office ]database
+  open "/usr/lib/libreoffice/program/soffice.bin" --base
+  
+[[<liber[ ],libre[ ],open[ ]>]office ]<math,[math ]formula>
+  open "/usr/lib/libreoffice/program/soffice.bin" --math
+  
+[[<liber[ ],libre[ ],open[ ]>]office ]<excel,foglio di calcolo>
+  open "/usr/lib/libreoffice/program/soffice.bin" --calc
+  
+[[<liber[ ],libre[ ],open[ ]>]office ]draw
+  open "/usr/lib/libreoffice/program/soffice.bin" --draw
+  
+###########################
+#   AUDIO
+###########################
+audacity
+  open audacity
+  
+###########################
+#   GAMES
+###########################
+  
+suduko
+  open gnome-suduko
+  
+tee[ ]world[s]
+  open teeworld
+  
+<mine,campo minato>
+  open gnome-mines
+  
+###########################
+#   MISC
+###########################
+<editor[ di testo],edit,gedit,g edit>
+  open gnome-text-editor
+
+<[emulatore [di ]]terminale,riga di comando>
+  open gnome-terminal
+
+calcolatrice
+  open gnome-calculator
+  
+dischi
+  open gnome-disks
+
+###########################
+#   GNOME CONTROL CENTER
+###########################
+statistiche [della ]batteria
+  open gnome-power-statistics
+
+<impostazioni,pannello di controllo,control panel>
+  open gnome-control-center unity-appearance
+#This won't work in LinuxMint :(
+  
+[impostazioni [del ]]mouse
+  open gnome-control-center mouse
+  
+[impostazioni [<della,di> ]]rete
+  open gnome-control-center network
+  
+[impostazioni [degli ]]<accounts,utenti>
+  open gnome-control-center credentials
+  
+[impostazioni ]<schermo,luce,luminosità,contrasto>
+  open gnome-control-center screen
+  
+[impostazioni [della ]]<privacy,sicurezza,sicurezza e privacy,privacy e sicurezza>
+  open gnome-control-center activity-log-manager
+  
+[<impostazioni,layout> [della ]]tastiera
+  open gnome-control-center keyboard
+  
+[<impostazioni,apparecchi> [del ]]bluetooth
+  open gnome-control-center bluetooth
+  
+[impostazioni [della ]]batteria
+  open gnome-control-center power
+  
+[impostazioni ][risoluzione ]<[<del,dei> ]<monitor,display,schermo,schermi>,[della ]risoluzione>
+  open gnome-control-center display
+  
+[impostazioni ]<[del ]suono,[delle ]casse,[dell']altoparlante,[degli ]altoparlanti>
+  open gnome-control-center sound-nua
+  
+  
+[<apri,lancia> ](LINE word)
+  open "$word$"
+
