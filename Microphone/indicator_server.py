@@ -59,6 +59,11 @@ class indicator:
         self.p_item.connect("activate", self.install)
         self.p_item.show()
         self.menu.append(self.p_item)
+        
+        self.p_item = gtk.MenuItem("Plugin Browser")
+        self.p_item.connect("activate", self.openBrowser)
+        self.p_item.show()
+        self.menu.append(self.p_item)
 
         self.r_item = gtk.MenuItem("Restart Servers")
         self.r_item.connect("activate", self.restart)
@@ -90,6 +95,10 @@ class indicator:
         print "Installing: "+p
         lispeak.downloadPackage(p)
         lispeak.dialogInfo("Plugin Installed",'LiSpeak')
+        
+    def openBrowser(self,widget):
+        os.system(PWD + "/../Recognition/bin/open "+PWD+"/browser.py")
+        print "Opened"
         
     def callback(self):
         global last_signal

@@ -392,8 +392,8 @@ def copyLibraries():
     libraries = os.listdir(installDir+"/Setup/libraries")
     for l in libraries:
         copy(installDir+"/Setup/libraries/"+l,[installDir+"/"+l,installDir+"/Recognition/bin/"+l])
-def downloadPackage(name,install=True):
-    f = urllib2.urlopen("http://lispeak.bmandesigns.com/functions.php?f=download&t=name&s="+name)
+def downloadPackage(name,key="name",install=True):
+    f = urllib2.urlopen("http://lispeak.bmandesigns.com/functions.php?f=download&t="+key+"&s="+str(name))
     with open(installDir+'/tmp.tar.gz', "wb") as local_file:
         local_file.write(f.read())
     time.sleep(0.2)
@@ -700,7 +700,6 @@ def writeInfo(new,plugin="UserInfo",upper=True,t=True):
 def autostart(state):
     if state:
         touch(home+"/.config/autostart/lispeak.desktop")
-        #copy(installDir+"/Setup/defaults/autostart",home+"/.config/autostart")
         with open(home+"/.config/autostart/lispeak.desktop","w") as f:
             f.write("""
 [Desktop Entry]\n
