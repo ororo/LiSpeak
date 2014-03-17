@@ -125,19 +125,15 @@ class PopUp:
         if self.counting:
             self.counting = False   
             self.window.set_opacity(1.0)
-            self.message.set_visible(True)
         else:
             self.counting = True
             self.window.set_opacity(0.9)
-            self.message.set_visible(not self.message_hide)
         
     def message_system(self):
-        print "Checking for Message"
         f = urllib2.urlopen("http://lispeak.bmandesigns.com/functions.php?f=messageUpdate")
         text = f.read()
         message = json.loads(text.replace('\r', '\\r').replace('\n', '\\n'),strict=False)
         lastId = lispeak.getSingleInfo("lastid")
-        print "Checking done." #debug 14 seconds !?!
         if lastId == "":
             lastId = message['id']
         try:
@@ -166,7 +162,6 @@ class PopUp:
                                 gtk.main_iteration_do(True)
                             self.window.show_all()
                             self.window.move(100,150)
-                            self.message.set_visible(not self.message_hide)
                             self.icon.set_visible(not self.image_hide)
                     self.speak(self.speech)
                 if self.counter == 5:
@@ -184,10 +179,7 @@ class PopUp:
                 data = self.queue[0]
                 try:
                     self.message.set_text("")
-                    self.message_hide = True
-                    self.message.set_text(data['message'].replace("\\n","\n"))
-                    if data['message'].count("\\n") < 3 and data['message'].count("\n") < 3:
-                        self.message_hide = False
+Z                    self.message.set_text(data['message'].replace("\\n","\n"))
                 except:
                     pass
                 self.title.set_text(data['title'])

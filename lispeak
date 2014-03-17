@@ -307,6 +307,7 @@ def yn(text = "Continue?",exit=False):
     else:
         return True
 def speak(words):
+    createDirectory("/tmp/LiSpeak_TTS")
     print "Speaking:",words
     if type(words) == list:
         for w in words:
@@ -393,6 +394,7 @@ def copyLibraries():
     for l in libraries:
         copy(installDir+"/Setup/libraries/"+l,[installDir+"/"+l,installDir+"/Recognition/bin/"+l])
 def downloadPackage(name,key="name",install=True):
+    createDirectory("/tmp/LiSpeak_FILES")
     f = urllib2.urlopen("http://lispeak.bmandesigns.com/functions.php?f=download&t="+key+"&s="+str(name))
     with open('/tmp/LiSpeak_FILES/tmp.tar.gz', "wb") as local_file:
         local_file.write(f.read())
