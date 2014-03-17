@@ -336,12 +336,12 @@ def speak(words):
         if engine == "espeak":
             os.system("espeak -a 200 \""+words+"\"")
         elif engine == "Google TTS":
-            os.system("wget -q -U Mozilla -O audio.mp3 \"http://translate.google.com/translate_tts?ie=UTF-8&tl="+getSingleInfo("LANG")+"&q="+words+"\"")
-            os.system("mpg123 audio.mp3 &> /dev/null")
+            os.system("wget -q -U Mozilla -O /tmp/LiSpeak_TTS/audio.mp3 \"http://translate.google.com/translate_tts?ie=UTF-8&tl="+getSingleInfo("LANG")+"&q="+words+"\"")
+            os.system("mpg123 /tmp/LiSpeak_TTS/audio.mp3 &> /dev/null")
         elif engine == "pico2wave":
             checkDepends(["libttspico0","libttspico-utils","libttspico-data"])
-            os.system("pico2wave --wave=audio.wav \""+words+"\"")
-            os.system("aplay audio.wav &> /dev/null")
+            os.system("pico2wave --wave=/tmp/LiSpeak_TTS/audio.wav \""+words+"\"")
+            os.system("aplay /tmp/LiSpeak_TTS/audio.wav &> /dev/null")
         time.sleep(4)
         for e in range(40000,65535,400):
             for text in locs:
@@ -394,11 +394,11 @@ def copyLibraries():
         copy(installDir+"/Setup/libraries/"+l,[installDir+"/"+l,installDir+"/Recognition/bin/"+l])
 def downloadPackage(name,key="name",install=True):
     f = urllib2.urlopen("http://lispeak.bmandesigns.com/functions.php?f=download&t="+key+"&s="+str(name))
-    with open(installDir+'/tmp.tar.gz', "wb") as local_file:
+    with open('/tmp/LiSpeak_FILES/tmp.tar.gz', "wb") as local_file:
         local_file.write(f.read())
     time.sleep(0.2)
-    installPlugin(installDir+'/tmp.tar.gz')
-    delete(installDir+"/tmp.tar.gz")
+    installPlugin(/tmp/LiSpeak_FILES/tmp.tar.gz')
+    delete("/tmp/LiSpeak_FILES/tmp.tar.gz")
 def sudo(cmd):
     cmd.insert(0,"pkexec")
     try:
