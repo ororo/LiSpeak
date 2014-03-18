@@ -2,11 +2,14 @@
 # -*- coding: utf-8 -*- 
 VERSION = 1.1
 
-import subprocess,sys,platform,tarfile,os,argparse,shutil,urllib2,time,json,socket,zipfile,serial,dbus
+import subprocess,sys,platform,tarfile,os,argparse,shutil,urllib2,time,json,socket,zipfile,serial,dbus,getpass
 
 import sqlite3 as sql
 
 import commands
+
+FILEFOLDER="/tmp/lispeak_" + getpass.getuser()
+os.system("mkdir -p " + FILEFOLDER)
 
 try:
     from dbus.mainloop.glib import DBusGMainLoop
@@ -155,9 +158,9 @@ class InstallGUI:
             depends = ["sox","libpython2.7-stdlib","wget","espeak","xautomation","xvkbd","python-appindicator","xdotool","mpg123"]
             self.needs = []
             try:
-                resp = commands.getstatusoutput("dpkg --get-selections | grep -v deinstall > packages")[1]
+                resp = commands.getstatusoutput("dpkg --get-selections | grep -v deinstall > " + FILEFOLDER + "/packages")[1]
                 installed = []
-                with open("packages") as pack:
+                with open(FILEFOLDER + "/packages") as pack:
                     for l in pack:
                         if ":" in l:
                             l = l.split(":")[0]
@@ -263,9 +266,9 @@ def set_combo_active_text(combo, text):
 def checkDepends(depends):
     needs = []
     try:
-        resp = commands.getstatusoutput("dpkg --get-selections | grep -v deinstall > packages")[1]
+        resp = commands.getstatusoutput("dpkg --get-selections | grep -v deinstall > " + FILEFOLDER + "/packages")[1]
         installed = []
-        with open("packages") as pack:
+        with open(FILEFOLDER + "/packages") as pack:
             for l in pack:
                 if ":" in l:
                     l = l.split(":")[0]
@@ -282,9 +285,9 @@ def checkDepends(depends):
     except:
         debug("Error Checking For Dependencies")
     try:
-        delete("packages")
+        delete(FILEFOLDER + "/packages")
     except:
-        debug("Could not delete \"packages\"")
+        debug("Could not delete \"" + FILEFOLDER + "/packages\"")
     
 
 def displayInstaller(userinfo= None):
@@ -366,7 +369,7 @@ def setup():
     ])
     gui = displayInstaller()
     if gui.status == "good":
-        os.system("nohup Recognition/bin/goto 'http://lispeak.bmandesigns.com/thanks' \"nohup.out\" &")
+        os.system("nohup Recognition/bin/goto 'http://lispeak.bmandesigns.com/thanks' > \"" + FILEFOLDER + "/nohup.out\" 2>&1 ")
         os.system("./start")
         writeSingleInfo("ROOTDIR",installDir,"UserInfo",False,False)
         lang = getInfo()['LANG']
@@ -378,7 +381,7 @@ def setup():
 def askInfo():
     gui = displayInstaller(getInfo())
     if gui.status == "good":
-        os.system("nohup Recognition/bin/goto 'http://lispeak.bmandesigns.com/thanks' \"nohup.out\" &")
+        os.system("nohup Recognition/bin/goto 'http://lispeak.bmandesigns.com/thanks' > \"" + FILEFOLDER + "/nohup.out\" 2>&1 ")
         os.system("./start")
         writeSingleInfo("ROOTDIR",installDir,"UserInfo",False,False)
         lang = getInfo()['LANG']
