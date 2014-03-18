@@ -1064,11 +1064,11 @@ if __name__ == "__main__":
 else:
     installDir = getInfo()['ROOTDIR']    
 try:
-    import goslate
+    from goslate import goslate
     gt = goslate.Goslate()
 except:
     copyLibraries()
-    import goslate
+    from goslate import goslate
     gt = goslate.Goslate()
 
 if __name__ == "__main__": 

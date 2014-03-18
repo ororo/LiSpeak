@@ -6,7 +6,8 @@ import math
 
 import cairo
 
-import urllib2,sys,time,os,lispeak,json,dbus,dbus.service
+import urllib2,sys,time,os,json,dbus,dbus.service
+from lispeak import lispeak
 from HTMLParser import HTMLParser
 
 from gi.repository import Gtk

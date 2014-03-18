@@ -20,18 +20,6 @@
 cd ${0%/*}
 
 USER_DIR=$HOME/.lispeak
-rm $HOME/.lispeak/bin/lispeak.py
-rm $HOME/.lispeak/services/lispeak.py
-
-cp "./lispeak" "$HOME/.lispeak/bin/lispeak.py"
-cp "./lispeak" "$HOME/.lispeak/services/lispeak.py"
-cp "./lispeak" "./Recognition/bin/lispeak.py"
-cp "./lispeak" "./Microphone/lispeak.py"
-
-cp "./Setup/libraries/goslate.py" "$HOME/.lispeak/bin/"
-cp "./Setup/libraries/goslate.py" "$HOME/.lispeak/services/"
-cp "./Setup/libraries/goslate.py" "./Microphone/"
-cp "./Setup/libraries/goslate.py" "./Recognition/bin/"
 
 while read line           
 do

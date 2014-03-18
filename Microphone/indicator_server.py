@@ -4,7 +4,8 @@
 # Applet in system tray
 #
 
-import gtk,gobject,os,appindicator,subprocess,lispeak,dbus
+import gtk,gobject,os,appindicator,subprocess,dbus
+from lispeak import lispeak
 
 try:
     os.chdir("Microphone")
