@@ -380,7 +380,7 @@ def setup():
         output("Installation failed.")
 def askInfo():
     gui = displayInstaller(getInfo())
-    if gui.status == "good":
+    if gui.status == "saved":
         os.system("nohup Recognition/bin/goto 'http://lispeak.bmandesigns.com/thanks' > \"" + FILEFOLDER + "/nohup.out\" 2>&1 ")
         os.system("./start")
         writeSingleInfo("ROOTDIR",installDir,"UserInfo",False,False)
