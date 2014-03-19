@@ -15,6 +15,8 @@ from gi.repository import GdkPixbuf as pixbuf
 from gi.repository import Gtk as gtk
 from gi.repository import GObject as gobject
 
+FILEFOLDER="/tmp/lispeak_" + getpass.getuser()
+
 #ar = lispeak.getSingleInfo("ARDUINO")
 #if ar == "":
 #    ar = '/dev/ttyACM1'
@@ -152,14 +154,14 @@ class PopUp:
         return True
         
     def display_notify(self):
-         if os.path.exists("notification.lmf"):
+         if os.path.exists(FILEFOLDER + "/notification.lmf"):
              print "Notification"
              time.sleep(0.05)
-             with open("notification.lmf") as f:
+             with open(FILEFOLDER + "/notification.lmf") as f:
                  data = lispeak.parseData(f.read())
                  self.queue.append(data)
                  print data,"ADDED TO QUEUE"
-             os.remove("notification.lmf")
+             os.remove(FILEFOLDER + "/notification.lmf")
          return True
          
  
