@@ -1,0 +1,109 @@
+###########################
+#   INTERNET BROWSERS
+###########################
+[<internet,web> ]browser
+  open xdg-open http://
+  
+[google ]chome
+  open google-chrome
+  
+[mozilla ]fire[ ]fox
+  open firefox
+  
+###########################
+#   OFFICE PROGRAMS
+###########################
+[[libre][ ][office] ]<writer,word>
+  open "/usr/lib/libreoffice/program/soffice.bin" --writer
+  
+[[libre][ ][office] ]<impress,power[ ]point>
+  open "/usr/lib/libreoffice/program/soffice.bin" --impress
+  
+[[libre][ ][office] ][data]base
+  open "/usr/lib/libreoffice/program/soffice.bin" --base
+  
+[[libre][ ][office] ][math ]formula
+  open "/usr/lib/libreoffice/program/soffice.bin" --math
+  
+[[libre][ ][office] ]<spread[ ]sheet,excel,calc>
+  open "/usr/lib/libreoffice/program/soffice.bin" --calc
+  
+[[libre][ ][office] ]draw[ing]
+  open "/usr/lib/libreoffice/program/soffice.bin" --draw
+  
+###########################
+#   AUDIO
+###########################
+audacity
+  open audacity
+  
+###########################
+#   GAMES
+###########################
+  
+suduko
+  open gnome-suduko
+  
+tee[ ]world[s]
+  open teeworld
+  
+<mines,mine[ sweeper]>
+  open gnome-mines
+  
+###########################
+#   MISC
+###########################
+[<text,file> ]editor
+  open gnome-text-editor
+
+<terminal,command line[ interface]>
+  open gnome-terminal
+
+calculator
+  open gnome-calculator
+  
+disks
+  open gnome-disks
+
+###########################
+#   GNOME CONTROL CENTER
+###########################
+power stat<istics,s>
+  open gnome-power-statistics
+
+appearance[ settings]
+  open gnome-control-center unity-appearance
+  
+mouse[ settings]
+  open gnome-control-center mouse
+  
+network[ settings]
+  open gnome-control-center network
+  
+online accounts[ settings]
+  open gnome-control-center credentials
+  
+<screen,brightness,lock,brightness and lock>[ settings]
+  open gnome-control-center screen
+  
+<privacy,security,security and privacy,privacy and security>[ settings]
+  open gnome-control-center activity-log-manager
+  
+keyboard[s][ settings]
+  open gnome-control-center keyboard
+  
+bluetooth[ <settings,devices>]
+  open gnome-control-center bluetooth
+  
+power[ settings]
+  open gnome-control-center power
+  
+<display[s],monitor[s],resolution>[ settings]
+  open gnome-control-center display
+  
+<sound,speaker[s]>[ settings]
+  open gnome-control-center sound-nua
+  
+  
+(LINE word)
+  open "$word$"

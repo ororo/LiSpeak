@@ -28,4 +28,3 @@ wget -qO- --post-file "$1" --header 'Content-type: audio/x-flac; rate=16000' "$U
 RESULT=$(grep "utterance" $FILE|head -n 1|sed 's/^[^[]*\[{\"utterance\":\"\([^\"]*\)\".*/\1/')
 
 echo $RESULT
-
