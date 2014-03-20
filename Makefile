@@ -33,15 +33,15 @@ install: all
 	#Language-spec
 	mkdir -p $(DESTDIR)/usr/share/gtksourceview-3.0/language-specs
 	cp Setup/lidic.lang $(DESTDIR)/usr/share/gtksourceview-3.0/language-specs
-	#pyshared. We don't need to copy lispeak and gooslate in every subfolder any more!
+	#pyshared.
 	mkdir -p $(DESTDIR)/usr/share/pyshared/lispeak
-	cp lispeak $(DESTDIR)/usr/share/pyshared/lispeak/lispeak.py
+	cp lispeak $(DESTDIR)/usr/share/pyshared/lispeak/__init__.py
 	mkdir -p $(DESTDIR)/usr/share/pyshared/goslate
-	cp Setup/libraries/goslate.py $(DESTDIR)/usr/share/pyshared/goslate/goslate.py
+	cp Setup/libraries/goslate.py $(DESTDIR)/usr/share/pyshared/goslate/__init__.py
 	#launch icon
 	mkdir -p $(DESTDIR)/usr/share/applications/
 	cp lispeak.desktop $(DESTDIR)/usr/share/applications/
-
+        
 uninstall:
 	rm -rf $(DESTDIR)$(LISPEAKDIR)
 	rm -rf $(DESTDIR)/usr/share/pyshared/lispeak

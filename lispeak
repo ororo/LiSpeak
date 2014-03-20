@@ -2,11 +2,14 @@
 # -*- coding: utf-8 -*- 
 VERSION = 1.1
 
-import subprocess,sys,platform,tarfile,os,argparse,shutil,urllib2,time,json,socket,zipfile,serial,dbus
+import subprocess,sys,platform,tarfile,os,argparse,shutil,urllib2,time,json,socket,zipfile,serial,dbus,getpass
 
 import sqlite3 as sql
 
 import commands
+
+FILEFOLDER="/tmp/lispeak_" + getpass.getuser()
+os.system("mkdir -p " + FILEFOLDER)
 
 try:
     from dbus.mainloop.glib import DBusGMainLoop
@@ -341,15 +344,33 @@ def setup():
     call("./stop")
     installDir = os.path.dirname(os.path.realpath(__file__))
     displayOSWarning()
-    delete([installDir+"/Recognition/modes/main.dic",installDir+"/Recognition/bin/",root,installDir+"/Recognition/dictionary.c"])
+    #debian branch bengin
+    #delete([installDir+"/Recognition/modes/main.dic",installDir+"/Recognition/bin/",root,installDir+"/Recognition/dictionary.c"])
+    #createDirectory([root, root+"/modes", root+"/bin", root+"/services"])
+    #touch(installDir+"/Recognition/dictionary.c")
+    #cd("Recognition")
+    #call("make")
+    #cd(installDir)
+    #touch([home+"/.lispeak/UserInfo",root+"/plugins.db",root+"/plugins.dic",installDir+"/Recognition/modes/main.dic",root+"/MODE"])
+    #copy([
+    #    [installDir+"/Setup/defaults/bin/",      installDir+"/Recognition/bin/"],
+    #    [installDir+"/Setup/languages/", root+"/configs/"]
+    #])
+    #gui = displayInstaller()
+    #if gui.status == "good":
+    #    os.system("nohup Recognition/bin/goto 'http://lispeak.bmandesigns.com/thanks' \"nohup.out\" &")
+    #    os.system("./start")
+    #    writeSingleInfo("ROOTDIR",installDir,"UserInfo",False,False)
+    #    lang = getInfo()['LANG']
+    #    copy(installDir+"/Setup/defaults/modes/"+lang+"/", root+"/modes/")
+    #    if os.path.exists("/usr/share/gtksourceview-3.0/language-specs/"):
+    #        sudo(["cp",installDir+"/Setup/lidic.lang","/usr/share/gtksourceview-3.0/language-specs/"])
+    #else:
+    #    output("Installation failed.")
+    delete(root)
     createDirectory([root, root+"/modes", root+"/bin", root+"/services"])
-    touch(installDir+"/Recognition/dictionary.c")
-    cd("Recognition")
-    call("make")
-    cd(installDir)
-    touch([home+"/.lispeak/UserInfo",root+"/plugins.db",root+"/plugins.dic",installDir+"/Recognition/modes/main.dic",root+"/MODE"])
+    touch([home+"/.lispeak/UserInfo",root+"/plugins.db",root+"/plugins.dic",root+"/MODE"])
     copy([
-        [installDir+"/Setup/defaults/bin/",      installDir+"/Recognition/bin/"],
         [installDir+"/Setup/languages/", root+"/configs/"]
     ])
     gui = displayInstaller()
@@ -359,10 +380,9 @@ def setup():
         writeSingleInfo("ROOTDIR",installDir,"UserInfo",False,False)
         lang = getInfo()['LANG']
         copy(installDir+"/Setup/defaults/modes/"+lang+"/", root+"/modes/")
-        if os.path.exists("/usr/share/gtksourceview-3.0/language-specs/"):
-            sudo(["cp",installDir+"/Setup/lidic.lang","/usr/share/gtksourceview-3.0/language-specs/"])
     else:
         output("Installation failed.")
+    #debian branch end
 def askInfo():
     gui = displayInstaller(getInfo())
     if gui.status == "good":
@@ -376,18 +396,21 @@ def askInfo():
 def loadLanguage(lang="en"):
     languages[lang.lower()] = getInfo("Language-"+lang.lower())
 def copyLibraries():
-    if not os.path.exists(installDir+"/Recognition/bin"):
-        createDirectory(installDir+"/Recognition/bin")
-    libraries = os.listdir(installDir+"/Setup/libraries")
-    for l in libraries:
-        copy(installDir+"/Setup/libraries/"+l,[installDir+"/"+l,installDir+"/Recognition/bin/"+l])
+    #debian branch begin
+    #if not os.path.exists(installDir+"/Recognition/bin"):
+    #    createDirectory(installDir+"/Recognition/bin")
+    #libraries = os.listdir(installDir+"/Setup/libraries")
+    #for l in libraries:
+    #    copy(installDir+"/Setup/libraries/"+l,[installDir+"/"+l,installDir+"/Recognition/bin/"+l])
+    pass
+    #debian branch ends
 def downloadPackage(name,install=True):
     f = urllib2.urlopen("http://lispeak.bmandesigns.com/functions.php?f=download&t=name&s="+name)
-    with open(installDir+'/tmp.tar.gz', "wb") as local_file:
+    with open(FILEFOLDER+'/tmp.tar.gz', "wb") as local_file:
         local_file.write(f.read())
     time.sleep(0.2)
-    installPlugin(installDir+'/tmp.tar.gz')
-    delete(installDir+"/tmp.tar.gz")
+    installPlugin(FILEFOLDER+'/tmp.tar.gz')
+    delete(FILEFOLDER+"/tmp.tar.gz")
 def sudo(cmd):
     cmd.insert(0,"pkexec")
     try:
@@ -1064,11 +1087,11 @@ if __name__ == "__main__":
 else:
     installDir = getInfo()['ROOTDIR']    
 try:
-    from goslate import goslate
+    import goslate
     gt = goslate.Goslate()
 except:
     copyLibraries()
-    from goslate import goslate
+    import goslate
     gt = goslate.Goslate()
 
 if __name__ == "__main__": 

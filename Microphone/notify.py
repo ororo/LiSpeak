@@ -6,8 +6,7 @@ import math
 
 import cairo
 
-import urllib2,sys,time,os,json,dbus,dbus.service
-from lispeak import lispeak
+import urllib2,sys,time,os,lispeak,json,dbus,dbus.service
 from HTMLParser import HTMLParser
 
 from gi.repository import Gtk
@@ -15,6 +14,8 @@ from gi.repository import Gdk as gdk
 from gi.repository import GdkPixbuf as pixbuf
 from gi.repository import Gtk as gtk
 from gi.repository import GObject as gobject
+
+FILEFOLDER="/tmp/lispeak_" + getpass.getuser()
 
 #ar = lispeak.getSingleInfo("ARDUINO")
 #if ar == "":
@@ -37,19 +38,23 @@ except ImportError:
 DBusGMainLoop(set_as_default=True)
 
 class MyDBUSService(dbus.service.Object):
-    """ This is a service that waits for somebody call receive_data(data) """
+    """ This is a service that waits for somebody call create_notification(data) """
     def __init__(self):
         global gbus
         bus_name = dbus.service.BusName('com.bmandesigns.lispeak.notify', bus=dbus.SessionBus())
         dbus.service.Object.__init__(self, bus_name, '/com/bmandesigns/lispeak/notify')
 
     @dbus.service.method('com.bmandesigns.lispeak.notify')
-    def receive_data(self, data):
+    def create_notification(self, data):
         try:
             popup.queue.append(data)
             print data,"ADDED TO QUEUE"
         except:
             pass
+            
+    @dbus.service.method('com.bmandesigns.lispeak.notify')
+    def new_command(self, speech, command):
+        self.CommandRecognized(speech, command)
 
     @dbus.service.method('com.bmandesigns.lispeak.notify')
     def Quit(self):
@@ -57,6 +62,11 @@ class MyDBUSService(dbus.service.Object):
         self.remove_from_connection()
         Gtk.main_quit()
         return
+        
+    @dbus.service.signal('com.bmandesigns.lispeak.notify')
+    def CommandRecognized(self, speech, command):
+        return str(speech),str(command)
+
         
 MyDBUSService()
 
@@ -93,6 +103,7 @@ class PopUp:
         self.queue = []
         
         gobject.timeout_add_seconds(1, self.timer)
+        gobject.timeout_add_seconds(0.2, self.display_notify)
         gobject.timeout_add_seconds(30, self.message_system)
         while gtk.events_pending():
             gtk.main_iteration_do(True)
@@ -117,19 +128,15 @@ class PopUp:
         if self.counting:
             self.counting = False   
             self.window.set_opacity(1.0)
-            self.message.set_visible(True)
         else:
             self.counting = True
             self.window.set_opacity(0.9)
-            self.message.set_visible(not self.message_hide)
         
     def message_system(self):
-        print "Checking for Message"
         f = urllib2.urlopen("http://lispeak.bmandesigns.com/functions.php?f=messageUpdate")
         text = f.read()
         message = json.loads(text.replace('\r', '\\r').replace('\n', '\\n'),strict=False)
         lastId = lispeak.getSingleInfo("lastid")
-        print "Checking done." #debug 14 seconds !?!
         if lastId == "":
             lastId = message['id']
         try:
@@ -146,6 +153,18 @@ class PopUp:
         lispeak.writeSingleInfo("lastid",str(int(message['id'])))
         return True
         
+    def display_notify(self):
+         if os.path.exists(FILEFOLDER + "/notification.lmf"):
+             print "Notification"
+             time.sleep(0.05)
+             with open(FILEFOLDER + "/notification.lmf") as f:
+                 data = lispeak.parseData(f.read())
+                 self.queue.append(data)
+                 print data,"ADDED TO QUEUE"
+             os.remove(FILEFOLDER + "/notification.lmf")
+         return True
+         
+ 
     def timer(self):
         try:
             if self.counting:
@@ -158,7 +177,6 @@ class PopUp:
                                 gtk.main_iteration_do(True)
                             self.window.show_all()
                             self.window.move(100,150)
-                            self.message.set_visible(not self.message_hide)
                             self.icon.set_visible(not self.image_hide)
                     self.speak(self.speech)
                 if self.counter == 5:
@@ -176,10 +194,7 @@ class PopUp:
                 data = self.queue[0]
                 try:
                     self.message.set_text("")
-                    self.message_hide = True
-                    self.message.set_text(data['message'].replace("\\n","\n"))
-                    if data['message'].count("\\n") < 3 and data['message'].count("\n") < 3:
-                        self.message_hide = False
+Z                    self.message.set_text(data['message'].replace("\\n","\n"))
                 except:
                     pass
                 self.title.set_text(data['title'])

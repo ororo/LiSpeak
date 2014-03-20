@@ -4,8 +4,7 @@
 # Applet in system tray
 #
 
-import gtk,gobject,os,appindicator,subprocess,dbus
-from lispeak import lispeak
+import gtk,gobject,os,appindicator,subprocess,lispeak,dbus
 
 try:
     os.chdir("Microphone")
@@ -41,7 +40,6 @@ def msg_handler(*args,**keywords):
 
 bus.add_signal_receiver(handler_function=msg_handler, dbus_interface='com.bmandesigns.lispeak', signal_name='AppStatus', interface_keyword='iface',  member_keyword='member', path_keyword='path')
 
-
 class indicator:
     def __init__(self):
         
@@ -59,6 +57,11 @@ class indicator:
 
         self.p_item = gtk.MenuItem("Install a Plugin")
         self.p_item.connect("activate", self.install)
+        self.p_item.show()
+        self.menu.append(self.p_item)
+        
+        self.p_item = gtk.MenuItem("Plugin Browser")
+        self.p_item.connect("activate", self.openBrowser)
         self.p_item.show()
         self.menu.append(self.p_item)
 
@@ -92,6 +95,10 @@ class indicator:
         print "Installing: "+p
         lispeak.downloadPackage(p)
         lispeak.dialogInfo("Plugin Installed",'LiSpeak')
+        
+    def openBrowser(self,widget):
+        os.system(PWD + "/../Recognition/bin/open "+PWD+"/browser.py")
+        print "Opened"
         
     def callback(self):
         global last_signal
