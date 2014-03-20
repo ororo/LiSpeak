@@ -22,13 +22,19 @@ How to Install
 ======
 1. Download and extract LiSpeak (we recommend your home folder)
 
-2. Run ./lispeak --setup          (you can use --debug to see whats happening "behind the scenes")
+2. Run
+     make && sudo make install
+   to install
 
-3. Configure a keyboard shortcut for ./hotkey - We recommend setting the hotkey command to something like "bash /home/USER/LiSpeak/hotkey" as this seems to work best. "bash" folled by the complete path.
+3. Run 
+     cd /opt/lispeak && ./lispeak --setup
+   to configure (you can use --debug to see whats happening "behind the scenes")
+
+4. Configure a keyboard shortcut for ./hotkey - We recommend setting the hotkey command to something like "bash /home/USER/LiSpeak/hotkey" as this seems to work best. "bash" folled by the complete path.
 
 NOTE: Ubuntu 13.10 users will need to log out and back in after setting a shortcut. 
 
-4. That's it!
+5. That's it!
 
 Language Support
 ======
