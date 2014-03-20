@@ -23,11 +23,15 @@ How to Install
 1. Download and extract LiSpeak (we recommend your home folder)
 
 2. Run
-     make && sudo make install
+
+    make && sudo make install
+
    to install
 
 3. Run 
-     cd /opt/lispeak && ./lispeak --setup
+
+    cd /opt/lispeak && ./lispeak --setup
+
    to configure (you can use --debug to see whats happening "behind the scenes")
 
 4. Configure a keyboard shortcut for ./hotkey - We recommend setting the hotkey command to something like "bash /home/USER/LiSpeak/hotkey" as this seems to work best. "bash" folled by the complete path.
