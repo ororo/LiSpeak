@@ -41,6 +41,10 @@ install: all
 	#launch icon
 	mkdir -p $(DESTDIR)/usr/share/applications/
 	cp lispeak.desktop $(DESTDIR)/usr/share/applications/
+	#links!?!
+	ln -s $(LISPEAKDIR)/lispeak $(DESTDIR)/usr/bin/lispeak
+	ln -s $(LISPEAKDIR)/start $(DESTDIR)/usr/bin/lispeak-start
+	ln -s $(LISPEAKDIR)/stop $(DESTDIR)/usr/bin/lispeak-stop
         
 uninstall:
 	rm -rf $(DESTDIR)$(LISPEAKDIR)
@@ -48,5 +52,6 @@ uninstall:
 	rm -rf $(DESTDIR)/usr/share/pyshared/goslate
 	rm -f $(DESTDIR)/usr/share/gtksourceview-3.0/language-specs/lidic.lang
 	rm -f $(DESTDIR)/usr/share/applications/lispeak.desktop
+	rm -f $(DESTDIR)/usr/bin/lispeak*
 	
 
