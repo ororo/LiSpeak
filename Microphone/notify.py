@@ -1,12 +1,7 @@
 #!/usr/bin/env python
 
 # -*- coding: utf-8 -*-
-
-import math
-
-import cairo
-
-import urllib2,sys,time,os,lispeak,json,dbus,dbus.service
+import urllib2,sys,time,os,lispeak,json,dbus,dbus.service,getpass
 from HTMLParser import HTMLParser
 
 from gi.repository import Gtk
