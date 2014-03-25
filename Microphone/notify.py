@@ -194,7 +194,7 @@ class PopUp:
                 data = self.queue[0]
                 try:
                     self.message.set_text("")
-Z                    self.message.set_text(data['message'].replace("\\n","\n"))
+                    self.message.set_text(data['message'].replace("\\n","\n"))
                 except:
                     pass
                 self.title.set_text(data['title'])

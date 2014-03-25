@@ -24,6 +24,34 @@ mkdir -p $FILEFOLDER
 PIDFILE=$FILEFOLDER/speech.pid
 FLACFILE=$FILEFOLDER/speech.flac
 
+shopt -s nullglob
+
+for f in $HOME/.lispeak/services/*.service
+do
+    echo $f
+    base=$(basename $f)
+	if ps auxww |grep -v grep |grep $base > /dev/null 2>&1;then
+        : # we are good, the server is there
+    else # otherwise start it
+        $f 2>/dev/null & 
+	echo $! > $FILEFOLDER/$base.pid
+    fi 
+done
+
+if ps auxww |grep -v grep |grep notify.py > /dev/null 2>&1;then
+    : # we are good, the server is there
+else # otherwise start it
+    ./Microphone/notify.py 2>/dev/null & 
+    echo $! > $FILEFOLDER/notify.pid
+fi  
+if ps auxww |grep -v grep |grep indicator_server.py > /dev/null 2>&1;then
+    : # we are good, the server is there
+else # otherwise start it
+    ./Microphone/indicator_server.py 2>/dev/null &
+    echo $! > $FILEFOLDER/indicator.pid
+    echo $!
+fi 
+
 if [ -e $PIDFILE ];then
     read PID_OF_SPEECH < $PIDFILE
     sleep .1 # This is so the end of the speech doesn't get cut off.
