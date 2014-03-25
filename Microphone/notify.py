@@ -1,12 +1,7 @@
 #!/usr/bin/env python
 
 # -*- coding: utf-8 -*-
-
-import math
-
-import cairo
-
-import urllib2,sys,time,os,lispeak,json,dbus,dbus.service
+import urllib2,sys,time,os,lispeak,json,dbus,dbus.service,getpass
 from HTMLParser import HTMLParser
 
 from gi.repository import Gtk
@@ -194,7 +189,7 @@ class PopUp:
                 data = self.queue[0]
                 try:
                     self.message.set_text("")
-Z                    self.message.set_text(data['message'].replace("\\n","\n"))
+                    self.message.set_text(data['message'].replace("\\n","\n"))
                 except:
                     pass
                 self.title.set_text(data['title'])
