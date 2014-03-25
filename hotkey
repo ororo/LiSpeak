@@ -17,7 +17,7 @@
 # Look for CONFIG file to see if it has SOUND or VISUAL set
 # And display accordingly
 
-cd "$(dirname "$0")"
+cd /opt/lispeak
 
 FILEFOLDER=/tmp/lispeak_$(id -un)
 mkdir -p $FILEFOLDER
