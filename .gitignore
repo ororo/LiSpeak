@@ -1,14 +1,9 @@
-speech.flac
-result.json
-tmp.sp
+*.flac
+*.mp3
 
-lispeak.py
-audio.mp3
-goslate.pyc
-
-/Recognition/bin/*
-/Recognition/dictionary
-/Recognition/modes/*
+/lispeak-1.0/Recognition/bin/*
+/lispeak-1.0/Recognition/dictionary
+/lispeak-1.0/Recognition/modes/*
 
 #Process IDs
 *.pid
