@@ -1,0 +1,15 @@
+Source: lispeak
+Section: java
+Priority: optional
+Maintainer: Name Surname, Luca Vercelli <ororo@email.it>
+Build-Depends: debhelper (>= 8)
+Standards-Version: 3.9.3
+Homepage: http://lispeak.bmandesigns.com
+
+Package: lispeak
+Architecture: any
+Depends: sox, libpython2.7-stdlib, wget, espeak, xautomation,
+ xvkbd, python-appindicator, xdotool, mpg123, ${misc:Depends}
+Description: LiSpeak - Linux Voice Command System
+ Some description here
+ 
