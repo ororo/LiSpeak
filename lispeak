@@ -725,7 +725,7 @@ def writeInfo(new,plugin="UserInfo",upper=True,t=True):
 def autostart(state):
     if state:
         os.system("mkdir -p " + home + "/.config/autostart")
-        copy("/ush/share/applications/lispeak.desktop", home+"/.config/autostart/lispeak.desktop")
+        copy("/usr/share/applications/lispeak.desktop", home+"/.config/autostart/lispeak.desktop")
     elif state == False:
         delete(home+"/.config/autostart/lispeak.desktop")
             
