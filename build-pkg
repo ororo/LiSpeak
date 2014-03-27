@@ -1,0 +1,19 @@
+#!/bin/bash
+PKG=lispeak
+VER=1.0
+
+#this would delete *.orig.*
+rm -f ${PKG}_${VER}.tar.gz
+rm -f ${PKG}_${VER}.dsc
+rm -f ${PKG}_${VER}_*.deb
+rm -f ${PKG}_${VER}_*.changes
+rm -f ${PKG}_${VER}_*.build
+rm -f ${PKG}_${VER}_*.upload
+
+cd ${PKG}-${VER}
+dpkg-buildpackage # -S
+
+cd ..
+#lintian ${PKG}_${VER}*.changes
+
+#dput ppa:ororo/ppa ${PKG}_${VER}*.changes
