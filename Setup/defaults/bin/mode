@@ -12,6 +12,6 @@ read mode < MODE
 echo "$1" > "$HOME/.lispeak/MODE"
 
 if [ "$1" != "$mode" ];then # we changed modes
-    ./Recognition/bin/result "Mode Changed" "You are now in '$1' mode."
+    ./Recognition/bin/result "Mode Changed" "You are now in '$1' mode." --translate
 fi
 
