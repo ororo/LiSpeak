@@ -69,5 +69,8 @@ date
 [start,enter,begin][ ]dictation mode
   mode dictation
   
+[start,enter,begin][ ]programs mode
+  mode programs
+  
 (LINE word)
   wolf "$word$"

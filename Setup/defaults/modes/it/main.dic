@@ -76,6 +76,9 @@ ora
 [<inizia,avvia,attiva> ]<[il ]modo,[la ]modalità> dettato
     mode dictation
   
+[<inizia,avvia,attiva> ]<[il ]modo,[la ]modalità> programmi
+    mode programs
+  
 (LINE word)
   wolf "$word$"
  

@@ -2,6 +2,9 @@
   mode main
 <fine[ del],stop,ferma[ il],esci da[l]> modo dettato
   mode main
+<inizia,avvia,ritorna> [al][la]<modo,modalità> principale  
+  mode main
+
 (LINE catch_all)
   type "$catch_all$\\r"
 
