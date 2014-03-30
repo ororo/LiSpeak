@@ -316,7 +316,10 @@ def speak(words):
         for w in words:
             speak(w)
     else:
-        words = str(words)
+        try:
+           words = words.encode("utf-8")
+        except:
+           words = str(words)
         engine = getSingleInfo("TTSENGINE")
         print "Lower Volume"
         p = subprocess.Popen(['pactl', 'list','sink-inputs'], stdout=subprocess.PIPE, stderr=subprocess.PIPE)

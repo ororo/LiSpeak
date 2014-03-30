@@ -60,8 +60,8 @@ class MyDBUSService(dbus.service.Object):
         
     @dbus.service.signal('com.bmandesigns.lispeak.notify')
     def CommandRecognized(self, speech, command):
-        return str(speech), str(command)
-        #ho to fix??? return speech.encode('utf-8'),command.encode('utf-8')
+        #return str(speech), str(command) #fails if there are non-ascii characters
+        return speech.encode('utf-8'),command.encode('utf-8')
 
         
 MyDBUSService()
