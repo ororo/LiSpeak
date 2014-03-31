@@ -69,41 +69,43 @@ disks
 #   GNOME CONTROL CENTER
 ###########################
 power stat<istics,s>
-  open gnome-power-statistics
+  controlpanel power-statistics
 
 appearance[ settings]
-  open gnome-control-center unity-appearance
+  controlpanel unity-appearance
   
 mouse[ settings]
-  open gnome-control-center mouse
+  controlpanel mouse
   
 network[ settings]
-  open gnome-control-center network
+  controlpanel network
   
 online accounts[ settings]
-  open gnome-control-center credentials
+  controlpanel credentials
   
 <screen,brightness,lock,brightness and lock>[ settings]
-  open gnome-control-center screen
+  controlpanel screen
   
 <privacy,security,security and privacy,privacy and security>[ settings]
-  open gnome-control-center activity-log-manager
+  controlpanel activity-log-manager
   
 keyboard[s][ settings]
-  open gnome-control-center keyboard
+  controlpanel keyboard
   
 bluetooth[ <settings,devices>]
-  open gnome-control-center bluetooth
+  controlpanel bluetooth
   
 power[ settings]
-  open gnome-control-center power
+  controlpanel power
   
 <display[s],monitor[s],resolution>[ settings]
-  open gnome-control-center display
+  controlpanel display
   
 <sound,speaker[s]>[ settings]
-  open gnome-control-center sound-nua
+  controlpanel sound-nua
   
-  
+#############################################
+
 (LINE word)
   open "$word$"
+

@@ -2,4 +2,7 @@
 
 import lispeak,sys
 
+if len(sys.argv) >= 3 and sys.argv[3] == "--translate":
+    sys.argv[1] = lispeak.translate(sys.argv[1])
+    sys.argv[2] = lispeak.translate(sys.argv[2])
 lispeak.displayNotification({'title':sys.argv[1],'message':sys.argv[2]})
