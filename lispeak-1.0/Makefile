@@ -35,6 +35,7 @@ install: all
 	mkdir -p $(DESTDIR)/usr/share/gtksourceview-3.0/language-specs
 	cp Setup/lidic.lang $(DESTDIR)/usr/share/gtksourceview-3.0/language-specs
 	#pyshared.
+	mkdir $(DESTDIR)/usr/share/pyshared
 	cp lispeak $(DESTDIR)/usr/share/pyshared/lispeak.py
 	cp Setup/libraries/goslate.py $(DESTDIR)/usr/share/pyshared/goslate.py
 	#launch icon
