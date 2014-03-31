@@ -49,7 +49,7 @@ do
 done <$USER_DIR/UserInfo
 
 # Try to run a command in ./Recognition/bin with useful errors.
-# This routine assumes $1 is not empty
+# This routine assumes $2 is not empty
 function run_command() {
     eval "./Recognition/recognized.py \"$1\" \"$2\""
     

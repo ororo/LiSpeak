@@ -1,5 +1,10 @@
 #!/usr/bin/env python
 
+#
+# Usage: recognized <speech> <command>
+# Alert the user what speech has been recognized and which command is going to be executed
+#
+
 import dbus,sys
 
 try:
