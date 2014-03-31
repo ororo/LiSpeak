@@ -4,14 +4,14 @@
 [<internet,web> ]browser
   open xdg-open http://
   
-[<apri,lancia> ][google ]<chome,chromium>
+[google ]<chome,chromium>
   open chromium
 #we should support both chromium and google chrome...
 
-[<apri,lancia> ]<mozilla[ firefox],firefox>
+<mozilla[ firefox],firefox>
   open firefox
   
-[<apri,lancia> ][mozilla ]thunderbird
+[mozilla ]thunderbird
   open thunderbird
 
 ###########################
@@ -108,13 +108,6 @@ statistiche [della ]batteria
   
 [impostazioni ]<[del ]suono,[delle ]casse,[dell']altoparlante,[degli ]altoparlanti>
   controlpanel sound-nua
-  
-<fine[ della],stop,ferma[ la],esci da[lla]> modalità programmi
-  mode main
-<fine[ del],stop,ferma[ il],esci da[l]> modo programmi
-  mode main
-<inizia,avvia,ritorna> [al][la]<modo,modalità> principale  
-  mode main
 
 [<apri,lancia> ](LINE word)
   open "$word$"

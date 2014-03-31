@@ -105,10 +105,6 @@ power[ settings]
   controlpanel sound-nua
   
 #############################################
-<exit,end,stop,leave> dictation mode
-  mode main
-[return ][ to]main mode
-  mode main
 
 (LINE word)
   open "$word$"
