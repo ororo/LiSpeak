@@ -32,6 +32,8 @@ install: all
 	cp Recognition/dictionary $(DESTDIR)$(LISPEAKDIR)/Recognition
 	cp -r Setup/defaults/bin $(DESTDIR)$(LISPEAKDIR)/Recognition
 	#Language-spec
+	mkdir -p $(DESTDIR)/usr/share/gtksourceview-2.0/language-specs
+	cp Setup/lidic.lang $(DESTDIR)/usr/share/gtksourceview-2.0/language-specs
 	mkdir -p $(DESTDIR)/usr/share/gtksourceview-3.0/language-specs
 	cp Setup/lidic.lang $(DESTDIR)/usr/share/gtksourceview-3.0/language-specs
 	#pyshared.
