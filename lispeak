@@ -211,7 +211,7 @@ class InstallGUI:
     def nextPage(self,widget=None):
         if self.notebook.get_current_page() == USER_INFO_PAGE:
             self.userinfo = {}
-            for e in ['first','last','email']:
+            for e in ['first','last','email','proxy']:
                 self.userinfo[e.upper()] = self.builder.get_object('ent'+e[0].upper()+e[1:]).get_text()
             self.userinfo["TTSENGINE"] = str(self.builder.get_object("cbtTTS").get_active_text())
             self.userinfo["TTS"] = str(self.builder.get_object("swEspeak").get_active())
@@ -241,7 +241,7 @@ class InstallGUI:
         self.processPage(new,False)
     
     def fillFields(self, userinfo):
-        for e in ['first','last','email']:
+        for e in ['first','last','email','proxy']:
             if e.upper() in userinfo:
                 self.builder.get_object('ent'+e[0].upper()+e[1:]).set_text(userinfo[e.upper()])
         if "LANG" in userinfo:

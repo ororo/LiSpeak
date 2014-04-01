@@ -6,7 +6,7 @@ import math
 
 import cairo
 
-import urllib2,sys,time,os,lispeak,json,dbus,dbus.service
+import urllib2,sys,time,getpass,os,lispeak,json,dbus,dbus.service
 from HTMLParser import HTMLParser
 
 from gi.repository import Gtk
@@ -38,7 +38,7 @@ except ImportError:
 DBusGMainLoop(set_as_default=True)
 
 class MyDBUSService(dbus.service.Object):
-    """ This is a service that waits for somebody call create_notification(data) """
+    """ This is a service that waits for somebody call fcreate_notification(data) """
     def __init__(self):
         global gbus
         bus_name = dbus.service.BusName('com.bmandesigns.lispeak.notify', bus=dbus.SessionBus())
@@ -91,7 +91,7 @@ class PopUp:
         self.exit = self.builder.get_object("exitbox")
         self.exit.connect("button-release-event",self.close_notify)
         self.icon = self.builder.get_object("imgIcon") 
-        self.window.set_gravity(gdk.Gravity.NORTH_WEST)  
+        self.window.set_gravity(gdk.Gravity.NORTH_EAST)  
         self.display = False
         self.window.set_keep_above(True)
         color = gdk.color_parse('#F7A900')
@@ -167,6 +167,7 @@ class PopUp:
  
     def timer(self):
         try:
+            s = gdk.Screen.get_default().get_width()
             if self.counting:
                 if self.counter == 0:
                     self.display = True
@@ -176,7 +177,9 @@ class PopUp:
                             while gtk.events_pending():
                                 gtk.main_iteration_do(True)
                             self.window.show_all()
-                            self.window.move(100,150)
+                            width, height = self.window.get_size()                            
+                            width = s - width - 30
+                            self.window.move(width,70)
                             self.icon.set_visible(not self.image_hide)
                     self.speak(self.speech)
                 if self.counter == 5:
