@@ -7,11 +7,11 @@ if [ -z "$1" ];then
     1="main" # Default mode is main
 fi
 
-read mode < MODE
+read mode < "$HOME/.lispeak/MODE"
 
 echo "$1" > "$HOME/.lispeak/MODE"
 
 if [ "$1" != "$mode" ];then # we changed modes
-    ./Recognition/bin/result "Mode Changed" "You are now in '$1' mode."
+    ./Recognition/bin/result "Mode Changed" "You are now in '$1' mode." --translate
 fi
 
