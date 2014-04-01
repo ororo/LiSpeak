@@ -51,19 +51,20 @@ done <$USER_DIR/UserInfo
 # Try to run a command in ./Recognition/bin with useful errors.
 # This routine assumes $1 is not empty
 function run_command() {
-    eval "./Recognition/recognized.py \"$1\" \"$2\""
-    
+    eval "./Recognition/recognized.py \"$1\" \"$2\""    
+    #Probably environment variables not getting inherited in the bash shell!!
     eval "./Recognition/bin/$2"
-
+    
     if [ $? != 0 ];then
         eval "~/.lispeak/bin/$2"
     fi
 
     if [ $? != 0 ];then
-	./Recognition/bin/result Error "There was an error while running:" \
-	"$1" ""
+	 #eval "./Recognition/bin/$2"
+	./Recognition/bin/result "Error" " $? There was an error while running:\n '$1'"
 	exit 1
     fi
+    
 }
 
 cd $ROOTDIR
