@@ -10,10 +10,12 @@ Current Active Developers:
     Coco2233
     
 Supported Languages:
+
     English - BmanDesignsCanada
     Italian - ororo
     
 Semi-Supported Languages:
+
     Spanish - Coco2233
     
 ======
