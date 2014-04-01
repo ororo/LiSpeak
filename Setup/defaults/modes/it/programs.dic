@@ -4,14 +4,14 @@
 [<internet,web> ]browser
   open xdg-open http://
   
-[<apri,lancia> ][google ]<chome,chromium>
+[google ]<chome,chromium>
   open chromium
 #we should support both chromium and google chrome...
 
-[<apri,lancia> ]<mozilla[ firefox],firefox>
+<mozilla[ firefox],firefox>
   open firefox
   
-[<apri,lancia> ][mozilla ]thunderbird
+[mozilla ]thunderbird
   open thunderbird
 
 ###########################
@@ -73,43 +73,42 @@ dischi
 #   GNOME CONTROL CENTER
 ###########################
 statistiche [della ]batteria
-  open gnome-power-statistics
+  controlpanel power-statistics
 
 <impostazioni,pannello di controllo,control panel>
-  open gnome-control-center unity-appearance
+  controlpanel unity-appearance
 #This won't work in LinuxMint :(
   
 [impostazioni [del ]]mouse
-  open gnome-control-center mouse
+  controlpanel mouse
   
 [impostazioni [<della,di> ]]rete
-  open gnome-control-center network
+  controlpanel network
   
 [impostazioni [degli ]]<accounts,utenti>
-  open gnome-control-center credentials
+  controlpanel credentials
   
 [impostazioni ]<schermo,luce,luminosità,contrasto>
-  open gnome-control-center screen
+  controlpanel screen
   
 [impostazioni [della ]]<privacy,sicurezza,sicurezza e privacy,privacy e sicurezza>
-  open gnome-control-center activity-log-manager
+  controlpanel activity-log-manager
   
 [<impostazioni,layout> [della ]]tastiera
-  open gnome-control-center keyboard
+  controlpanel keyboard
   
 [<impostazioni,apparecchi> [del ]]bluetooth
-  open gnome-control-center bluetooth
+  controlpanel bluetooth
   
 [impostazioni [della ]]batteria
-  open gnome-control-center power
+  controlpanel power
   
 [impostazioni ][risoluzione ]<[<del,dei> ]<monitor,display,schermo,schermi>,[della ]risoluzione>
-  open gnome-control-center display
+  controlpanel display
   
 [impostazioni ]<[del ]suono,[delle ]casse,[dell']altoparlante,[degli ]altoparlanti>
-  open gnome-control-center sound-nua
-  
-  
+  controlpanel sound-nua
+
 [<apri,lancia> ](LINE word)
   open "$word$"
 

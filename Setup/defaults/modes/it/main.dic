@@ -47,14 +47,8 @@ blocca[[ il] computer]
 <dove è,dov'è,dove si trova,dove sta> (LINE place)
   goto "https://maps.google.com/maps?q=$place$&hl=\$LANG"
   
-apri [google ]<chrome, chromium>
-  open "chromium-browser"
-  
-apri <mozilla[ firefox],firefox>
-  open "firefox"
-
-apri (WORD app)
-  open "$app$"
+<apri,lancia> [<il programma,l'applicazione> ](WORD app)
+  program "$app$"
 
 data
   date date
