@@ -4,18 +4,19 @@ argparser = argparse.ArgumentParser(description='Display User Information')
 argparser.add_argument('action', type=str,help='Action to execute')
 args = argparser.parse_args()
 root = ''.join([e+'/' for e in os.path.realpath(__file__).split('/')[0:-1]])
+info = lispeak.getInfo()
 if args.action == "ip":
     import socket
     s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     s.connect(("gmail.com",80))
     root = ''.join([e+'/' for e in os.path.realpath(__file__).split('/')[0:-1]])
     local = s.getsockname()[0]
-    f = urllib.urlopen("http://icanhazip.com/")
+    proxies = {'http': 'http://'+info['PROXY']}
+    f = urllib.urlopen("http://icanhazip.com/",proxies=proxies)
     extern = f.read()
     f.close()
     lispeak.displayNotification("IP Address","Local: "+local+"\nExternal: "+extern)
     s.close()
 if args.action == "name":
-    info = lispeak.getInfo()
     name = info['FIRST'] + " " + info['LAST']
     lispeak.displayNotification(name)

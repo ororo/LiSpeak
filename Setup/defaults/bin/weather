@@ -23,8 +23,11 @@ class IPPageParser(HTMLParser):
 #f = urllib.urlopen("http://icanhazip.com/")
 #extern = f.read()
 #f.close()
-opener = urllib2.build_opener()
+info = lispeak.getInfo()
+proxy = urllib2.ProxyHandler({'http': info['PROXY']})
+opener = urllib2.build_opener(proxy)
 opener.addheaders = [('User-agent', 'Mozilla/5.0')]
+urllib2.install_opener(opener)
 extern = opener.open("http://whatismyipaddress.com/")
 parser = IPPageParser()
 parser.record = False
