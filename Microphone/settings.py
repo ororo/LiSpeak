@@ -16,6 +16,9 @@ class PopUp:
         self.builder.connect_signals(self)
         self.window = self.builder.get_object("window1")
         self.window.set_title("LiSpeak Settings")
+        self.about = self.builder.get_object("aboutdialog1")
+        self.aboutBtn = self.builder.get_object("btnAbout")
+        self.aboutBtn.connect("clicked", self.aboutOpen)
         self.notebook = self.builder.get_object("notebook1")
         self.exit = self.builder.get_object("btnClose")
         self.exit.connect("button-release-event",self.close)
@@ -39,7 +42,8 @@ class PopUp:
         else:
             lispeak.autostart(False)
         Gtk.main_quit()
-        
+    def aboutOpen(self,widget):
+        self.about.show_all()
     def fillFields(self, userinfo):
         for e in ['proxyport','proxyhost']:
             if e.upper() in userinfo:

@@ -4,8 +4,10 @@
   <object class="GtkAboutDialog" id="aboutdialog1">
     <property name="can_focus">False</property>
     <property name="border_width">5</property>
+    <property name="destroy_with_parent">True</property>
     <property name="type_hint">dialog</property>
     <property name="program_name">LiSpeak</property>
+    <property name="comments" translatable="yes">This dialog has some problems. We're working on it.</property>
     <property name="website">http://lispeak.bmandesigns.com</property>
     <property name="authors">Brett Mayson (@BmanDesignsCanada)
 Luca (@ororo)</property>
