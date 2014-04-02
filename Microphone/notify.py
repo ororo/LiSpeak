@@ -24,7 +24,6 @@ try:
 except:
     print "Currently in",os.getcwd()
 
-
 try:
     from dbus.mainloop.glib import DBusGMainLoop
 except ImportError:
@@ -129,24 +128,25 @@ class PopUp:
             self.window.set_opacity(0.9)
         
     def message_system(self):
-        f = urllib2.urlopen("http://lispeak.bmandesigns.com/functions.php?f=messageUpdate")
-        text = f.read()
-        message = json.loads(text.replace('\r', '\\r').replace('\n', '\\n'),strict=False)
-        lastId = lispeak.getSingleInfo("lastid")
-        if lastId == "":
-            lastId = message['id']
-        try:
-            go = int(message['id']) > int(lastId)
-        except:
-            go = True
-        if go:
-            if 'icon' in message:
-                urllib.urlretrieve(message['icon'], "/tmp/lsicon.png")
-                self.queue.append({'title':"LiSpeak - "+message['title'],'message':message['text'],'icon':"/tmp/lsicon.png","speech":message['text']})
-            else:
-                self.queue.append({'title':"LiSpeak - "+message['title'],'message':message['text'],"speech":message['text']})
-        
-        lispeak.writeSingleInfo("lastid",str(int(message['id'])))
+        if lispeak.getInfo()['MESSAGES'] == "True":
+            f = urllib2.urlopen("http://lispeak.bmandesigns.com/functions.php?f=messageUpdate")
+            text = f.read()
+            message = json.loads(text.replace('\r', '\\r').replace('\n', '\\n'),strict=False)
+            lastId = lispeak.getSingleInfo("lastid")
+            if lastId == "":
+                lastId = message['id']
+            try:
+                go = int(message['id']) > int(lastId)
+            except:
+                go = True
+            if go:
+                if 'icon' in message:
+                    urllib.urlretrieve(message['icon'], "/tmp/lsicon.png")
+                    self.queue.append({'title':"LiSpeak - "+message['title'],'message':message['text'],'icon':"/tmp/lsicon.png","speech":message['text']})
+                else:
+                    self.queue.append({'title':"LiSpeak - "+message['title'],'message':message['text'],"speech":message['text']})
+            
+            lispeak.writeSingleInfo("lastid",str(int(message['id'])))
         return True
         
     def display_notify(self):
