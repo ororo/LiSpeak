@@ -11,8 +11,11 @@ if args.action == "ip":
     s.connect(("gmail.com",80))
     root = ''.join([e+'/' for e in os.path.realpath(__file__).split('/')[0:-1]])
     local = s.getsockname()[0]
-    proxies = {'http': 'http://'+info['PROXY']}
-    f = urllib.urlopen("http://icanhazip.com/",proxies=proxies)
+    if info['PROXY'] == "True":
+        proxies = {'http': 'http://'+info['PROXYHOST']+":"+info['PROXYPORT']}
+        f = urllib.urlopen("http://icanhazip.com/",proxies=proxies)
+    else:
+        f = urllib.urlopen("http://icanhazip.com/")
     extern = f.read()
     f.close()
     lispeak.displayNotification("IP Address","Local: "+local+"\nExternal: "+extern)

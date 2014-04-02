@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-import urllib2,sys,time,lispeak
+import urllib,urllib2,sys,time,lispeak
 from HTMLParser import HTMLParser
 
 class MyHTMLParser(HTMLParser):
@@ -22,20 +22,16 @@ class IPPageParser(HTMLParser):
                     self.city = attr[1]
             self.record = False
             
-#import urllib
-#f = urllib.urlopen("http://icanhazip.com/")
-#extern = f.read()
-#f.close()
 info = lispeak.getInfo()
-proxy = urllib2.ProxyHandler({'http': info['PROXY']})
-opener = urllib2.build_opener(proxy)
-opener.addheaders = [('User-agent', 'Mozilla/5.0')]
-urllib2.install_opener(opener)
-extern = opener.open("http://www.geobytes.com/IpLocator.htm")
-#print extern.read()
+if info['PROXY'] == "True":
+    proxies = {'http': 'http://'+info['PROXYHOST']+":"+info['PROXYPORT']}
+    f = urllib.urlopen("http://www.geobytes.com/IpLocator.htm",proxies=proxies)
+else:
+    f = urllib.urlopen("http://www.geobytes.com/IpLocator.htm")
+
 parser = IPPageParser()
 parser.record = False
-parser.feed(extern.read())
+parser.feed(f.read())
 city = parser.city.replace(" ","%20")
 
 print "CITY:",city
