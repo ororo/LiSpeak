@@ -40,8 +40,7 @@ Luca (@ororo)</property>
                     <property name="draw_indicator">True</property>
                   </object>
                   <packing>
-                    <property name="x">45</property>
-                    <property name="y">10</property>
+                    <property name="x">10</property>
                   </packing>
                 </child>
                 <child>
@@ -56,8 +55,8 @@ Luca (@ororo)</property>
                     <property name="draw_indicator">True</property>
                   </object>
                   <packing>
-                    <property name="x">45</property>
-                    <property name="y">55</property>
+                    <property name="x">10</property>
+                    <property name="y">45</property>
                   </packing>
                 </child>
                 <child>
@@ -71,8 +70,8 @@ Luca (@ororo)</property>
                     <property name="draw_indicator">True</property>
                   </object>
                   <packing>
-                    <property name="x">45</property>
-                    <property name="y">105</property>
+                    <property name="x">10</property>
+                    <property name="y">95</property>
                   </packing>
                 </child>
                 <child>
@@ -87,8 +86,8 @@ Luca (@ororo)</property>
                     <property name="draw_indicator">True</property>
                   </object>
                   <packing>
-                    <property name="x">45</property>
-                    <property name="y">155</property>
+                    <property name="x">10</property>
+                    <property name="y">145</property>
                   </packing>
                 </child>
                 <child>
@@ -100,8 +99,8 @@ Luca (@ororo)</property>
                     <property name="label" translatable="yes">Host</property>
                   </object>
                   <packing>
-                    <property name="x">100</property>
-                    <property name="y">205</property>
+                    <property name="x">15</property>
+                    <property name="y">195</property>
                   </packing>
                 </child>
                 <child>
@@ -113,8 +112,8 @@ Luca (@ororo)</property>
                     <property name="invisible_char">•</property>
                   </object>
                   <packing>
-                    <property name="x">180</property>
-                    <property name="y">230</property>
+                    <property name="x">100</property>
+                    <property name="y">220</property>
                   </packing>
                 </child>
                 <child>
@@ -129,8 +128,8 @@ Luca (@ororo)</property>
                     <property name="invisible_char">•</property>
                   </object>
                   <packing>
-                    <property name="x">180</property>
-                    <property name="y">270</property>
+                    <property name="x">100</property>
+                    <property name="y">260</property>
                   </packing>
                 </child>
                 <child>
@@ -142,8 +141,8 @@ Luca (@ororo)</property>
                     <property name="label" translatable="yes">Port</property>
                   </object>
                   <packing>
-                    <property name="x">100</property>
-                    <property name="y">247</property>
+                    <property name="x">15</property>
+                    <property name="y">237</property>
                   </packing>
                 </child>
               </object>
