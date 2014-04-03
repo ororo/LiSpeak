@@ -2,4 +2,4 @@
 
 import lispeak,sys
 
-lispeak.speak(sys.argv[1])
+lispeak.speak(sys.argv[1],True)

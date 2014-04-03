@@ -64,9 +64,18 @@ class indicator:
         self.p_item.connect("activate", self.openBrowser)
         self.p_item.show()
         self.menu.append(self.p_item)
+        
+        separator = gtk.SeparatorMenuItem()
+        separator.show()
+        self.menu.append(separator)
 
         self.r_item = gtk.MenuItem("Restart Servers")
         self.r_item.connect("activate", self.restart)
+        self.r_item.show()
+        self.menu.append(self.r_item)
+        
+        self.r_item = gtk.MenuItem("Settings")
+        self.r_item.connect("activate", self.settings)
         self.r_item.show()
         self.menu.append(self.r_item)
         
@@ -98,7 +107,12 @@ class indicator:
         
     def openBrowser(self,widget):
         os.system(PWD + "/../Recognition/bin/open "+PWD+"/browser.py")
-        print "Opened"
+        print "Opened Browser"
+        
+    def settings(self,widget):
+        print PWD + "/../Recognition/bin/open "+PWD+"/settings.py"
+        os.system(PWD + "/../Recognition/bin/open "+PWD+"/settings.py")
+        print "Opened Settings"
         
     def callback(self):
         global last_signal
