@@ -1,4 +1,4 @@
-<dì,ripeti> (LINE words)
+<dì,di',dimmi> (LINE words)
   say "$words$"
 <scrivi> (LINE words)
   type "$words$\\r"
