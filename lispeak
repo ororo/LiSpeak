@@ -609,7 +609,7 @@ def getInfo(plugin="UserInfo"):
 def homeDir():
     return home 
 
-def displayNotification(text,text2 = False,image=False,speech=None):
+def displayNotification(text,text2 = False,image=False,speech=True):
     global bus
     data = formatNotification(text,text2,image,speech)
     if bus == None:
@@ -620,7 +620,7 @@ def displayNotification(text,text2 = False,image=False,speech=None):
     
 def formatNotification(text,text2 = False,image=False,speech=None):
     if type(text) != dict:
-        data = {'title':text,'message':text2,'icon':image,'speech':speech}
+        data = dbus.Dictionary({'title':text,'message':text2,'icon':image,'speech':speech}, signature='sv')
     else:
         data = text
     if image == False and type(text) == str:

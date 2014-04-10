@@ -213,7 +213,7 @@ class PopUp:
                     self.image_hide = True
                 if "speech" in data:
                     print data['speech']
-                    if data["speech"] != "None":
+                    if data["speech"] != True:
                         self.speech = data['speech']
                     else:
                         self.speech = data['title']
