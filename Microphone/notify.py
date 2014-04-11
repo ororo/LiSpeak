@@ -19,6 +19,9 @@ FILEFOLDER="/tmp/lispeak_" + getpass.getuser()
 #lcd = lispeak.arduino(lispeak.getSingleInfo("ARDUINO"))
 #lcd.sendText("Welcome|LiSpeak LCD;")
 
+if "NOTIFICATIONS" not in lispeak.getInfo():
+    lispeak.writeSingleInfo("NOTIFICATIONS","LiSpeak")
+
 try:
     os.chdir("Microphone")
 except:
@@ -65,6 +68,18 @@ class MyDBUSService(dbus.service.Object):
         
 MyDBUSService()
 
+def notify(summary, body='', app_name='LiSpeak', app_icon='',
+            timeout=5000, actions=[], hints=[], replaces_id=0):
+        print "creating notification",app_icon
+        _bus_name = 'org.freedesktop.Notifications'
+        _object_path = '/org/freedesktop/Notifications'
+        _interface_name = _bus_name
+
+        session_bus = dbus.SessionBus()
+        obj = session_bus.get_object(_bus_name, _object_path)
+        interface = dbus.Interface(obj, _interface_name)
+        interface.Notify(app_name, replaces_id, app_icon,
+                summary, body, actions, hints, timeout)
 
 class MyHTMLParser(HTMLParser):
     def handle_starttag(self, tag, attrs):
@@ -163,30 +178,31 @@ class PopUp:
  
     def timer(self):
         try:
-            if self.counting:
-                if self.counter == 0:
-                    self.display = True
-                    for each in range(0,10):
-                        if self.counting:
-                            self.window.set_opacity(float("0."+str(each)))
-                            while gtk.events_pending():
-                                gtk.main_iteration_do(True)
-                            self.window.show_all()
-                            self.window.move(100,150)
-                            self.icon.set_visible(not self.image_hide)
-                    self.speak(self.speech)
-                if self.counter == 5:
-                    if self.window.get_opacity() != 0.0:
-                        for each in range(9,-1,-1):
-                            self.window.set_opacity(float("0."+str(each)))
-                            while gtk.events_pending():
-                                gtk.main_iteration_do(True)
-                            time.sleep(0.02)
-                        self.window.hide()
-                        self.display = False
-                        self.counting = False
-                self.counter += 1
-            elif len(self.queue) > 0 and self.display == False:
+            if lispeak.getInfo()['NOTIFICATIONS'] == "LiSpeak":
+                if self.counting:
+                    if self.counter == 0:
+                        self.display = True
+                        for each in range(0,10):
+                            if self.counting:
+                                self.window.set_opacity(float("0."+str(each)))
+                                while gtk.events_pending():
+                                    gtk.main_iteration_do(True)
+                                self.window.show_all()
+                                self.window.move(100,150)
+                                self.icon.set_visible(not self.image_hide)
+                        self.speak(self.speech)
+                    if self.counter == 5:
+                        if self.window.get_opacity() != 0.0:
+                            for each in range(9,-1,-1):
+                                self.window.set_opacity(float("0."+str(each)))
+                                while gtk.events_pending():
+                                    gtk.main_iteration_do(True)
+                                time.sleep(0.02)
+                            self.window.hide()
+                            self.display = False
+                            self.counting = False
+                    self.counter += 1
+            if not self.counting and len(self.queue) > 0 and self.display == False:
                 data = self.queue[0]
                 try:
                     self.message.set_text("")
@@ -219,8 +235,25 @@ class PopUp:
                         self.speech = data['title']
                 else:
                     self.speech = data['title']
-                self.counter = 0
-                self.counting = True
+                if lispeak.getInfo()['NOTIFICATIONS'] == "LiSpeak":
+                    self.counter = 0
+                    self.counting = True
+                elif lispeak.getInfo()['NOTIFICATIONS'] == "System":
+                    try:
+                        if "icon" in data:
+                            if data['icon'].startswith("http"):
+                                f2 = urllib2.urlopen(data['icon'])
+                                output = open('/tmp/lispeak-image','wb')
+                                output.write(f2.read())
+                                output.close()
+                                notify(summary=data['title'],body=data['message'].replace("\\n","\n"),app_icon='/tmp/lispeak-image')
+                            else:
+                                notify(summary=data['title'],body=data['message'].replace("\\n","\n"),app_icon=data['icon'])
+                        else:
+                            notify(summary=data['title'],body=data['message'].replace("\\n","\n"))
+                    except:
+                        notify(summary=data['title'])
+                    self.speak(self.speech)
                 self.queue.pop(0)
                 #lcd.sendText(self.title.get_text()+"|"+self.message.get_text()+";")
             return True

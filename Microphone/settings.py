@@ -14,6 +14,7 @@ class PopUp:
     
         self.languages = {"English":"en","Polski":'pl',"Español":'es',"Français":'fr',"Italiano":"it"}
         self.languages2 = ["English","Polski","Español","Français","Italiano"]
+        self.notifications = ["LiSpeak","System"]
     
         filename = "../Setup/templates/settings.glade"
         self.builder = Gtk.Builder()
@@ -30,6 +31,7 @@ class PopUp:
         try:
             self.addItems(self.builder.get_object("cmbEngine"),["espeak","Google TTS","pico2wave"])
             self.addItems(self.builder.get_object("cmbLang"),self.languages2)
+            self.addItems(self.builder.get_object("cmbNotifications"),self.notifications)
             self.fillFields(lispeak.getInfo())
             self.window.show_all()
         except KeyError:
@@ -47,6 +49,7 @@ class PopUp:
         self.userinfo["TTSENGINE"] = str(self.builder.get_object("cmbEngine").get_active_text())
         self.userinfo['LANG'] = self.languages[str(self.builder.get_object("cmbLang").get_active_text())]
         self.userinfo['CONTINUE'] = str(self.builder.get_object("chkContinue").get_active())
+        self.userinfo['NOTIFICATIONS'] = str(self.builder.get_object("cmbNotifications").get_active_text())
         lispeak.writeInfo(self.userinfo)
         if self.userinfo["AUTOSTART"] == "True":
             lispeak.autostart(True)
@@ -88,6 +91,10 @@ class PopUp:
             self.set_combo_active_text(self.builder.get_object("cmbEngine"), userinfo["TTSENGINE"])
         else:
             self.builder.get_object("cmbEngine").set_active(0)
+        if "NOTIFICATIONS" in userinfo:
+            self.set_combo_active_text(self.builder.get_object("cmbNotifications"), userinfo["NOTIFICATIONS"])
+        else:
+            self.builder.get_object("cmbNotifications").set_active(0)
         if "LANG" in userinfo:
             languages_back = {"en":"English","pl":"Polski",'es':'Español','fr':'Français',"it":"Italiano"}
             self.set_combo_active_text(self.builder.get_object("cmbLang"), languages_back[userinfo["LANG"]])
