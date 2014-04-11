@@ -461,7 +461,7 @@ more-example</property>
                           <item translatable="yes">Français</item>
                           <item translatable="yes">Italiano</item>
                           <item translatable="yes">Polski</item>
-                          <item translatable="yes">Français</item>
+                          <item translatable="yes"/>
                         </items>
                       </object>
                       <packing>
@@ -499,30 +499,10 @@ more-example</property>
                       </packing>
                     </child>
                     <child>
-                      <object class="GtkLabel" id="lblProxy">
-                        <property name="visible">True</property>
-                        <property name="can_focus">False</property>
-                        <property name="label" translatable="yes">Proxy Server:Port</property>
-                      </object>
-                      <packing>
-                        <property name="left_attach">0</property>
-                        <property name="top_attach">8</property>
-                        <property name="width">1</property>
-                        <property name="height">1</property>
-                      </packing>
+                      <placeholder/>
                     </child>
                     <child>
-                      <object class="GtkEntry" id="entProxy">
-                        <property name="visible">True</property>
-                        <property name="can_focus">True</property>
-                        <property name="invisible_char">•</property>
-                      </object>
-                      <packing>
-                        <property name="left_attach">1</property>
-                        <property name="top_attach">8</property>
-                        <property name="width">1</property>
-                        <property name="height">1</property>
-                      </packing>
+                      <placeholder/>
                     </child>
                   </object>
                   <packing>
@@ -621,4 +601,3 @@ more-example</property>
     </child>
   </object>
 </interface>
-
