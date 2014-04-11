@@ -46,12 +46,18 @@ class PopUp:
         self.userinfo["TTS"] = str(self.builder.get_object("chkTTS").get_active())
         self.userinfo["TTSENGINE"] = str(self.builder.get_object("cmbEngine").get_active_text())
         self.userinfo['LANG'] = self.languages[str(self.builder.get_object("cmbLang").get_active_text())]
+        self.userinfo['CONTINUE'] = str(self.builder.get_object("chkContinue").get_active())
         lispeak.writeInfo(self.userinfo)
         if self.userinfo["AUTOSTART"] == "True":
             lispeak.autostart(True)
         else:
             lispeak.autostart(False)
+        if self.userinfo["CONTINUE"] == "True":
+            lispeak.continuous(True)
+        else:
+            lispeak.continuous(False)
         Gtk.main_quit()
+        os.system("../start")
     def aboutOpen(self,widget):
         self.about.show_all()
     def set_combo_active_text(self,combo, text):
@@ -74,6 +80,8 @@ class PopUp:
             self.builder.get_object("chkUpdates").set_active(userinfo["UPDATES"] == "True")
         if "PROXY" in userinfo:
             self.builder.get_object("chkProxy").set_active(userinfo["PROXY"] == "True")
+        if "CONTINUE" in userinfo:
+            self.builder.get_object("chkContinue").set_active(userinfo["CONTINUE"] == "True")
         if "TTS" in userinfo:
             self.builder.get_object("chkTTS").set_active(userinfo["TTS"] == "True")
         if "TTSENGINE" in userinfo:

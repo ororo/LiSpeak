@@ -726,6 +726,14 @@ Type=Application\n
 Categories=Application;\n""")
     elif state == False:
         delete(home+"/.config/autostart/lispeak.desktop")
+        
+def continuous(state):
+    if state:
+        copy(installDir+"/Setup/continue.service",home+"/.lispeak/services/continue.service")
+        writeSingleInfo("continue","True")
+    elif state == False:
+        delete(home+"/.lispeak/services/continue.service")
+        writeSingleInfo("continue","False")
             
 def sqlCheck(cur):
     cur.execute("CREATE TABLE IF NOT EXISTS plugins(id INTEGER PRIMARY KEY, name TEXT, identifier TEXT,type TEXT, version TEXT, author TEXT, binFiles TEXT,services TEXT, dicts TEXT, actions TEXT)")
