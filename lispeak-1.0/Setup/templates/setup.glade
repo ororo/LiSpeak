@@ -461,7 +461,7 @@ more-example</property>
                           <item translatable="yes">Français</item>
                           <item translatable="yes">Italiano</item>
                           <item translatable="yes">Polski</item>
-                          <item translatable="yes">Français</item>
+                          <item translatable="yes"/>
                         </items>
                       </object>
                       <packing>
@@ -497,6 +497,12 @@ more-example</property>
                         <property name="width">1</property>
                         <property name="height">1</property>
                       </packing>
+                    </child>
+                    <child>
+                      <placeholder/>
+                    </child>
+                    <child>
+                      <placeholder/>
                     </child>
                   </object>
                   <packing>
@@ -595,4 +601,3 @@ more-example</property>
     </child>
   </object>
 </interface>
-

@@ -9,10 +9,14 @@ Current Active Developers:
     ororo
     Coco2233
     
-Current Active Translators:
+Supported Languages:
+
+    English - BmanDesignsCanada
+    Italian - ororo
     
-    ororo - Italian
-    Coco2233 - Spanish
+Semi-Supported Languages:
+
+    Spanish - Coco2233
     
 ======
     

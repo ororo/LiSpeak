@@ -309,52 +309,53 @@ def yn(text = "Continue?",exit=False):
                 return False
     else:
         return True
-def speak(words):
-    createDirectory("/tmp/LiSpeak_TTS")
-    print "Speaking:",words
-    if type(words) == list:
-        for w in words:
-            speak(w)
-    else:
-        try:
-           words = words.encode("utf-8")
-        except:
-           words = str(words)
-        engine = getSingleInfo("TTSENGINE")
-        print "Lower Volume"
-        p = subprocess.Popen(['pactl', 'list','sink-inputs'], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-        out, err = p.communicate()
-        start = 0
-        locs = []
-        while "#" in out[start:]:
-            loc = out.find("#",start)
-            text = out[loc+1]
-            plus = 2
-            while out[loc+plus] not in [" ","\n","D"]:
-                text += out[loc+plus]
-                plus = plus + 1
-            print text
-            locs.append(text)
-            start = loc+1
-        
-        for e in range(65530,40000,-400):
+def speak(words,skip=False):
+    if getInfo()['TTS'] == "True" or skip:
+        createDirectory("/tmp/LiSpeak_TTS")
+        print "Speaking:",words
+        if type(words) == list:
+            for w in words:
+                speak(w)
+        else:
+            try:
+               words = words.encode("utf-8")
+            except:
+               words = str(words)
+            engine = getSingleInfo("TTSENGINE")
+            print "Lower Volume"
+            p = subprocess.Popen(['pactl', 'list','sink-inputs'], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            out, err = p.communicate()
+            start = 0
+            locs = []
+            while "#" in out[start:]:
+                loc = out.find("#",start)
+                text = out[loc+1]
+                plus = 2
+                while out[loc+plus] not in [" ","\n","D"]:
+                    text += out[loc+plus]
+                    plus = plus + 1
+                print text
+                locs.append(text)
+                start = loc+1
+            
+            for e in range(65530,40000,-400):
+                for text in locs:
+                    subprocess.call(["pactl","set-sink-input-volume",text,str(e)])
+            if engine == "espeak":
+                os.system("espeak -a 200 \""+words+"\"")
+            elif engine == "Google TTS":
+                os.system("wget -q -U Mozilla -O /tmp/LiSpeak_TTS/audio.mp3 \"http://translate.google.com/translate_tts?ie=UTF-8&tl="+getSingleInfo("LANG")+"&q="+words+"\"")
+                os.system("mpg123 /tmp/LiSpeak_TTS/audio.mp3 &> /dev/null")
+            elif engine == "pico2wave":
+                checkDepends(["libttspico0","libttspico-utils","libttspico-data"])
+                os.system("pico2wave --wave=/tmp/LiSpeak_TTS/audio.wav \""+words+"\"")
+                os.system("aplay /tmp/LiSpeak_TTS/audio.wav &> /dev/null")
+            time.sleep(4)
+            for e in range(40000,65535,400):
+                for text in locs:
+                    subprocess.call(["pactl","set-sink-input-volume",text,str(e)])
             for text in locs:
-                subprocess.call(["pactl","set-sink-input-volume",text,str(e)])
-        if engine == "espeak":
-            os.system("espeak -a 200 \""+words+"\"")
-        elif engine == "Google TTS":
-            os.system("wget -q -U Mozilla -O /tmp/LiSpeak_TTS/audio.mp3 \"http://translate.google.com/translate_tts?ie=UTF-8&tl="+getSingleInfo("LANG")+"&q="+words+"\"")
-            os.system("mpg123 /tmp/LiSpeak_TTS/audio.mp3 &> /dev/null")
-        elif engine == "pico2wave":
-            checkDepends(["libttspico0","libttspico-utils","libttspico-data"])
-            os.system("pico2wave --wave=/tmp/LiSpeak_TTS/audio.wav \""+words+"\"")
-            os.system("aplay /tmp/LiSpeak_TTS/audio.wav &> /dev/null")
-        time.sleep(4)
-        for e in range(40000,65535,400):
-            for text in locs:
-                subprocess.call(["pactl","set-sink-input-volume",text,str(e)])
-        for text in locs:
-            subprocess.call(["pactl","set-sink-input-volume",text,str(65535)])
+                subprocess.call(["pactl","set-sink-input-volume",text,str(65535)])
 def setup():
     call("./stop")
     installDir = os.path.dirname(os.path.realpath(__file__))
@@ -378,6 +379,8 @@ def setup():
     #    writeSingleInfo("ROOTDIR",installDir,"UserInfo",False,False)
     #    lang = getInfo()['LANG']
     #    copy(installDir+"/Setup/defaults/modes/"+lang+"/", root+"/modes/")
+    #    if os.path.exists("/usr/share/gtksourceview-2.0/language-specs/"):
+    #        sudo(["cp",installDir+"/Setup/lidic.lang","/usr/share/gtksourceview-2.0/language-specs/"])
     #    if os.path.exists("/usr/share/gtksourceview-3.0/language-specs/"):
     #        sudo(["cp",installDir+"/Setup/lidic.lang","/usr/share/gtksourceview-3.0/language-specs/"])
     #elif gui.status != "saved":
@@ -626,7 +629,7 @@ def getInfo(plugin="UserInfo"):
 def homeDir():
     return home 
 
-def displayNotification(text,text2 = False,image=False,speech=None):
+def displayNotification(text,text2 = False,image=False,speech=True):
     global bus
     data = formatNotification(text,text2,image,speech)
     if bus == None:
@@ -637,7 +640,7 @@ def displayNotification(text,text2 = False,image=False,speech=None):
     
 def formatNotification(text,text2 = False,image=False,speech=None):
     if type(text) != dict:
-        data = {'title':text,'message':text2,'icon':image,'speech':speech}
+        data = dbus.Dictionary({'title':text,'message':text2,'icon':image,'speech':speech}, signature='sv')
     else:
         data = text
     if image == False and type(text) == str:
@@ -731,6 +734,14 @@ def autostart(state):
         copy("/usr/share/applications/lispeak.desktop", home+"/.config/autostart/lispeak.desktop")
     elif state == False:
         delete(home+"/.config/autostart/lispeak.desktop")
+        
+def continuous(state):
+    if state:
+        copy(installDir+"/Setup/continue.service",home+"/.lispeak/services/continue.service")
+        writeSingleInfo("continue","True")
+    elif state == False:
+        delete(home+"/.lispeak/services/continue.service")
+        writeSingleInfo("continue","False")
             
 def sqlCheck(cur):
     cur.execute("CREATE TABLE IF NOT EXISTS plugins(id INTEGER PRIMARY KEY, name TEXT, identifier TEXT,type TEXT, version TEXT, author TEXT, binFiles TEXT,services TEXT, dicts TEXT, actions TEXT)")

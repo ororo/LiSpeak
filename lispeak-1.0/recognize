@@ -14,16 +14,33 @@
    #  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #
-# Usage: recognize "Text to be recognized"
+# Usage: recognize [--dontexec] "Text to be recognized" [ file.dic ]
 #
+
+if [ "$1" = "--dontexec" ] ;
+then
+  DONTEXEC=1
+  shift
+else
+  DONTEXEC=0
+fi
+
+if [ -z "$1" ] ;
+then
+  echo "Empty speech."
+  exit -1
+else
+  SPEECH=$1
+fi
 
 if [ -z "$2" ]
   then
     dicmode="reg"
   else
     dicmode="$2"
+    
 fi
-echo $dicmode
+echo "DICMODE=$dicmode"
 
 cd /opt/lispeak
 
@@ -36,29 +53,50 @@ do
   fi
 done <$USER_DIR/UserInfo
 
+
+#transform $SPEECH into some standard form
+#i.e. everything lowercase, and it does not contain "
+function escape_speech() {
+SPEECH=$(echo "$SPEECH" |sed -e "s/\"//")
+SPEECH=$(eval "echo \"$SPEECH\" | tr '[:upper:]' '[:lower:]'")
+}
+
+
+#transform $1 (probably $COMMAND) into some formattable form
+#i.e. " replaced with \"
+function escape_command() {
+echo "${1}" |sed -e 's/\"/_FUCK_/' |sed -e 's/\"/_FUCK_/' |sed -e 's/_FUCK_/\\"/' |sed -e 's/_FUCK_/\\"/'
+}
+
+
 # Try to run a command in ./Recognition/bin with useful errors.
-# This routine assumes $1 is not empty
+# This routine assumes $2 is not empty
 function run_command() {
-    eval "./Recognition/recognized.py \"$1\" \"$2\""
+    
+    #Probably environment variables not getting inherited in the bash shell!!
+    CMDFMT=$(escape_command "$2")
+    eval "./Recognition/recognized.py \"$1\" \"$CMDFMT\""
+
     
     eval "./Recognition/bin/$2"
 
     if [ $? != 0 ];then
-        eval "~/.lispeak/bin/$2"
+       eval "~/.lispeak/bin/$2"
     fi
 
     if [ $? != 0 ];then
-	./Recognition/bin/result Error "There was an error while running:" \
-	"$1" ""
+	./Recognition/bin/result "Error" "There was an error while running: $1" --translate
 	exit 1
     fi
+    
 }
+
+#convert speech $SPEECH into command $COMMAND
+function speech2command() {
 
 cd $ROOTDIR
 
-speech=$(eval "echo \"$1\" | tr '[:upper:]' '[:lower:]'")
-
-if [ $dicmode = "reg" ]; then
+if [ "$dicmode" = "reg" ]; then
 
     read mode < "$USER_DIR/MODE"
 
@@ -71,9 +109,9 @@ if [ $dicmode = "reg" ]; then
     if [ $mode = "main" ]; then
 
         # Use sed scripts here.
-        if [ -z "$speech" ];then
+        if [ -z "$SPEECH" ];then
             echo "Speech unable to be transcribed."
-            ./Recognition/bin/result Error "Speech unable to be transcribed"
+            ./Recognition/bin/result Error "Speech unable to be transcribed" --translate
             exit 1
         fi
 
@@ -81,14 +119,11 @@ if [ $dicmode = "reg" ]; then
 
 
         if [ -e "$USER_DIR/personal.dic" ];then
-            COMMAND=$(./Recognition/dictionary "$speech" "$USER_DIR/personal.dic")
+            COMMAND=$(./Recognition/dictionary "$SPEECH" "$USER_DIR/personal.dic")
 
             EXIT=$?
             if [ "$EXIT" == 0 ];then
-
-	        run_command "$speech" "$COMMAND"
-
-	        exit 0
+	        return
             fi
             if [ "$EXIT" != 2 ];then
 	        echo "There is an error in $USER_DIR/personal.dic"
@@ -98,14 +133,11 @@ if [ $dicmode = "reg" ]; then
         process=$(ps -p `xdotool getwindowfocus getwindowpid` -o comm= |tr -d '\n')
         echo ${process}
         if [ -e "$USER_DIR/dictionaries/${process}.dic" ];then
-            COMMAND=$(./Recognition/dictionary "$speech" "$USER_DIR/dictionaries/${process}.dic")
+            COMMAND=$(./Recognition/dictionary "$SPEECH" "$USER_DIR/dictionaries/${process}.dic")
 
             EXIT=$?
             if [ "$EXIT" == 0 ];then
-
-	        run_command "$speech" "$COMMAND"
-
-	        exit 0
+	        return
             fi
             if [ "$EXIT" != 2 ];then
 	        echo "There is an error in $USER_DIR/dictionaries/${process}.dic"
@@ -113,14 +145,11 @@ if [ $dicmode = "reg" ]; then
         fi
 
         if [ -e "$USER_DIR/plugins.dic" ];then
-            COMMAND=$(./Recognition/dictionary "$speech" "$USER_DIR/plugins.dic")
+            COMMAND=$(./Recognition/dictionary "$SPEECH" "$USER_DIR/plugins.dic")
 
             EXIT=$?
             if [ "$EXIT" == 0 ];then
-
-	        run_command "$speech" "$COMMAND"
-
-	        exit 0
+	        return
             fi
             if [ "$EXIT" != 2 ];then
 	        echo "There is an error in $USER_DIR/plugins.dic"
@@ -132,56 +161,67 @@ if [ $dicmode = "reg" ]; then
            exit 5
         fi
         
-        COMMAND=$(./Recognition/dictionary "$speech" "$USER_DIR/modes/main.dic")
+        COMMAND=$(./Recognition/dictionary "$SPEECH" "$USER_DIR/modes/main.dic")
 
         EXIT=$?
 
         if [ "$EXIT" == 0 ];then
             if [ ! -z "$COMMAND" ];then
-                run_command "$speech" "$COMMAND"
-                exit 0
+                return
             else
                 exit 7
             fi
         elif [ "$EXIT" == 2 ];then
-            ./Recognition/bin/result Error "'$speech'" "is not a recognized command" ""
+            ./Recognition/bin/result Error "'$SPEECH' is not a recognized command" --translate
 
         else 
             echo "There is an error in ${mode}.dic"
-            ./Recognition/bin/result Error "There was an error while reading main.dic" \
-	        "$COMMAND" ""
+            ./Recognition/bin/result Error "There was an error while reading main.dic" --translate
         fi
     else
 
-        COMMAND=$(./Recognition/dictionary "$speech" "$USER_DIR/modes/$mode.dic")
+        COMMAND=$(./Recognition/dictionary "$SPEECH" "$USER_DIR/modes/$mode.dic")
 
         EXIT=$?
 
         if [ "$EXIT" == 0 ];then
-            run_command "$speech" "$COMMAND"
-            exit 0
+            return
         elif [ "$EXIT" == 2 ];then
-            ./Recognition/bin/result Error "'$speech'" "is not a recognized command" ""
+            ./Recognition/bin/result Error "'$SPEECH' is not a recognized command" --translate
 
         else 
             echo "There is an error in ${mode}.dic"
-            ./Recognition/bin/result Error "There was an error while reading $mode" \
-	        "$COMMAND" ""
+            ./Recognition/bin/result Error "There was an error while reading $mode" --translate
         fi
     fi
 else
-    COMMAND=$(./Recognition/dictionary "$speech" "$USER_DIR/modes/$dicmode.dic")
+    COMMAND=$(./Recognition/dictionary "$SPEECH" "$USER_DIR/modes/$dicmode.dic")
     
     EXIT=$?
     if [ "$EXIT" == 0 ];then
-        run_command "$speech" "$COMMAND"
-        exit 0
+        return
     elif [ "$EXIT" == 2 ];then
-        ./Recognition/bin/result Error "'$speech'" "is not a recognized command" ""
-
+        ./Recognition/bin/result Error "'$SPEECH' is not a recognized command" --translate
     else 
         echo "There is an error in ${mode}.dic"
-        ./Recognition/bin/result Error "There was an error while reading $mode" \
-        "$COMMAND" ""
+        ./Recognition/bin/result Error "There was an error while reading $mode" --translate
     fi
 fi
+
+} # speech2command
+
+escape_speech
+
+speech2command
+
+if [ \! -z "$COMMAND"  ] ;
+then
+  if [ $DONTEXEC -eq 0 ] ;
+  then
+    run_command "$SPEECH" "$COMMAND"
+  else
+    echo "$COMMAND"
+  fi
+fi
+
+
