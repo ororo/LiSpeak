@@ -40,7 +40,7 @@ if [ -z "$2" ]
     dicmode="$2"
     
 fi
-echo $dicmode
+echo "DICMODE=$dicmode"
 
 cd ${0%/*}
 
@@ -74,19 +74,26 @@ SPEECH=$(eval "echo \"$SPEECH\" | tr '[:upper:]' '[:lower:]'")
 }
 
 
+#transform $1 (probably $COMMAND) into some formattable form
+#i.e. " replaced with \"
+function escape_command() {
+echo "${1}" |sed -e 's/\"/_FUCK_/' |sed -e 's/\"/_FUCK_/' |sed -e 's/_FUCK_/\\"/' |sed -e 's/_FUCK_/\\"/'
+}
+
+
 # Try to run a command in ./Recognition/bin with useful errors.
 # This routine assumes $2 is not empty
 function run_command() {
+    
     #Probably environment variables not getting inherited in the bash shell!!
-    #eval "./Recognition/recognized.py \"$1\" '$2'"
-    ./Recognition/recognized.py "$1" "$2"       #FIXME what should it do? I don't see anything
-     
-    #eval './Recognition/bin/$2' FIXME: why eval? without eval, this works even if $2 contains "'"
-    ./Recognition/bin/$2
+    CMDFMT=$(escape_command "$2")
+    eval "./Recognition/recognized.py \"$1\" \"$CMDFMT\""
+
+    
+    eval "./Recognition/bin/$2"
 
     if [ $? != 0 ];then
-       #eval "~/.lispeak/bin/$2"
-        ~/.lispeak/bin/$2
+       eval "~/.lispeak/bin/$2"
     fi
 
     if [ $? != 0 ];then
@@ -101,7 +108,7 @@ function speech2command() {
 
 cd $ROOTDIR
 
-if [ $dicmode = "reg" ]; then
+if [ "$dicmode" = "reg" ]; then
 
     read mode < "$USER_DIR/MODE"
 
