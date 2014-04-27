@@ -26,7 +26,7 @@ install: all
 	cp -r Microphone $(DESTDIR)$(LISPEAKDIR)
 	#Setup
 	cp -r Setup $(DESTDIR)$(LISPEAKDIR)
-	#Recognition. What about modes folder ?!?
+	#Recognition.
 	mkdir -p $(DESTDIR)$(LISPEAKDIR)/Recognition
 	cp Recognition/*.py $(DESTDIR)$(LISPEAKDIR)/Recognition
 	cp Recognition/dictionary $(DESTDIR)$(LISPEAKDIR)/Recognition
@@ -37,9 +37,11 @@ install: all
 	mkdir -p $(DESTDIR)/usr/share/gtksourceview-3.0/language-specs
 	cp Setup/lidic.lang $(DESTDIR)/usr/share/gtksourceview-3.0/language-specs
 	#pyshared.
-	mkdir $(DESTDIR)/usr/share/pyshared
+	mkdir -p $(DESTDIR)/usr/share/pyshared
 	cp lispeak $(DESTDIR)/usr/share/pyshared/lispeak.py
 	cp Setup/libraries/goslate.py $(DESTDIR)/usr/share/pyshared/goslate.py
+	#manpages. Currently we leave them into /opt
+	cp -r manpages $(DESTDIR)$(LISPEAKDIR)
 	#launch icon
 	mkdir -p $(DESTDIR)/usr/share/applications/
 	cp lispeak.desktop $(DESTDIR)/usr/share/applications/
@@ -65,7 +67,7 @@ uninstall:
 	rm -f $(DESTDIR)/usr/share/pyshared/goslate.py
 	rm -f $(DESTDIR)/usr/lib/python2.*/goslate.py
 	rm -f $(DESTDIR)/usr/lib/python2.*/lispeak.py
-	rm -f $(DESTDIR)/usr/share/gtksourceview-3.0/language-specs/lidic.lang
+	rm -f $(DESTDIR)/usr/share/gtksourceview-*/language-specs/lidic.lang
 	rm -f $(DESTDIR)/usr/share/applications/lispeak.desktop
 	rm -f $(DESTDIR)/usr/bin/lispeak*
 	
