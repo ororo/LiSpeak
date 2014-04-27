@@ -11,9 +11,13 @@ rm -f ${PKG}_${VER}_*.build
 rm -f ${PKG}_${VER}_*.upload
 
 cd ${PKG}-${VER}
+
+#TEST VERSION:
+
 dpkg-buildpackage # -S
-
 cd ..
-#lintian ${PKG}_${VER}*.changes
+lintian ${PKG}_${VER}*.changes
 
+#PRODUCTION VERSION:
+#dpkg-buildpackage -S
 #dput ppa:ororo/ppa ${PKG}_${VER}*.changes

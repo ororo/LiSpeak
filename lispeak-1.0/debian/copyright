@@ -3,7 +3,7 @@ Upstream-Name: lispeak
 Source: none
 
 Files: *
-Copyright: 2014 Brett Mayson
+Copyright: 2014 Brett Mayson https://github.com/BmanDesignsCanada/LiSpeak
 License: GPL-3.0+
 
 Files: debian/*

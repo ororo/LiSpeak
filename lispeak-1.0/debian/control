@@ -4,12 +4,14 @@ Priority: optional
 Maintainer: Name Surname, Luca Vercelli <ororo@email.it>
 Build-Depends: debhelper (>= 8)
 Standards-Version: 3.9.3
-Homepage: http://lispeak.bmandesigns.com
+Homepage: http://lispeak.bmandesigns.com and https://github.com/BmanDesignsCanada/LiSpeak
 
 Package: lispeak
 Architecture: any
 Depends: sox, libpython2.7-stdlib, wget, espeak, xautomation,
- xvkbd, python-appindicator, xdotool, mpg123, ${misc:Depends}
-Description: LiSpeak - Linux Voice Command System
- Some description here
+ xvkbd, python-appindicator, xdotool, mpg123, python,
+ ${python:Depends}, ${shlibs:Depends}, ${misc:Depends}
+Description: Linux Voice Command System
+ Convert speech to text using Google Voice API; then try to recognize 
+ the given command and execute it.
  
