@@ -220,8 +220,8 @@ class PopUp:
         color2 = gdk.color_parse(getAvgColB()[1])
         for wid in [self.window,self.exit,self.titleBox]:
             wid.modify_bg(Gtk.StateFlags.NORMAL, color)
-        for wid in [self.title,self.message]:
-            wid.modify_bg(Gtk.StateFlags.NORMAL, color2)
+        #for wid in [self.title,self.message]:
+        #    wid.modify_bg(Gtk.StateFlags.NORMAL, color2)
         try:
             if self.info['NOTIFICATIONS'] == "LiSpeak":
                 if self.counting:
