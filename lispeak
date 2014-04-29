@@ -155,7 +155,7 @@ class InstallGUI:
         if num == DEPENDS_PAGE:
             self.nButton.set_label("Skip Dependencies")
             output("Calculating dependencies...")   #could be a message in some status bar
-            depends = ["sox","libpython2.7-stdlib","wget","espeak","xautomation","xvkbd","python-appindicator","xdotool","mpg123"]
+            depends = ["sox","wget","espeak","xautomation","xvkbd","python-appindicator","xdotool","mpg123"]
             self.needs = []
             try:
                 resp = commands.getstatusoutput("dpkg --get-selections | grep -v deinstall > " + FILEFOLDER + "/packages")[1]
@@ -544,7 +544,7 @@ def displayOSWarning():
                 dialogInfo("%s is a supported operating system, but has not been tested on %s\nLiSpeak may not work properly","LiSpeak","",True,d,v)
                 dialogPrompt(exit=True)
         else:
-            dialogInfo("%s is NOT a supported operating system\nLiSpeak may not work properly","LiSpeak","",True,d)
+            dialogInfo("%s %s is NOT a supported operating system\nLiSpeak may not work properly","LiSpeak","",True,d,v)
             dialogPrompt(exit=True)
     else:
         dialogInfo("Your operating system could not be detected\nLiSpeak may not work properly")
@@ -610,13 +610,16 @@ def homeDir():
     return home 
 
 def displayNotification(text,text2 = False,image=False,speech=True):
-    global bus
-    data = formatNotification(text,text2,image,speech)
-    if bus == None:
-        bus = dbus.SessionBus()
-    proxy_obj = bus.get_object("com.bmandesigns.lispeak.notify", "/com/bmandesigns/lispeak/notify")
-    proxy_iface = dbus.Interface(proxy_obj, "com.bmandesigns.lispeak.notify")
-    proxy_iface.create_notification(data)
+    try:
+        global bus
+        data = formatNotification(text,text2,image,speech)
+        if bus == None:
+            bus = dbus.SessionBus()
+        proxy_obj = bus.get_object("com.bmandesigns.lispeak.notify", "/com/bmandesigns/lispeak/notify")
+        proxy_iface = dbus.Interface(proxy_obj, "com.bmandesigns.lispeak.notify")
+        proxy_iface.create_notification(data)
+    except:
+        print "Error while displaying notification"
     
 def formatNotification(text,text2 = False,image=False,speech=None):
     if type(text) != dict:

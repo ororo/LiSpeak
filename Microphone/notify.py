@@ -113,7 +113,11 @@ class PopUp:
         self.queue = []
         
         gobject.timeout_add_seconds(1, self.timer)
-        gobject.timeout_add_seconds(0.2, self.display_notify)
+        try:
+            gobject.timeout_add_seconds(0.2, self.display_notify)
+        except:
+            print "Reverting to 1 second check"
+            gobject.timeout_add_seconds(1, self.display_notify)       
         gobject.timeout_add_seconds(30, self.message_system)
         while gtk.events_pending():
             gtk.main_iteration_do(True)
