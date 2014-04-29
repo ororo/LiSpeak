@@ -3,21 +3,35 @@ PKG=lispeak
 VER=1.0
 
 #this would delete *.orig.*
-rm -f ${PKG}_${VER}.tar.gz
-rm -f ${PKG}_${VER}.dsc
-rm -f ${PKG}_${VER}_*.deb
-rm -f ${PKG}_${VER}_*.changes
-rm -f ${PKG}_${VER}_*.build
-rm -f ${PKG}_${VER}_*.upload
+rm -f ${PKG}_${VER}*.tar.gz
+rm -f ${PKG}_${VER}*.dsc
+rm -f ${PKG}_${VER}*.deb
+rm -f ${PKG}_${VER}*.changes
+rm -f ${PKG}_${VER}*.build
+rm -f ${PKG}_${VER}*.upload
 
-cd ${PKG}-${VER}
+DIRNAME=${PKG}-${VER}
+cp ${DIRNAME}/debian/changelog ./changelog.bak
 
-#TEST VERSION:
+for RELEASE in precise saucy trusty ;
+do
 
-dpkg-buildpackage # -S
+cd ${DIRNAME}
+
+cp ../changelog.bak debian/changelog
+sed -i -e "s/$PKG ($VER) release/$PKG ($VER~$RELEASE) $RELEASE/" debian/changelog
+
+#IN PRODUCTION USE -s
+
+dpkg-buildpackage > ../${PKG}_${VER}~${RELEASE}.log
 cd ..
+
+
+done
+
 lintian ${PKG}_${VER}*.changes
 
-#PRODUCTION VERSION:
-#dpkg-buildpackage -S
+mv changelog.bak ${PKG}-${VER}/debian/changelog
+
 #dput ppa:ororo/ppa ${PKG}_${VER}*.changes
+
