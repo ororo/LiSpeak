@@ -3,6 +3,9 @@
 # -*- coding: utf-8 -*-
 import urllib2,sys,time,os,lispeak,json,dbus,dbus.service,getpass
 from HTMLParser import HTMLParser
+from PIL import Image
+import os.path
+import cStringIO
 
 from gi.repository import Gtk
 from gi.repository import Gdk as gdk
@@ -19,8 +22,14 @@ FILEFOLDER="/tmp/lispeak_" + getpass.getuser()
 #lcd = lispeak.arduino(lispeak.getSingleInfo("ARDUINO"))
 #lcd.sendText("Welcome|LiSpeak LCD;")
 
-if "NOTIFICATIONS" not in lispeak.getInfo():
+preInfo = lispeak.getInfo()
+if "NOTIFICATIONS" not in preInfo:
     lispeak.writeSingleInfo("NOTIFICATIONS","LiSpeak")
+if "NOTIFYX" not in preInfo:
+    lispeak.writeSingleInfo("NOTIFYX","50")
+if "NOTIFYY" not in preInfo:
+    lispeak.writeSingleInfo("NOTIFYY","50")
+
 
 try:
     os.chdir("Microphone")
@@ -34,6 +43,36 @@ except ImportError:
     #if none exists, an ImportError will be throw
 DBusGMainLoop(set_as_default=True)
 
+def getAvgColB():
+    try:
+        f = os.popen("gsettings get org.gnome.desktop.background picture-uri")
+        f = f.read().replace("\n","").replace("'","").replace("file://","")
+        img = Image.open(cStringIO.StringIO(open(f).read()))
+        width, height = img.size
+        pixels = img.load()  
+        sides = [pixels[x,y] for x in range(3)+range(width-3,width) for y in range(height)]
+        topbottom = [pixels[x,y] for x in range(3,width-3) for y in range(3) + range(height-3,height)]
+        borderPixels = sides + topbottom
+        rsum = 0
+        gsum = 0
+        bsum = 0
+        for r,g,b in borderPixels:
+            rsum = rsum + r
+            gsum = gsum + g
+            bsum = bsum + b
+        numPixs = len(borderPixels)
+        rAvg = rsum / numPixs
+        gAvg = gsum / numPixs
+        bAvg = bsum / numPixs
+        bright = ((rAvg * 299) + (gAvg * 587) + (bAvg * 114)) / 1000
+        if bright > 100:
+            bright = "black"
+        else:
+            bright = "white"
+        return '#%02x%02x%02x' % (rAvg,gAvg,bAvg),bright
+    except:
+        return "#4D65F0","black"
+
 class MyDBUSService(dbus.service.Object):
     """ This is a service that waits for somebody call create_notification(data) """
     def __init__(self):
@@ -45,7 +84,6 @@ class MyDBUSService(dbus.service.Object):
     def create_notification(self, data):
         try:
             popup.queue.append(data)
-            print data,"ADDED TO QUEUE"
         except:
             pass
             
@@ -70,7 +108,6 @@ MyDBUSService()
 
 def notify(summary, body='', app_name='LiSpeak', app_icon='',
             timeout=5000, actions=[], hints=[], replaces_id=0):
-        print "creating notification",app_icon
         _bus_name = 'org.freedesktop.Notifications'
         _object_path = '/org/freedesktop/Notifications'
         _interface_name = _bus_name
@@ -104,14 +141,13 @@ class PopUp:
         self.window.set_gravity(gdk.Gravity.NORTH_WEST)  
         self.display = False
         self.window.set_keep_above(True)
-        color = gdk.color_parse('#F7A900')
-        for wid in [self.window,self.exit,self.titleBox]:
-            wid.modify_bg(Gtk.StateFlags.NORMAL, color)
         self.counter = 0
         self.counter2 = 0
         self.counting = False
         self.queue = []
         
+        self.info = lispeak.getInfo()
+
         gobject.timeout_add_seconds(1, self.timer)
         try:
             gobject.timeout_add_seconds(0.2, self.display_notify)
@@ -147,7 +183,7 @@ class PopUp:
             self.window.set_opacity(0.9)
         
     def message_system(self):
-        if lispeak.getInfo()['MESSAGES'] == "True":
+        if self.info['MESSAGES'] == "True":
             f = urllib2.urlopen("http://lispeak.bmandesigns.com/functions.php?f=messageUpdate")
             text = f.read()
             message = json.loads(text.replace('\r', '\\r').replace('\n', '\\n'),strict=False)
@@ -175,14 +211,19 @@ class PopUp:
              with open(FILEFOLDER + "/notification.lmf") as f:
                  data = lispeak.parseData(f.read())
                  self.queue.append(data)
-                 print data,"ADDED TO QUEUE"
              os.remove(FILEFOLDER + "/notification.lmf")
          return True
          
  
     def timer(self):
+        color = gdk.color_parse(getAvgColB()[0])
+        color2 = gdk.color_parse(getAvgColB()[1])
+        for wid in [self.window,self.exit,self.titleBox]:
+            wid.modify_bg(Gtk.StateFlags.NORMAL, color)
+        for wid in [self.title,self.message]:
+            wid.modify_bg(Gtk.StateFlags.NORMAL, color2)
         try:
-            if lispeak.getInfo()['NOTIFICATIONS'] == "LiSpeak":
+            if self.info['NOTIFICATIONS'] == "LiSpeak":
                 if self.counting:
                     if self.counter == 0:
                         self.display = True
@@ -192,7 +233,7 @@ class PopUp:
                                 while gtk.events_pending():
                                     gtk.main_iteration_do(True)
                                 self.window.show_all()
-                                self.window.move(100,150)
+                                self.window.move(int(self.info['NOTIFYX']),int(self.info['NOTIFYY']))
                                 self.icon.set_visible(not self.image_hide)
                         self.speak(self.speech)
                     if self.counter == 5:
@@ -239,10 +280,10 @@ class PopUp:
                         self.speech = data['title']
                 else:
                     self.speech = data['title']
-                if lispeak.getInfo()['NOTIFICATIONS'] == "LiSpeak":
+                if self.info['NOTIFICATIONS'] == "LiSpeak":
                     self.counter = 0
                     self.counting = True
-                elif lispeak.getInfo()['NOTIFICATIONS'] == "System":
+                elif self.info['NOTIFICATIONS'] == "System":
                     try:
                         if "icon" in data:
                             if data['icon'].startswith("http"):

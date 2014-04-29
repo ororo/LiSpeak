@@ -27,7 +27,7 @@ EXIT_PAGE = 4
 home = subprocess.Popen("echo $HOME", shell=True, stdout=subprocess.PIPE).communicate()[0].replace('\n','')
 root = home + "/.lispeak"
 
-approvedDistros = {"Ubuntu":["13.10"],"LinuxMint":["15"]}
+approvedDistros = {"Ubuntu":["13.10","14.04"],"LinuxMint":["15"],"Elementary OS":["0.2"]}
 
 languages = {}
 
@@ -536,19 +536,17 @@ def call(cmd,hide=True):
             subprocess.check_call(cmd)
 def displayOSWarning():
     d,v,j = platform.linux_distribution()
+    d = d.replace("\"","").replace("elementary OS","Elementary OS")
     if d != "":
         if d in approvedDistros:
             if v in approvedDistros[d]:
-                output("%s %s is a supported operating system",True,False,d,v)
+                output(str(d)+" "+str(v)+" ("+str(j.title())+") "+" is a supported operating system",True,False)
             else:
-                dialogInfo("%s is a supported operating system, but has not been tested on %s\nLiSpeak may not work properly","LiSpeak","",True,d,v)
-                dialogPrompt(exit=True)
+                dialogPrompt(text = str(d) +" is a supported operating system, but has not been tested on "+str(v)+" ("+str(j.title())+") "+"\nLiSpeak may not work properly.\n\nDo you want to continue?",exit=True)
         else:
-            dialogInfo("%s %s is NOT a supported operating system\nLiSpeak may not work properly","LiSpeak","",True,d,v)
-            dialogPrompt(exit=True)
+            dialogPrompt(text=str(d)+" "+str(v)+" ("+str(j.title())+") "+" is NOT a supported operating system.\nLiSpeak may not work properly.\n\nDo you want to continue?",exit=True)
     else:
-        dialogInfo("Your operating system could not be detected\nLiSpeak may not work properly")
-        dialogPrompt(exit=True)
+        dialogPrompt(text="Your operating system could not be detected.\nLiSpeak may not work properly.\n\nDo you want to continue?",exit=true)
 def touch(path,out=True):   
     if type(path)==str:
         if not os.path.exists(os.path.dirname(path)):
