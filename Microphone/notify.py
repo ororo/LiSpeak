@@ -29,6 +29,8 @@ if "NOTIFYX" not in preInfo:
     lispeak.writeSingleInfo("NOTIFYX","50")
 if "NOTIFYY" not in preInfo:
     lispeak.writeSingleInfo("NOTIFYY","50")
+if "MESSAGES" not in preInfo:
+    lispeak.writeSingleInfo("MESSAGES","False")
 
 
 try:
