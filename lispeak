@@ -223,7 +223,6 @@ class InstallGUI:
                 checkDepends(["libttspico0","libttspico-utils","libttspico-data"])
             self.userinfo["AUTOSTART"] = str(self.builder.get_object("swAutostart").get_active())
             writeInfo(self.userinfo)
-            self.userinfo["MESSAGES"] = False
             if self.userinfo["AUTOSTART"] == "True":
                 self.autostart(True)
             else:
