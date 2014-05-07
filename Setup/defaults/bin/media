@@ -11,6 +11,8 @@ case "$1" in
                 xte 'keydown XF86AudioPause' 'keyup XF86AudioPause';;
         'play' )
                 xte 'keydown XF86AudioPlay' 'keyup XF86AudioPlay';;
+        'stop' )
+                xte 'keydown XF86AudioStop' 'keyup XF86AudioStop';;
         'next' )
                 xte 'keydown XF86AudioNext' 'keyup XF86AudioNext';;
         'prev' )
