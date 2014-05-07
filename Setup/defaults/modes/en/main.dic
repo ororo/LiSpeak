@@ -66,6 +66,27 @@ date
 <whats,what is> my name
   UserInformation name
   
+play (LINE song)
+  media "$song$"
+play[ <media,song,video>]
+  media play
+pause[ <media,song,video>]
+  media pause
+stop[ <media,song,video>]
+  media stop
+next[ <song,file,media,video>]
+  media next
+<previous,last>[ <song,file,media,video>]
+  media prev
+[volume ]mute[ volume]
+  media volume_mute
+<<increase,raise,more,higher> volume,volume <up,increase,higher,raise>>
+  media volume_up
+<<decrease,lower,less,down> volume,volume <decrease,lower,less,down>>
+  media volume_down
+[what[ is][ <the,this>] ]<current[ly],playing,song>[ playing][ song][ is <playing,on,this>][ right[ now]]
+  mediaAdv
+
 [start,enter,begin][ ]dictation mode
   mode dictation
   

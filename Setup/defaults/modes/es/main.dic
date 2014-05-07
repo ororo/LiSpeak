@@ -78,7 +78,13 @@ fecha
   UserInformation ip
 [Cual es][mi]<nombre>
   UserInformation name
-  
+
+#MEDIA MISSING MOST COMMANDS  
+juego (LINE extra)
+  media-control play
+deténgase (LINE extra)
+  media-control stop
+
 <iniciar,entrar,comenzar>[el] <modo [de] dictado>
     mode dictation
   

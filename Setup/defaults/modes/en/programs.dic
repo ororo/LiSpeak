@@ -9,7 +9,16 @@
   
 [mozilla ]fire[ ]fox
   open firefox
-  
+
+###########################
+#   GRAPHICS
+###########################
+blender
+  open blender
+
+gimp
+  open gimp
+
 ###########################
 #   OFFICE PROGRAMS
 ###########################

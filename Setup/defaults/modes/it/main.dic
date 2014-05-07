@@ -67,6 +67,26 @@ ora
 [dimmi ]<come mi chiamo,qual è il mio nome>
   UserInformation name
 
+[<canzone,fai partire,ascolta,metti>][ <[il ]brano,[la ]canzone>] (LINE song)
+  media "$song$"
+abbassa [il ]volume
+  media volume_down
+alza [il ]volume
+  media volume_up
+<ferma,stop>[ <[il ]brano,[la ]canzone>]
+  media stop
+<silenzioso, muto>
+  media volume_mute
+pausa
+  media pause
+<play, esegui>[ <[il ]brano,[la ]traccia,[la ]canzone,[il ]video>]
+  media play
+[<canzone, brano, traccia, file, video> ]precedente
+  media prev
+<[<canzone, traccia> ]successiva,[<file,video,brano> ]successivo>
+  media next
+<qual, quale, che>[
+
 [<inizia,avvia,attiva> ]<[il ]modo,[la ]modalità> dettato
     mode dictation
   
