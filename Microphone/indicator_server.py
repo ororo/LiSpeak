@@ -102,8 +102,8 @@ class indicator:
     def install(self,widget):
         p = subprocess.Popen("zenity --entry --text='Enter the Plugin Name' --title='Plugin Installer'", shell=True, stdout=subprocess.PIPE).communicate()[0].replace('\n','')
         print "Installing: "+p
-        lispeak.downloadPackage(p)
-        lispeak.dialogInfo("Plugin Installed",'LiSpeak')
+        #lispeak.downloadPackage(p)
+        os.system("../lispeak -p "+p)
         
     def openBrowser(self,widget):
         os.system(PWD + "/../Recognition/bin/open "+PWD+"/browser.py")

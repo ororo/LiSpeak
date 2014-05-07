@@ -6,6 +6,8 @@ import subprocess,sys,platform,tarfile,os,argparse,shutil,urllib2,time,json,sock
 
 import sqlite3 as sql
 
+#from gi.repository import Gtk
+
 import commands
 
 FILEFOLDER="/tmp/lispeak_" + getpass.getuser()
@@ -40,6 +42,51 @@ class arduino():
         self.com.close()
     def sendText(self,text):
         self.com.write(str(text))
+class PopUp:
+    def __init__(self,data,path):
+        print "Loading PopUp"
+        filename = installDir+"/Setup/templates/plugininstall.glade"
+        self.builder = Gtk.Builder()
+        print "Builder Created"
+        self.builder.add_from_file(filename)
+        print "File Loaded"
+        self.builder.connect_signals(self)
+        print "Builder Loaded"
+        self.window = self.builder.get_object("window1")
+        self.window.set_title("LiSpeak - Install Plugin")
+        self.notebook = self.builder.get_object("notebook1")
+        #self.exit = self.builder.get_object("btnClose")
+        #self.exit.connect("button-release-event",self.close)
+        self.name = self.builder.get_object("lblName")
+        self.name2 = self.builder.get_object("lblName2")
+        self.depends = self.builder.get_object("lblDepends")
+        self.spin = self.builder.get_object("spinner")
+        self.btnInstall = self.builder.get_object("btnInstall")
+        self.btnInstall.connect("button-release-event",self.install)
+        self.name.set_text(data['name'])
+        
+        self.name2.set_text(data['name'])
+        if 'depends' in data:
+            self.depends.set_text("\n".join(data['depends']))
+        else:
+            self.depends.set_text("None")
+        print "Showing PopUp"
+        self.window.show_all()
+        self.data = data
+        self.path = path
+    
+    def install(self,a,b):
+        print "Installing"
+        self.notebook.next_page()
+        self.spin.start()
+        self.installPlugin(self.path,parent=self)
+        self.notebook.next_page()
+        self.window.destroy()
+        Gtk.main_quit()
+        
+    def refresh(self):
+        while Gtk.events_pending():
+            Gtk.main_iteration_do(True)
 class IPInfo() :
     def __init__(self, apikey):
         self.apikey = apikey
@@ -155,7 +202,7 @@ class InstallGUI:
         if num == DEPENDS_PAGE:
             self.nButton.set_label("Skip Dependencies")
             output("Calculating dependencies...")   #could be a message in some status bar
-            depends = ["sox","wget","espeak","xautomation","xvkbd","python-appindicator","xdotool","mpg123"]
+            depends = ["sox","wget","espeak","xautomation","xvkbd","python-appindicator","xdotool","mpg123","python-alsaauido"]
             self.needs = []
             try:
                 resp = commands.getstatusoutput("dpkg --get-selections | grep -v deinstall > " + FILEFOLDER + "/packages")[1]
@@ -739,7 +786,64 @@ def continuous(state):
 def sqlCheck(cur):
     cur.execute("CREATE TABLE IF NOT EXISTS plugins(id INTEGER PRIMARY KEY, name TEXT, identifier TEXT,type TEXT, version TEXT, author TEXT, binFiles TEXT,services TEXT, dicts TEXT, actions TEXT)")
             
-def installPlugin(path,upgrading=False):
+def getPluginData(path):
+    print "Gathering"
+    if path.endswith('.zip'):
+        zfile = zipfile.ZipFile(path)
+        tar = tarfile.open('tmp.tar.gz', 'w:gz')
+        for name in zfile.namelist():
+            print name
+            (dirname, filename) = os.path.split(name)
+            if "/" not in dirname:
+                dname = dirname
+            zfile.extract(name, installDir)
+            os.chdir(dname)
+            print name.split("/")
+            filea = '/'.join(name.split("/")[1:])
+            if filea != "":
+                tar.add(filea)
+            os.chdir('../')
+        tar.close() 
+        installPlugin("tmp.tar.gz")
+        delete(["tmp.tar.gz",dname])
+        return False
+    dictionaries = []
+    services = []
+    executables = []
+    complete = False
+    config = root + "/config/"
+    if path.endswith('.sp') or path.endswith('.tar.gz'):
+        plugins = {}
+        con = sql.connect(root+"/plugins.db")
+        with con:
+            cur = con.cursor()
+            sqlCheck(cur)
+            cur.execute("SELECT * FROM plugins")
+            pluginList = cur.fetchall()
+            for line in pluginList:
+                print line
+                pid,name,identifier,types,version,author,cmdfile,servicefiles,dictionaries,actions = line
+                plugins[name] = [float(version),eval(cmdfile)]
+        tar = tarfile.open(mode='r:gz',fileobj=file(path))
+        print "Opened"
+        dataf = tar.extractfile('main.info')
+        data = dataf.read()
+        dataf.close()
+        data = parseData(data)
+        print "Data Parsed"
+        data['name'] = data['name'].replace(" ","")  
+    return data
+            
+def installPlugin(path):
+    print "Recieved: "+path
+    data = getPluginData(path)
+    print "Data Gathered"
+    popup = PopUp(data,path)
+    popup.installPlugin = installPluginAction
+    print "Starting"
+    Gtk.main()
+            
+def installPluginAction(path,upgrading=False,parent=None):
     if path.endswith('.zip'):
         zfile = zipfile.ZipFile(path)
         tar = tarfile.open('tmp.tar.gz', 'w:gz')
@@ -790,12 +894,12 @@ def installPlugin(path,upgrading=False):
                 output("This version is already installed")
                 if dialogPrompt("Reinstall?") == True:
                     removePlugin(name,True)
-                    installPlugin(path)
+                    installPluginAction(path,parent=parent)
             else:
                 output("A previous version is already installed")
                 if dialogPrompt("Upgrade?") == True:
                     removePlugin(name,True)
-                    installPlugin(path)
+                    installPluginAction(path,parent=parent)
         except:
             install = False
             userLang = getSingleInfo("lang")
@@ -821,6 +925,7 @@ def installPlugin(path,upgrading=False):
                     depend = data['depends']
                     checkDepends(depend)
                 output("Installation is beginning")
+                
                 delete(root+"/"+data['name'])
                 output("Extracting")
                 tar.extractall(root+"/"+data['name'])

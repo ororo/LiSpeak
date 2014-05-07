@@ -81,9 +81,9 @@ fecha
 
 #MEDIA MISSING MOST COMMANDS  
 juego (LINE extra)
-  media-control play
+  media play
 deténgase (LINE extra)
-  media-control stop
+  media stop
 
 <iniciar,entrar,comenzar>[el] <modo [de] dictado>
     mode dictation
