@@ -16,6 +16,8 @@ int lt_match(char **buffer,char **speech);
 int sb_match(char **buffer,char **speech);
 // ( match
 int op_match(char **buffer,char **speech);
+// { match
+int cb_match(char **buffer,char **speech);
 
 int is_match(char *speech,char *buf);
 
