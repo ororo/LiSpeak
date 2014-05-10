@@ -365,15 +365,6 @@ int any_atomic_match(char **buffer,char **speech,char start,char end,struct conf
   **buffer = '\0';
   //Now *buf is a file name
   
-/*  char cmd[100];
-  strcpy(cmd, "dictionary -f ");
-  strcpy(cmd, *buf);
-  strcpy
-  FILE f = popen("dictionary" + *buf,'r')
-  ...
-  pclose(f);
-  ...*/
-  
   struct config newcfg;
   newcfg.match_first = 1;
   newcfg.starting_db_line = 0;
