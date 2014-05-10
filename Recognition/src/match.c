@@ -363,9 +363,15 @@ int any_atomic_match(char **buffer,char **speech,char start,char end) {
   pclose(f);
   ...*/
   
+  struct config newcfg;
+  newcfg.match_first = 1;
+  newcfg.starting_db_line = 0;
+  newcfg.current_db_line = 0;
+  
   char *new_command = NULL;
-  int LINE_IN_DB2 = 0;
-  new_command = get_command(buf,*speech,1,0,&LINE_IN_DB2); // ma devi prendere solo il primo match... FIXME
+
+  new_command = get_command(buf,*speech,&newcfg);
+  
   if (new_command != 0 && *new_command != '\0') return 1;
   else return 0;
 }

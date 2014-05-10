@@ -41,7 +41,6 @@
 #include "commands.h"
 
 
-
 int STORE_VARIABLES = 0; // set to yes when actually
                          // storing vars.
 
@@ -56,7 +55,7 @@ struct variables *var_Header = NULL;
   PROTOTYPES
 ************************************************************************/
 
-static int parse_args(int argc,char *argv[],char **speech,char **database,int *first_match,int *starting_line);
+static int parse_args(int argc,char *argv[],char **speech,char **database,struct config *cfg);
 
 // Print with everything after the first space in single quotes
 // to stop the shell from getting to it.
@@ -80,15 +79,16 @@ int main(int argc, char *argv[]) {
 
   char *command = NULL; // The command to run.
   
-  int match_first = 0; //option (boolean): match first line only
-  int starting_line = 0;    //option: starting line
-  int LINE_IN_DATABASE = 0;
-  
-  if(parse_args(argc,argv,&speech,&database,&match_first,&starting_line) != 0) {
+  struct config cfg;
+  cfg.match_first = 0; //option (boolean): match first line only
+  cfg.starting_db_line = 0;    //option: starting line
+  cfg.current_db_line = 0;
+    
+  if(parse_args(argc,argv,&speech,&database,&cfg) != 0) {
     exit(EXIT_FAILURE);
   }
   str_lower(speech);  
-  command = get_command(database,speech,match_first,starting_line,&LINE_IN_DATABASE);
+  command = get_command(database,speech,&cfg);
 
   free(speech); // No oppression allowed in this program.
   if(command) {
@@ -102,8 +102,8 @@ int main(int argc, char *argv[]) {
       free(var_Header);
       var_Header = var_LL;
     }
-    if(starting_line > 0) { // if we ask for a line, we get one back.
-      printf("%d\n",LINE_IN_DATABASE-1);
+    if(cfg.starting_db_line > 0) { // if we ask for a line, we get one back.
+      printf("%d\n",cfg.current_db_line-1);
     }
     
   } else {
@@ -143,11 +143,7 @@ static void print_arg_quoted(char *string) {
   return;
 }
 
-static int scroll_database_to_line(char *database, int line) {
-
-}
-
-static int parse_args(int argc,char *argv[],char **speech,char **database,int *first_match,int *starting_line) {
+static int parse_args(int argc,char *argv[],char **speech,char **database,struct config *cfg) {
 
   // Could reduce amount of code here. Also, maybe logic can be fixed
   if(argc < 3) {
@@ -172,12 +168,12 @@ static int parse_args(int argc,char *argv[],char **speech,char **database,int *f
   
   //more options
   int curarg = 2;
-  *first_match = 0;
-  *starting_line = 0;
+  cfg->match_first = 0;
+  cfg->starting_db_line = 0;
   while ( ++curarg < argc ) {
   
     if (strcmp(argv[curarg], "-f") == 0) {
-      *first_match = 1;
+      cfg->match_first = 1;
       
     } else if(strcmp(argv[curarg], "-s") == 0) {
       if (++curarg >= argc) {
@@ -190,7 +186,7 @@ static int parse_args(int argc,char *argv[],char **speech,char **database,int *f
         fprintf(stderr,"'%s' is not a valid line to start on.\n",argv[curarg]);
         return 1;
       }
-      *starting_line = i-1;
+      cfg->starting_db_line = i-1;
       
     } else {
       fprintf(stderr,"ERROR, unknown option: %s.\n", argv[curarg]);

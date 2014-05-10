@@ -21,7 +21,7 @@ void store_special_variables(char *speech,char *buf);
 /**
 * Return the command corresponding to /speech/ according to the dictionary file named /database/
 */
-char *get_command(char *database,char *speech,int match_first,int starting_line,int *LINE_IN_DATABASE) {
+char *get_command(char *database,char *speech,struct config *cfg) {
 
   FILE *file;
   char buf[1024];
@@ -34,17 +34,17 @@ char *get_command(char *database,char *speech,int match_first,int starting_line,
   }
 
   int i;
-  if(starting_line != 0) {
-    for(i = 0;i < starting_line;++i) {
+  if(cfg->starting_db_line != 0) {
+    for(i = 0;i < cfg->starting_db_line;++i) {
       if(!(fgets(buf,1024,file))) {
-      	goto success;
+      	goto success; //starting_db_line over file size
       }
     }
-    ++*LINE_IN_DATABASE;
+    ++cfg->current_db_line;
   }
 
   while( fgets(buf,1024,file)) {
-    ++*LINE_IN_DATABASE;
+    ++cfg->current_db_line;
     if(is_match(speech,buf)) {
       // Yes the speech matches, now to get variables in it.
       STORE_VARIABLES = 1;
@@ -56,8 +56,8 @@ char *get_command(char *database,char *speech,int match_first,int starting_line,
         printf("Error in database, waiting command but got EOF.\n");
         exit(1);
       }
-      ++*LINE_IN_DATABASE;
-      ret = create_command(buf, LINE_IN_DATABASE);
+      ++cfg->current_db_line;
+      ret = create_command(buf, cfg);
       break;
     }
   }
@@ -70,7 +70,7 @@ char *get_command(char *database,char *speech,int match_first,int starting_line,
 /**
 * Create the command, using the given line of dictionary /buf/ and the variables stored in /var_LL/
 */
-char *create_command(char *buf, int *LINE_IN_DATABASE) {
+char *create_command(char *buf,struct config *cfg) {
 
   /* while(var_Header != NULL) { */
   /*   printf("%s == %s\n",var_Header->varName,var_Header->varValue); */
@@ -80,8 +80,8 @@ char *create_command(char *buf, int *LINE_IN_DATABASE) {
   /* printf("%s\n",buf); */
   char *ret = malloc(sizeof(char)*1024); // get a kilo at a time
   if(ret == NULL) {
-  perror("malloc:");
-  exit(EXIT_FAILURE);
+    perror("malloc:");
+    exit(EXIT_FAILURE);
   }
   int i = 0;
   char saveChar;
@@ -91,7 +91,7 @@ char *create_command(char *buf, int *LINE_IN_DATABASE) {
 
   // First skip leading spaces
   if(*buf != ' ' && *buf != '\t') {
-    fprintf(stderr,"Bad syntax in database command: line %i does not start with a space\n", *LINE_IN_DATABASE);
+    fprintf(stderr,"Bad syntax in database command: line %i does not start with a space\n", cfg->current_db_line);
     exit(EXIT_FAILURE);
   }
   while(*buf == ' ' || *buf == '\t') {
@@ -109,7 +109,7 @@ char *create_command(char *buf, int *LINE_IN_DATABASE) {
     if(*buf == '\\') {
       buf++;
       if(*buf == '\n' || *buf == '\0' || *buf == '\r') {
-        fprintf(stderr,"Bad syntax in database command: '\\' char at the end, line %i\n", *LINE_IN_DATABASE);
+        fprintf(stderr,"Bad syntax in database command: '\\' char at the end, line %i\n", cfg->current_db_line);
       	exit(EXIT_FAILURE);
       }
       ret[i] = *buf;
@@ -119,11 +119,11 @@ char *create_command(char *buf, int *LINE_IN_DATABASE) {
     } else {
       ++buf;
       if(*buf == '$') {
-      	printf("Bad syntax in database command: unexpected '$', line %i\n", *LINE_IN_DATABASE);
+      	printf("Bad syntax in database command: unexpected '$', line %i\n", cfg->current_db_line);
       	exit(EXIT_FAILURE);
       }
       if(*buf == '\n' || *buf == '\0' || *buf == '\r') {
-      	printf("Bad syntax in database command: unexpected EOL, line %i\n", *LINE_IN_DATABASE);
+      	printf("Bad syntax in database command: unexpected EOL, line %i\n", cfg->current_db_line);
       	exit(EXIT_FAILURE);
       }
       startVarName = buf;
@@ -132,7 +132,7 @@ char *create_command(char *buf, int *LINE_IN_DATABASE) {
       }
 
       if(*buf != '$') {
-        fprintf(stderr,"Bad syntax in database command: lacking '$', line %i\n", *LINE_IN_DATABASE);
+        fprintf(stderr,"Bad syntax in database command: lacking '$', line %i\n", cfg->current_db_line);
       	exit(EXIT_FAILURE);
       }
 

@@ -20,4 +20,8 @@ extern struct variables{
 
 extern int LINE_IN_DATABASE;
 
+struct config {
+  int match_first, starting_db_line, current_db_line;
+};
+
 #endif /* GLOBALS_H_INCLUDED */
