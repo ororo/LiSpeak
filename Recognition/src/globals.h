@@ -16,7 +16,7 @@ struct variables{
 };
 
 struct config {
-  int match_first, starting_db_line, current_db_line, store_variables;
+  int match_first, starting_db_line, current_db_line, store_variables, end_of_match;
   struct variables *var_Header, *var_LL;
 };
 

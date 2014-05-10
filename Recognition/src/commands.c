@@ -45,11 +45,11 @@ char *get_command(char *database,char *speech,struct config *cfg) {
 
   while( fgets(buf,1024,file)) {
     ++cfg->current_db_line;
-    if(is_match(speech,buf)) {
+    if(is_match(speech,buf,cfg)) {
       // Yes the speech matches, now to get variables in it.
       cfg->store_variables = 1;
       store_special_variables(speech,buf,cfg);
-      is_match(speech,buf); // Will now store variables in in a LL
+      is_match(speech,buf,cfg); // Will now store variables in in a LL
 
       char *got = fgets(buf,1024,file);
       if (got == NULL) {

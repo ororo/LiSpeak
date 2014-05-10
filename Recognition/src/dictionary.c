@@ -74,6 +74,7 @@ int main(int argc, char *argv[]) {
   cfg.match_first = 0; //option (boolean): match first line only
   cfg.starting_db_line = 0;    //option: starting line
   cfg.current_db_line = 0;
+  cfg.end_of_match = 0;  //in most cases this will be strlen(speech)
   cfg.var_Header = NULL;
   cfg.var_LL = NULL;
   

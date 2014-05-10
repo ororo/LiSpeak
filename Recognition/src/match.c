@@ -282,6 +282,17 @@ int any_match(char **buffer,char **speech,char start,char end,struct config *cfg
       continue;
     }
 
+    if(*buf == '{') {
+      if(! cb_match(&buf,&tmpSpeech,cfg)) {
+      	tmpSpeech = *speech;
+
+      	while(!(buf == *buffer || *buf == ',')) {
+      	  ++buf;
+      	}
+      }
+      continue;
+    }
+    
     if(*buf == '\\') { // We will check what is after it.
       ++buf;
     }
@@ -527,10 +538,18 @@ int is_match(char *speech,char *buf,struct config *cfg) {
   if(*ptr == '#')
     return 0;
 
+  // Check if line is a command.
+  if(*ptr == ' ' || *ptr == '\t')
+    return 0;
+
   // If we get here, check if they are equal.
   speechPtr = speech;
 
   return check_equality(speechPtr,ptr,cfg);
+}
+
+inline int is_eow(char c) {
+return c == ' ' || c == ',' || c == ';' || c == '.' || c == ':' ;
 }
 
 int check_equality(char *speech,char *buffer,struct config *cfg) {
@@ -554,12 +573,21 @@ int check_equality(char *speech,char *buffer,struct config *cfg) {
 
   //  printf("Testing if %s == %s\n",speech,buffer); // DEBUG
 
+  char* savespeech = speech;
 
-
-  while(*buffer != '\0') {
+  while(1) {
     if(*buffer == '\n' || *buffer == '#' || *buffer == '\r') {
       *buffer = '\0';
     }
+    if(*buffer == '\0') {
+      if (*speech == '\0') //both buffer and speech ended
+        break;
+      else if (cfg->match_first && is_eow(*speech)) //speech not ended, however we just want first match
+        break;
+    } else if(*speech == '\0') {//speech ended but buffer did not
+      return 0;
+    }
+
     if (*buffer == '<') {
       if(! lt_match(&buffer,&speech,cfg)) {
       	return 0;
@@ -581,6 +609,13 @@ int check_equality(char *speech,char *buffer,struct config *cfg) {
 
       continue;
     }
+    else if(*buffer == '{') {
+      if( ! cb_match(&buffer,&speech,cfg)) {
+        return 0;
+      }
+
+      continue;
+    }
     else if(*buffer == '\\') {
       ++buffer;
       // Duplicates ??
@@ -592,11 +627,12 @@ int check_equality(char *speech,char *buffer,struct config *cfg) {
       	//	printf("%c != %c\n",*speech,*buffer); // DEBUG
       	return 0;
       }
-    }
-    if(*buffer != '\0')
       ++buffer;
-    if(*speech != '\0')
       ++speech;
+    }
   }
+  cfg->end_of_match = speech - savespeech;
   return 1;
 }
+
+
