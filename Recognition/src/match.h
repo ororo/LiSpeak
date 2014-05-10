@@ -11,14 +11,14 @@
 #include "globals.h"
 
 // < match
-int lt_match(char **buffer,char **speech);
+int lt_match(char **buffer,char **speech,struct config *cfg);
 // [ match
-int sb_match(char **buffer,char **speech);
+int sb_match(char **buffer,char **speech,struct config *cfg);
 // ( match
-int op_match(char **buffer,char **speech);
+int op_match(char **buffer,char **speech,struct config *cfg);
 // { match
-int cb_match(char **buffer,char **speech);
+int cb_match(char **buffer,char **speech,struct config *cfg);
 
-int is_match(char *speech,char *buf);
+int is_match(char *speech,char *buf,struct config *cfg);
 
 #endif /* MATCH_H_INCLUDED */

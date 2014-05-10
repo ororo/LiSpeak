@@ -43,6 +43,7 @@ Wildchards can be nested.
 The second line of the entry \fBmust\fR begin with a space or a tab. It can contain internal variables, denoted as \fB$variablename$\fR.
 Internal variables will be replaced before echoing output.
 If you want output the $ sign, for example for using a SHELL variable, type \\$.
+A special variable \fB$SPEECH$\fR is provided for whole speech.
 
 Between one entry and the following one, any number of empty lines is allowed.
 Line beginning with a sharp are allowed, too, and will be ignored as comments.

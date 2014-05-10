@@ -33,27 +33,27 @@
 
 // PROTOTYPES *******************
 
-int check_equality(char *speech,char *buffer);
-int any_match(char **buffer,char **speech,char start,char end);
-int any_atomic_match(char **buffer,char **speech,char start,char end);
-char *line_match(char *buf,char **tmpSpeech);
+int check_equality(char *speech,char *buffer,struct config *cfg);
+int any_match(char **buffer,char **speech,char start,char end,struct config *cfg);
+int any_atomic_match(char **buffer,char **speech,char start,char end,struct config *cfg);
+char *line_match(char *buf,char **tmpSpeech,struct config *cfg);
 
 //********************************
 
 
 // square bracket match
-int sb_match(char **buffer,char **speech) {
-  return any_match(buffer,speech,'[',']');
+int sb_match(char **buffer,char **speech,struct config *cfg) {
+  return any_match(buffer,speech,'[',']',cfg);
 }
 
 // less than match
-int lt_match(char **buffer,char **speech) {
-  return any_match(buffer,speech,'<','>');
+int lt_match(char **buffer,char **speech,struct config *cfg) {
+  return any_match(buffer,speech,'<','>',cfg);
 }
 
 // bracket (variable) match.
 // Matches the syntax: ( WORD varname )   or  ( LINE varname [optional stopping expression] )
-int op_match(char **buffer,char **speech) {
+int op_match(char **buffer,char **speech,struct config *cfg) {
 
   char *buf = *buffer;
   char *tmpSpeech = *speech;
@@ -84,7 +84,7 @@ int op_match(char **buffer,char **speech) {
   if(strcmp(startVarName,"WORD") == 0) {
     *buf = saveChar;
     if(*buf == '<') {
-      lt_match(&buf,&tmpSpeech);
+      lt_match(&buf,&tmpSpeech,cfg);
     } else {
       while(*tmpSpeech != ' ' && *tmpSpeech != '\n' &&
 	     *tmpSpeech != '\r' && *tmpSpeech != '\0') {
@@ -100,10 +100,10 @@ int op_match(char **buffer,char **speech) {
     // until the end of the line.
     *buf = saveChar;
     if(*buf == '<') {
-      lt_match(&buf,&tmpSpeech);
+      lt_match(&buf,&tmpSpeech,cfg);
     } else {
       // buf won't change, but tmpSpeech must.
-      lineSpeech = line_match(buf,&tmpSpeech);
+      lineSpeech = line_match(buf,&tmpSpeech,cfg);
     }
   }
   else {
@@ -113,7 +113,7 @@ int op_match(char **buffer,char **speech) {
   }
 
 
-  if( !STORE_VARIABLES || !(tmpSpeech > *speech)) {
+  if( !cfg->store_variables || !(tmpSpeech > *speech)) {
     while(*buf != ')' && *buf != '\n' && *buf != '\0' && *buf != '\r') {
       ++buf;
     }
@@ -127,17 +127,17 @@ int op_match(char **buffer,char **speech) {
     //get the variable name.
     //reusing startVarName
 
-    if(var_LL->next != NULL) {
+    if(cfg->var_LL->next != NULL) {
       printf("var_LL->next is not NULL!\n");
       exit(1);
     }
 
-    var_LL->next = malloc(1*sizeof(struct variables));
-    if(var_LL->next == NULL) {
+    cfg->var_LL->next = malloc(1*sizeof(struct variables));
+    if(cfg->var_LL->next == NULL) {
       printf("Memory Error in op_match!\n");
       exit(1);
     }
-    var_LL = var_LL->next;
+    cfg->var_LL = cfg->var_LL->next;
 
    while(*buf == ' ') {
     	++buf;
@@ -156,13 +156,13 @@ int op_match(char **buffer,char **speech) {
     }
     saveChar = *buf;
     *buf = '\0';
-    var_LL->varName = malloc(sizeof(char)*strlen(startVarName)+1);
+    cfg->var_LL->varName = malloc(sizeof(char)*strlen(startVarName)+1);
 
-    if(var_LL->varName == NULL) {
+    if(cfg->var_LL->varName == NULL) {
       printf("Memory error in op_match!\n");
       exit(1);
     }
-    strcpy(var_LL->varName,startVarName);
+    strcpy(cfg->var_LL->varName,startVarName);
     *buf = saveChar;
     while(*buf != ')' && *buf != '\n' && *buf != '\0' && *buf != '\r') {
       ++buf;
@@ -173,19 +173,19 @@ int op_match(char **buffer,char **speech) {
     }
     ++buf;
     *buffer = buf;
-    var_LL->next = NULL;
+    cfg->var_LL->next = NULL;
 
   } if(tmpSpeech > *speech) { // A match!
-    if(STORE_VARIABLES) {
+    if(cfg->store_variables) {
       saveChar = *tmpSpeech;
       *tmpSpeech = '\0';
-      var_LL->varValue = malloc(sizeof(char)*strlen(*speech)+1);
+      cfg->var_LL->varValue = malloc(sizeof(char)*strlen(*speech)+1);
 
-      if(var_LL->varValue == NULL) {
+      if(cfg->var_LL->varValue == NULL) {
       	printf("MEMORY error in op_match!\n");
       	exit(1);
       }
-      strcpy(var_LL->varValue,*speech);
+      strcpy(cfg->var_LL->varValue,*speech);
       *tmpSpeech = saveChar;
     }
     if(!lineSpeech) {
@@ -210,7 +210,7 @@ int op_match(char **buffer,char **speech) {
 * 3. The function starts with the following control: expression is ok iff it contains a good number of /start/ and /end/ parenthesis.
 *    This control, IMO, does not check the different kinds of parenthesis.
 */
-int any_match(char **buffer,char **speech,char start,char end) {
+int any_match(char **buffer,char **speech,char start,char end,struct config *cfg) {
 
   if(**buffer != start) {
     printf("ERROR, any_match() called, but **buffer != '%c'\n",
@@ -257,7 +257,7 @@ int any_match(char **buffer,char **speech,char start,char end) {
       ++buf;
     }
     if(*buf == '<') {
-      if(! lt_match(&buf,&tmpSpeech)) {
+      if(! lt_match(&buf,&tmpSpeech,cfg)) {
       	tmpSpeech = *speech;
 
       	while(!(buf == *buffer || *buf == ',')) {
@@ -267,7 +267,7 @@ int any_match(char **buffer,char **speech,char start,char end) {
       continue;
     }
     if(*buf == '(') {
-      if(! op_match(&buf,&tmpSpeech)) {
+      if(! op_match(&buf,&tmpSpeech,cfg)) {
       	tmpSpeech = *speech;
 
       	while(!(buf == *buffer || *buf == ',')) {
@@ -278,7 +278,7 @@ int any_match(char **buffer,char **speech,char start,char end) {
     }
 
     if(*buf == '[') {
-      sb_match(&buf,&tmpSpeech);
+      sb_match(&buf,&tmpSpeech,cfg);
       continue;
     }
 
@@ -313,14 +313,14 @@ int any_match(char **buffer,char **speech,char start,char end) {
 }
 
 // curly bracket match
-int cb_match(char **buffer,char **speech) {
-  return any_atomic_match(buffer,speech,'{','}');
+int cb_match(char **buffer,char **speech,struct config *cfg) {
+  return any_atomic_match(buffer,speech,'{','}',cfg);
 }
 
 /*
 Generic parenthesis matcher, differently from any_match() this version is not recursive
 */
-int any_atomic_match(char **buffer,char **speech,char start,char end) {
+int any_atomic_match(char **buffer,char **speech,char start,char end,struct config *cfg) {
 
   if(**buffer != start) {
     printf("ERROR, any_atomic_match() called, but **buffer != '%c'\n",
@@ -380,7 +380,7 @@ int any_atomic_match(char **buffer,char **speech,char start,char end) {
 /**
 * Return the remaining part of the line
 */
-char *line_match(char *buf,char **tmpSpeech) {
+char *line_match(char *buf,char **tmpSpeech,struct config *cfg) {
   // buf should be right before the name of the
   // variable, on a space. What we need to do is skip the name
   // of the variable, and get the data we need so we can
@@ -468,14 +468,14 @@ char *line_match(char *buf,char **tmpSpeech) {
     while(*buf != ')') {
       if(*buf == '<') {
 	only_sb = 0;
-	if(! lt_match(&buf,&speechChecker)) {
+	if(! lt_match(&buf,&speechChecker,cfg)) {
 	  buf = matchExpression;
 	  speechChecker = speechWalker;
 	  break;
 	}
 	continue;
       } else if(*buf == '[') {
-	sb_match(&buf,&speechChecker);
+	sb_match(&buf,&speechChecker,cfg);
 	continue;
       }
       if(*buf != *speechChecker) {
@@ -513,7 +513,7 @@ char *line_match(char *buf,char **tmpSpeech) {
 * Return true if the text contained in /speech/ (input) matches the text-pattern contained in /buf/ (line of dictionary)
 * Assumes there are no blanks at the beginning
 */
-int is_match(char *speech,char *buf) {
+int is_match(char *speech,char *buf,struct config *cfg) {
   char *ptr;
   char *speechPtr;
 
@@ -530,10 +530,10 @@ int is_match(char *speech,char *buf) {
   // If we get here, check if they are equal.
   speechPtr = speech;
 
-  return check_equality(speechPtr,ptr);
+  return check_equality(speechPtr,ptr,cfg);
 }
 
-int check_equality(char *speech,char *buffer) {
+int check_equality(char *speech,char *buffer,struct config *cfg) {
   // if there is a < in buffer, don't move the speech pointer,
   // try to match from that point everything in <a,b,c>
   // and then move the speech pointer to the end of the biggest match
@@ -561,7 +561,7 @@ int check_equality(char *speech,char *buffer) {
       *buffer = '\0';
     }
     if (*buffer == '<') {
-      if(! lt_match(&buffer,&speech)) {
+      if(! lt_match(&buffer,&speech,cfg)) {
       	return 0;
       }
       // If there is a match here, both speech and buffer
@@ -569,13 +569,13 @@ int check_equality(char *speech,char *buffer) {
       continue;
     }
     else if (*buffer == '[') {
-      sb_match(&buffer,&speech);
+      sb_match(&buffer,&speech,cfg);
       // Same as lt_match, but not need to return no match
       // if nothing is found, that is okay.
       continue;
     }
     else if(*buffer == '(') {
-      if( ! op_match(&buffer,&speech)) {
+      if( ! op_match(&buffer,&speech,cfg)) {
         return 0;
       }
 

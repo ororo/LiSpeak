@@ -41,15 +41,6 @@
 #include "commands.h"
 
 
-int STORE_VARIABLES = 0; // set to yes when actually
-                         // storing vars.
-
-struct variables *var_LL = NULL;
-struct variables *var_Header = NULL;
-
-//int LINE_IN_DATABASE = 0;  //GLOBAL VARIABLES!!!! FIXME!!!
-
-
 
 /***********************************************************************
   PROTOTYPES
@@ -83,7 +74,9 @@ int main(int argc, char *argv[]) {
   cfg.match_first = 0; //option (boolean): match first line only
   cfg.starting_db_line = 0;    //option: starting line
   cfg.current_db_line = 0;
-    
+  cfg.var_Header = NULL;
+  cfg.var_LL = NULL;
+  
   if(parse_args(argc,argv,&speech,&database,&cfg) != 0) {
     exit(EXIT_FAILURE);
   }
@@ -95,12 +88,12 @@ int main(int argc, char *argv[]) {
     printf("%s\n",command);
     //print_arg_quoted(command);
     free(command);
-    while(var_Header) {
-      free(var_Header->varName);
-      free(var_Header->varValue);
-      var_LL = var_Header->next;
-      free(var_Header);
-      var_Header = var_LL;
+    while(cfg.var_Header) {
+      free(cfg.var_Header->varName);
+      free(cfg.var_Header->varValue);
+      cfg.var_LL = cfg.var_Header->next;
+      free(cfg.var_Header);
+      cfg.var_Header = cfg.var_LL;
     }
     if(cfg.starting_db_line > 0) { // if we ask for a line, we get one back.
       printf("%d\n",cfg.current_db_line-1);

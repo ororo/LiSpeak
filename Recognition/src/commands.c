@@ -14,7 +14,7 @@
 
 // PROTOTYPES *****************
 
-void store_special_variables(char *speech,char *buf);
+void store_special_variables(char *speech,char *buf,struct config *cfg);
 
 //****************************
 
@@ -47,8 +47,8 @@ char *get_command(char *database,char *speech,struct config *cfg) {
     ++cfg->current_db_line;
     if(is_match(speech,buf)) {
       // Yes the speech matches, now to get variables in it.
-      STORE_VARIABLES = 1;
-      store_special_variables(speech,buf);
+      cfg->store_variables = 1;
+      store_special_variables(speech,buf,cfg);
       is_match(speech,buf); // Will now store variables in in a LL
 
       char *got = fgets(buf,1024,file);
@@ -138,7 +138,7 @@ char *create_command(char *buf,struct config *cfg) {
 
       saveChar = *buf;
       *buf = '\0';
-      tmpHeader = var_Header;
+      tmpHeader = cfg->var_Header;
 
       while(tmpHeader != NULL) {
       	if(strcmp(startVarName,tmpHeader->varName) == 0) {
@@ -187,21 +187,21 @@ char *create_command(char *buf,struct config *cfg) {
 /**
 * Create the var_LL linked list, then set up the special variable SPEECH 
 */
-void store_special_variables(char *speech,char *buf) {
-  assert(var_LL == NULL);
+void store_special_variables(char *speech,char *buf,struct config *cfg) {
+  assert(cfg->var_LL == NULL);
   
   // first time add special var $SPEECH$
-  var_LL = malloc(1*sizeof(struct variables));
-  if(var_LL == NULL) {
+  cfg->var_LL = malloc(1*sizeof(struct variables));
+  if(cfg->var_LL == NULL) {
     perror("malloc:");
     exit(EXIT_FAILURE);
   }
   // Set the var_Header to access the head later.
-  var_Header = var_LL;
-  var_LL->next = NULL;
+  cfg->var_Header = cfg->var_LL;
+  cfg->var_LL->next = NULL;
   // The stupid error before "var_LL->next == NULL;"
-  var_LL->varName = malloc(strlen("SPEECH")+1);
-  strcpy(var_LL->varName,"SPEECH");
-  var_LL->varValue = malloc(strlen(speech)+1);
-  strcpy(var_LL->varValue,speech);
+  cfg->var_LL->varName = malloc(strlen("SPEECH")+1);
+  strcpy(cfg->var_LL->varName,"SPEECH");
+  cfg->var_LL->varValue = malloc(strlen(speech)+1);
+  strcpy(cfg->var_LL->varValue,speech);
 }
