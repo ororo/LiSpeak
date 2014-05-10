@@ -29,11 +29,13 @@
 #include <string.h>
 #include <stdlib.h>
 #include "match.h"
+#include "commands.h"
 
 // PROTOTYPES *******************
 
 int check_equality(char *speech,char *buffer);
 int any_match(char **buffer,char **speech,char start,char end);
+int any_atomic_match(char **buffer,char **speech,char start,char end);
 char *line_match(char *buf,char **tmpSpeech);
 
 //********************************
@@ -49,7 +51,7 @@ int lt_match(char **buffer,char **speech) {
   return any_match(buffer,speech,'<','>');
 }
 
-// Open paren (variable) match.
+// bracket (variable) match.
 // Matches the syntax: ( WORD varname )   or  ( LINE varname [optional stopping expression] )
 int op_match(char **buffer,char **speech) {
 
@@ -309,6 +311,65 @@ int any_match(char **buffer,char **speech,char start,char end) {
 
   return 0;
 }
+
+// curly bracket match
+int cb_match(char **buffer,char **speech) {
+  return any_atomic_match(buffer,speech,'{','}');
+}
+
+/*
+Generic parenthesis matcher, differently from any_match() this version is not recursive
+*/
+int any_atomic_match(char **buffer,char **speech,char start,char end) {
+
+  if(**buffer != start) {
+    printf("ERROR, any_atomic_match() called, but **buffer != '%c'\n",
+	   start);
+  }
+  ++(*buffer);
+
+  char *buf = *buffer;
+  char *Gspeech = *speech;
+  char *tmpSpeech = *speech;
+
+  int stop = 1;
+  
+  while (stop != 0) {
+    if(**buffer == '\n' || **buffer == '\0' || **buffer == '\r' || **buffer == start) {
+      printf("ERROR, inconnect syntax of %c,%c.\n",start,end);
+      exit(1);
+    }
+    if(**buffer == end) {
+      --stop;
+    }
+    ++(*buffer);
+    if(**buffer == '\\') {
+      // Not sure about the flows of these ifs
+      ++(*buffer);
+      if(**buffer != '\0')
+	     ++(*buffer);
+    }
+  }
+  --(*buffer);
+  **buffer = '\0';
+  //Now *buf is a file name
+  
+/*  char cmd[100];
+  strcpy(cmd, "dictionary -f ");
+  strcpy(cmd, *buf);
+  strcpy
+  FILE f = popen("dictionary" + *buf,'r')
+  ...
+  pclose(f);
+  ...*/
+  
+  char *new_command = NULL;
+  int LINE_IN_DB2 = 0;
+  new_command = get_command(buf,*speech,1,0,&LINE_IN_DB2); // ma devi prendere solo il primo match... FIXME
+  if (new_command != 0 && *new_command != '\0') return 1;
+  else return 0;
+}
+
 
 /**
 * Return the remaining part of the line

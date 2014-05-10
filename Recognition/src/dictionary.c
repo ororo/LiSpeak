@@ -41,20 +41,22 @@
 #include "commands.h"
 
 
+
 int STORE_VARIABLES = 0; // set to yes when actually
                          // storing vars.
 
 struct variables *var_LL = NULL;
 struct variables *var_Header = NULL;
 
-int LINE_IN_DATABASE = 0;
+//int LINE_IN_DATABASE = 0;  //GLOBAL VARIABLES!!!! FIXME!!!
+
+
 
 /***********************************************************************
   PROTOTYPES
 ************************************************************************/
 
-static int parse_args(int argc,char *argv[],char **speech,char **database);
-static int is_there_enough_args(int argc);
+static int parse_args(int argc,char *argv[],char **speech,char **database,int *first_match,int *starting_line);
 
 // Print with everything after the first space in single quotes
 // to stop the shell from getting to it.
@@ -64,24 +66,29 @@ static int is_there_enough_args(int argc);
 // testing '1 2 3'
 static void print_arg_quoted(char *string);
 
-void StrLower(char *str)
-  { char* pstr = str;
-     while (*pstr++)
-       *pstr = (char)tolower(*pstr); }
+void str_lower(char *str) {
+  char* pstr = str;
+  while (*pstr++)
+    *pstr = (char)tolower(*pstr);
+}
 
 int main(int argc, char *argv[]) {
-  
+   
   char *speech = NULL; // What the user said.
   char *database = NULL; // File to check what command to run
 			 // based on what was said.
 
   char *command = NULL; // The command to run.
   
-  if(parse_args(argc,argv,&speech,&database) != 0) {
+  int match_first = 0; //option (boolean): match first line only
+  int starting_line = 0;    //option: starting line
+  int LINE_IN_DATABASE = 0;
+  
+  if(parse_args(argc,argv,&speech,&database,&match_first,&starting_line) != 0) {
     exit(EXIT_FAILURE);
   }
-  StrLower(speech);
-  command = get_command(database,speech);
+  str_lower(speech);  
+  command = get_command(database,speech,match_first,starting_line,&LINE_IN_DATABASE);
 
   free(speech); // No oppression allowed in this program.
   if(command) {
@@ -95,7 +102,7 @@ int main(int argc, char *argv[]) {
       free(var_Header);
       var_Header = var_LL;
     }
-    if(argc == 4) { // if we ask for a line, we get one back.
+    if(starting_line > 0) { // if we ask for a line, we get one back.
       printf("%d\n",LINE_IN_DATABASE-1);
     }
     
@@ -136,12 +143,16 @@ static void print_arg_quoted(char *string) {
   return;
 }
 
-static int parse_args(int argc,char *argv[],char **speech,char **database) {
+static int scroll_database_to_line(char *database, int line) {
+
+}
+
+static int parse_args(int argc,char *argv[],char **speech,char **database,int *first_match,int *starting_line) {
 
   // Could reduce amount of code here. Also, maybe logic can be fixed
-  if(! is_there_enough_args(argc)) {
+  if(argc < 3) {
     printf("Incorrect number of arguments: \n"
-	   "USAGE %s <speech> <database> [starting-line]\n",argv[0]);
+	   "USAGE %s <speech> <database> [-f ][-s starting-line]\n",argv[0]);
     return 1;
   }
   if(*speech != NULL || *database != NULL) {
@@ -158,21 +169,36 @@ static int parse_args(int argc,char *argv[],char **speech,char **database) {
   }
   strcpy(*speech,argv[1]);
   strcpy(*database,argv[2]);
-
-  if(argc == 4) {
-    int i = -1;
-    
-    sscanf(argv[3],"%d",&i);
-    if(i <= 0) {
-      fprintf(stderr,"'%s' is not a valid line to start on.\n",argv[3]);
-      exit(EXIT_FAILURE);
+  
+  //more options
+  int curarg = 2;
+  *first_match = 0;
+  *starting_line = 0;
+  while ( ++curarg < argc ) {
+  
+    if (strcmp(argv[curarg], "-f") == 0) {
+      *first_match = 1;
+      
+    } else if(strcmp(argv[curarg], "-s") == 0) {
+      if (++curarg >= argc) {
+        fprintf(stderr,"ERROR, option -s expects a line number.\n");
+        return 1;
+      }
+      int i = -1;
+      sscanf(argv[curarg],"%d",&i);
+      if(i <= 0) {
+        fprintf(stderr,"'%s' is not a valid line to start on.\n",argv[curarg]);
+        return 1;
+      }
+      *starting_line = i-1;
+      
+    } else {
+      fprintf(stderr,"ERROR, unknown option: %s.\n", argv[curarg]);
+      return 1;
     }
-    LINE_IN_DATABASE = i-1;
-
   }
+  
   return 0;
 }
 
-static inline int is_there_enough_args(int argc) {
-  return ((argc == 3) || (argc == 4));
-}
+
