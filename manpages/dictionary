@@ -4,7 +4,7 @@
 .SH NAME
 dictionary \- recognize a pattern against a dictionary
 .SH SYNOPSIS
-dictionary <input text> <dictionaryfile> [startingline]
+dictionary [-h] <input text> <dictionaryfile> [-f][-s startingline]
 .SH DESCRIPTION
 dictionary takes as input a text (probably a sentence), then try to match it against the given dictionary (.dic) file.
 On success, the program echoes the text (probably a command) associated with the pattern.
@@ -37,6 +37,11 @@ Input text must contain an expression that match the mattern; all the expression
 All the remaining portion of the sentence. Such text will be referenced as \fB$name$\fR
 in the second line of entry.
 .RE
+ \fB{filename}\fR
+.RS 4
+This will match the string against the other dictionary filename, using option -f.
+Experimental feature.
+.RE
 
 Wildchards can be nested.
 
@@ -50,7 +55,15 @@ Line beginning with a sharp are allowed, too, and will be ignored as comments.
 Empty lines and comment lines are \fBnot\fR allowed between the two lines of an entry.
 
 .SH OPTIONS
- \fBstartingline\fR
+ \fB-h\fR
+.RS 4
+Show help
+.RE
+ \fB-f\fR
+.RS 4
+Allow matching of just first portion of speech.
+.RE
+ \fB-s\fR startingline
 .RS 4
 If a startingline is given, the search will begin from this line of the dic file. Program output will change:
 two lines will be echoed, the command and the number of line of the match.
