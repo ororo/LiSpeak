@@ -46,7 +46,7 @@
   PROTOTYPES
 ************************************************************************/
 
-static int parse_args(int argc,char *argv[],char **speech,char **database,struct config *cfg);
+static int parse_args(int argc,char *argv[],struct config *cfg);
 
 // Print with everything after the first space in single quotes
 // to stop the shell from getting to it.
@@ -56,6 +56,9 @@ static int parse_args(int argc,char *argv[],char **speech,char **database,struct
 // testing '1 2 3'
 static void print_arg_quoted(char *string);
 
+void free_structure(struct config *cfg);
+
+
 void str_lower(char *str) {
   char* pstr = str;
   while (*pstr++)
@@ -64,12 +67,6 @@ void str_lower(char *str) {
 
 int main(int argc, char *argv[]) {
    
-  char *speech = NULL; // What the user said.
-  char *database = NULL; // File to check what command to run
-			 // based on what was said.
-
-  char *command = NULL; // The command to run.
-  
   struct config cfg;
   cfg.match_first = 0; //option (boolean): match first line only
   cfg.starting_db_line = 0;    //option: starting line
@@ -77,38 +74,47 @@ int main(int argc, char *argv[]) {
   cfg.end_of_match = 0;  //in most cases this will be strlen(speech)
   cfg.var_Header = NULL;
   cfg.var_LL = NULL;
+  cfg.speech = NULL; // What the user said.
+  cfg.database = NULL; // File to check what command to run
+			 // based on what was said.
+  cfg.command = NULL; // The command to run.
   
-  if(parse_args(argc,argv,&speech,&database,&cfg) != 0) {
+  
+  if(parse_args(argc,argv,&cfg) != 0) {
     exit(EXIT_FAILURE);
   }
-  str_lower(speech);  
-  command = get_command(database,speech,&cfg);
+  str_lower(cfg.speech);  
+  get_command(&cfg);
 
-  free(speech); // No oppression allowed in this program.
-  if(command) {
-    printf("%s\n",command);
-    //print_arg_quoted(command);
-    free(command);
-    while(cfg.var_Header) {
-      free(cfg.var_Header->varName);
-      free(cfg.var_Header->varValue);
-      cfg.var_LL = cfg.var_Header->next;
-      free(cfg.var_Header);
-      cfg.var_Header = cfg.var_LL;
-    }
+  if(cfg.command) {
+    printf("%s\n",cfg.command);
     if(cfg.starting_db_line > 0) { // if we ask for a line, we get one back.
       printf("%d\n",cfg.current_db_line-1);
     }
-    
   } else {
-    fprintf(stderr,"No Command recognized in %s.\n", database);   //Message really useful? Debug purpose?
-    free(database);
-    exit(2);
+    fprintf(stderr,"No Command recognized in %s.\n", cfg.database);
   }
-  free(database);
-  
+    
+  free_structure(&cfg);
+
   return 0;
 }
+
+// Free elements in struct, not struct itself
+// No oppression allowed in this program.
+void free_structure(struct config *cfg) {
+  free(cfg->speech);
+  if (cfg->command) free(cfg->command);
+  while(cfg->var_Header) {
+      free(cfg->var_Header->varName);
+      free(cfg->var_Header->varValue);
+      cfg->var_LL = cfg->var_Header->next;
+      free(cfg->var_Header);
+      cfg->var_Header = cfg->var_LL;
+  }
+  free(cfg->database);
+}
+
 static void print_arg_quoted(char *string) {
   while(*string != ' ' && *string != '\0') {
     printf("%c",*string);
@@ -137,28 +143,27 @@ static void print_arg_quoted(char *string) {
   return;
 }
 
-static int parse_args(int argc,char *argv[],char **speech,char **database,struct config *cfg) {
+static int parse_args(int argc,char *argv[],struct config *cfg) {
 
-  // Could reduce amount of code here. Also, maybe logic can be fixed
-  if(argc < 3) {
+  if(argc < 3 || (argc >= 1 && strcmp(argv[1], "-h") == 0)) {
     printf("Incorrect number of arguments: \n"
 	   "USAGE %s <speech> <database> [-f ][-s starting-line]\n",argv[0]);
     return 1;
   }
-  if(*speech != NULL || *database != NULL) {
+  if(cfg->speech != NULL || cfg->database != NULL) {
     fprintf(stderr,"ERROR, speech and database pointers must be NULL\n"
 	    "before calling parse_args().");
     return 1;
   }
-  *speech = malloc(sizeof(char)*strlen(argv[1])+1);
-  *database = malloc(sizeof(char)*strlen(argv[2])+1);
+  cfg->speech = malloc(sizeof(char)*strlen(argv[1])+1);
+  cfg->database = malloc(sizeof(char)*strlen(argv[2])+1);
 
-  if(*speech == NULL || *database == NULL) {
+  if(cfg->speech == NULL || cfg->database == NULL) {
    perror("malloc:");
    exit(EXIT_FAILURE);
   }
-  strcpy(*speech,argv[1]);
-  strcpy(*database,argv[2]);
+  strcpy(cfg->speech,argv[1]);
+  strcpy(cfg->database,argv[2]);
   
   //more options
   int curarg = 2;

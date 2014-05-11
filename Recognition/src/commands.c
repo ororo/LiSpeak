@@ -21,13 +21,15 @@ void store_special_variables(char *speech,char *buf,struct config *cfg);
 /**
 * Return the command corresponding to /speech/ according to the dictionary file named /database/
 */
-char *get_command(char *database,char *speech,struct config *cfg) {
+char *get_command(struct config *cfg) {
+
+  printf("get_command: %s, %s.\n", cfg->database, cfg->speech); //DEBUG
 
   FILE *file;
   char buf[1024];
   char *ret = NULL; // The command to return.
 
-  file = fopen(database,"r");
+  file = fopen(cfg->database,"r");
   if(file == NULL) {
     perror("fopen");
     exit(EXIT_FAILURE);
@@ -45,11 +47,11 @@ char *get_command(char *database,char *speech,struct config *cfg) {
 
   while( fgets(buf,1024,file)) {
     ++cfg->current_db_line;
-    if(is_match(speech,buf,cfg)) {
+    if(is_match(cfg->speech,buf,cfg)) {
       // Yes the speech matches, now to get variables in it.
       cfg->store_variables = 1;
-      store_special_variables(speech,buf,cfg);
-      is_match(speech,buf,cfg); // Will now store variables in in a LL
+      store_special_variables(cfg->speech,buf,cfg);
+      is_match(cfg->speech,buf,cfg); // Will now store variables in in a LL
 
       char *got = fgets(buf,1024,file);
       if (got == NULL) {
@@ -63,8 +65,9 @@ char *get_command(char *database,char *speech,struct config *cfg) {
   }
   
  success:
-  fclose(file);
-  return ret;
+   fclose(file);
+   cfg->command = ret;
+   return ret;
 }
 
 /**

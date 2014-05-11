@@ -324,14 +324,11 @@ int any_match(char **buffer,char **speech,char start,char end,struct config *cfg
 }
 
 // curly bracket match
+// differently from any_match() this is not recursive
 int cb_match(char **buffer,char **speech,struct config *cfg) {
-  return any_atomic_match(buffer,speech,'{','}',cfg);
-}
 
-/*
-Generic parenthesis matcher, differently from any_match() this version is not recursive
-*/
-int any_atomic_match(char **buffer,char **speech,char start,char end,struct config *cfg) {
+  char start = '{';
+  char end = '}';
 
   if(**buffer != start) {
     printf("ERROR, any_atomic_match() called, but **buffer != '%c'\n",
@@ -340,8 +337,6 @@ int any_atomic_match(char **buffer,char **speech,char start,char end,struct conf
   ++(*buffer);
 
   char *buf = *buffer;
-  char *Gspeech = *speech;
-  char *tmpSpeech = *speech;
 
   int stop = 1;
   
@@ -361,6 +356,7 @@ int any_atomic_match(char **buffer,char **speech,char start,char end,struct conf
 	     ++(*buffer);
     }
   }
+  
   --(*buffer);
   **buffer = '\0';
   //Now *buf is a file name
@@ -369,13 +365,30 @@ int any_atomic_match(char **buffer,char **speech,char start,char end,struct conf
   newcfg.match_first = 1;
   newcfg.starting_db_line = 0;
   newcfg.current_db_line = 0;
+  newcfg.end_of_match = 0;
+  newcfg.var_Header = NULL;
+  newcfg.var_LL = NULL;
+  newcfg.database = malloc(sizeof(char)*strlen(buf)+1); strcpy(newcfg.database,buf);
+  newcfg.speech = malloc(sizeof(char)*strlen(*speech)+1); strcpy(newcfg.speech,*speech);
+  newcfg.command = NULL;
   
-  char *new_command = NULL;
-
-  new_command = get_command(buf,*speech,&newcfg);
+  get_command(&newcfg);
   
-  if (new_command != 0 && *new_command != '\0') return 1;
-  else return 0;
+  printf("any_atomic_match: %s,%d.\n", newcfg.command, newcfg.end_of_match); //DEBUG
+  
+  //FIXME: here we must save newcfg.command somewhere
+  
+  int ret = (newcfg.command != NULL && *newcfg.command != '\0');
+  
+  if (ret) {
+    *speech += newcfg.end_of_match;
+    **buffer = '}';
+    ++(*buffer);
+    //Probably we should now duplicate speech....
+  }
+  
+  free_structure(&newcfg);
+  return ret;
 }
 
 
@@ -570,6 +583,7 @@ int check_equality(char *speech,char *buffer,struct config *cfg) {
     if(*buffer == '\n' || *buffer == '#' || *buffer == '\r') {
       *buffer = '\0';
     }
+    //printf("Going to match: %c,%c.\n",*buffer,*speech);  //DEBUG
     if(*buffer == '\0') {
       if (*speech == '\0') //both buffer and speech ended
         break;
@@ -604,7 +618,7 @@ int check_equality(char *speech,char *buffer,struct config *cfg) {
       if( ! cb_match(&buffer,&speech,cfg)) {
         return 0;
       }
-
+      
       continue;
     }
     else if(*buffer == '\\') {
