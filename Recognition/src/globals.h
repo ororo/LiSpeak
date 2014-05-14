@@ -8,16 +8,17 @@
 #ifndef GLOBALS_H_INCLUDED
 #define GLOBALS_H_INCLUDED
 
-extern int STORE_VARIABLES; // set to yes when actually
-                         // storing vars.
-extern struct variables{
+struct variables{
   char *varName;
   char *varValue;
 
   struct variables *next;
-} *var_Header, *var_LL;
+};
 
-
-extern int LINE_IN_DATABASE;
+struct config {
+  int match_first, starting_db_line, current_db_line, store_variables, end_of_match;
+  struct variables *var_Header, *var_LL;
+  char *speech, *database, *command;
+};
 
 #endif /* GLOBALS_H_INCLUDED */

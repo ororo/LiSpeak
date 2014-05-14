@@ -1,6 +1,6 @@
 CC=gcc
 CFLAGS=-c -Wall -Wno-unused  
-LDFLAGS=-O3
+#LDFLAGS=-O3    #with this line, we get a Segmentation fault
 SOURCES=src/dictionary.c src/match.c src/commands.c
 OBJECTS=$(SOURCES:.cpp=.o)
 EXECUTABLE=dictionary
