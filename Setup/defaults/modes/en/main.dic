@@ -49,7 +49,7 @@ where is (LINE place)
 
 <open,launch>[ application] (LINE app)
   program "$app$"
-
+  
 date
   date date
 

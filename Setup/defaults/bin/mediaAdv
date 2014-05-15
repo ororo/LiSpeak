@@ -6,10 +6,10 @@ bus = dbus.SessionBus()
 proxy = False
 
 def feat(s):
-    s.replace("ft.","featuring")
-    s.replace("feat.","featuring")
-    s.replace("ft","featuring")
-    s.replace("feat","featuring")
+    s = s.replace(" feat "," featuring ")
+    s = s.replace(" ft. "," featuring ")
+    s = s.replace(" feat. "," featuring ")
+    s = s.replace(" ft "," featuring ")
     return s
 
 if bus.name_has_owner('org.gnome.Rhythmbox3'):
