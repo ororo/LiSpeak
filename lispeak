@@ -202,7 +202,7 @@ class InstallGUI:
         if num == DEPENDS_PAGE:
             self.nButton.set_label("Skip Dependencies")
             output("Calculating dependencies...")   #could be a message in some status bar
-            depends = ["sox","wget","espeak","xautomation","xvkbd","python-appindicator","xdotool","mpg123","python-alsaauido"]
+            depends = ["sox","wget","espeak","xautomation","xvkbd","python-appindicator","xdotool","mpg123","python-alsaaudio"]
             self.needs = []
             try:
                 resp = commands.getstatusoutput("dpkg --get-selections | grep -v deinstall > " + FILEFOLDER + "/packages")[1]

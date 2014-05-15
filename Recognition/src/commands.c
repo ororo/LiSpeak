@@ -14,58 +14,66 @@
 
 // PROTOTYPES *****************
 
-void store_special_variables(char *speech,char *buf);
+void store_special_variables(char *speech,char *buf,struct config *cfg);
 
 //****************************
 
 /**
 * Return the command corresponding to /speech/ according to the dictionary file named /database/
 */
-char *get_command(char *database,char *speech) {
+char *get_command(struct config *cfg) {
+
+  printf("get_command: %s, %s.\n", cfg->database, cfg->speech); //DEBUG
 
   FILE *file;
   char buf[1024];
   char *ret = NULL; // The command to return.
 
-  file = fopen(database,"r");
+  file = fopen(cfg->database,"r");
   if(file == NULL) {
     perror("fopen");
     exit(EXIT_FAILURE);
   }
 
   int i;
-  if(LINE_IN_DATABASE != 0) {
-    for(i = 0;i < LINE_IN_DATABASE;++i) {
+  if(cfg->starting_db_line != 0) {
+    for(i = 0;i < cfg->starting_db_line;++i) {
       if(!(fgets(buf,1024,file))) {
-      	goto success;
+      	goto success; //starting_db_line over file size
       }
     }
+    ++cfg->current_db_line;
   }
 
   while( fgets(buf,1024,file)) {
-    ++LINE_IN_DATABASE;
-    if(is_match(speech,buf)) {
+    ++cfg->current_db_line;
+    if(is_match(cfg->speech,buf,cfg)) {
       // Yes the speech matches, now to get variables in it.
-      STORE_VARIABLES = 1;
-      store_special_variables(speech,buf);
-      is_match(speech,buf); // Will now store variables in in a LL
+      cfg->store_variables = 1;
+      store_special_variables(cfg->speech,buf,cfg);
+      is_match(cfg->speech,buf,cfg); // Will now store variables in in a LL
 
-      fgets(buf,1024,file);
-      ++LINE_IN_DATABASE;
-      ret = create_command(buf);
+      char *got = fgets(buf,1024,file);
+      if (got == NULL) {
+        printf("Error in database, waiting command but got EOF.\n");
+        exit(1);
+      }
+      ++cfg->current_db_line;
+      ret = create_command(buf, cfg);
       break;
     }
   }
   
  success:
-  fclose(file);
-  return ret;
+   fclose(file);
+   cfg->command = ret;
+   return ret;
 }
 
 /**
 * Create the command, using the given line of dictionary /buf/ and the variables stored in /var_LL/
 */
-char *create_command(char *buf) {
+char *create_command(char *buf,struct config *cfg) {
 
   /* while(var_Header != NULL) { */
   /*   printf("%s == %s\n",var_Header->varName,var_Header->varValue); */
@@ -75,8 +83,8 @@ char *create_command(char *buf) {
   /* printf("%s\n",buf); */
   char *ret = malloc(sizeof(char)*1024); // get a kilo at a time
   if(ret == NULL) {
-  perror("malloc:");
-  exit(EXIT_FAILURE);
+    perror("malloc:");
+    exit(EXIT_FAILURE);
   }
   int i = 0;
   char saveChar;
@@ -86,7 +94,7 @@ char *create_command(char *buf) {
 
   // First skip leading spaces
   if(*buf != ' ' && *buf != '\t') {
-    fprintf(stderr,"Bad syntax in database command: line %i does not start with a space\n", LINE_IN_DATABASE);
+    fprintf(stderr,"Bad syntax in database command: line %i does not start with a space\n", cfg->current_db_line);
     exit(EXIT_FAILURE);
   }
   while(*buf == ' ' || *buf == '\t') {
@@ -104,7 +112,7 @@ char *create_command(char *buf) {
     if(*buf == '\\') {
       buf++;
       if(*buf == '\n' || *buf == '\0' || *buf == '\r') {
-        fprintf(stderr,"Bad syntax in database command: '\\' char at the end, line %i\n", LINE_IN_DATABASE);
+        fprintf(stderr,"Bad syntax in database command: '\\' char at the end, line %i\n", cfg->current_db_line);
       	exit(EXIT_FAILURE);
       }
       ret[i] = *buf;
@@ -114,11 +122,11 @@ char *create_command(char *buf) {
     } else {
       ++buf;
       if(*buf == '$') {
-      	printf("Bad syntax in database command: unexpected '$', line %i\n", LINE_IN_DATABASE);
+      	printf("Bad syntax in database command: unexpected '$', line %i\n", cfg->current_db_line);
       	exit(EXIT_FAILURE);
       }
       if(*buf == '\n' || *buf == '\0' || *buf == '\r') {
-      	printf("Bad syntax in database command: unexpected EOL, line %i\n", LINE_IN_DATABASE);
+      	printf("Bad syntax in database command: unexpected EOL, line %i\n", cfg->current_db_line);
       	exit(EXIT_FAILURE);
       }
       startVarName = buf;
@@ -127,13 +135,13 @@ char *create_command(char *buf) {
       }
 
       if(*buf != '$') {
-        fprintf(stderr,"Bad syntax in database command: lacking '$', line %i\n", LINE_IN_DATABASE);
+        fprintf(stderr,"Bad syntax in database command: lacking '$', line %i\n", cfg->current_db_line);
       	exit(EXIT_FAILURE);
       }
 
       saveChar = *buf;
       *buf = '\0';
-      tmpHeader = var_Header;
+      tmpHeader = cfg->var_Header;
 
       while(tmpHeader != NULL) {
       	if(strcmp(startVarName,tmpHeader->varName) == 0) {
@@ -182,21 +190,21 @@ char *create_command(char *buf) {
 /**
 * Create the var_LL linked list, then set up the special variable SPEECH 
 */
-void store_special_variables(char *speech,char *buf) {
-  assert(var_LL == NULL);
+void store_special_variables(char *speech,char *buf,struct config *cfg) {
+  assert(cfg->var_LL == NULL);
   
   // first time add special var $SPEECH$
-  var_LL = malloc(1*sizeof(struct variables));
-  if(var_LL == NULL) {
+  cfg->var_LL = malloc(1*sizeof(struct variables));
+  if(cfg->var_LL == NULL) {
     perror("malloc:");
     exit(EXIT_FAILURE);
   }
   // Set the var_Header to access the head later.
-  var_Header = var_LL;
-  var_LL->next = NULL;
+  cfg->var_Header = cfg->var_LL;
+  cfg->var_LL->next = NULL;
   // The stupid error before "var_LL->next == NULL;"
-  var_LL->varName = malloc(strlen("SPEECH")+1);
-  strcpy(var_LL->varName,"SPEECH");
-  var_LL->varValue = malloc(strlen(speech)+1);
-  strcpy(var_LL->varValue,speech);
+  cfg->var_LL->varName = malloc(strlen("SPEECH")+1);
+  strcpy(cfg->var_LL->varName,"SPEECH");
+  cfg->var_LL->varValue = malloc(strlen(speech)+1);
+  strcpy(cfg->var_LL->varValue,speech);
 }

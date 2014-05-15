@@ -10,7 +10,7 @@
 
 #include "globals.h"
 
-char *get_command(char *database,char *speech);
-char *create_command(char *buf);
+char *get_command(struct config *cfg);
+char *create_command(char *buf,struct config *cfg);
 
 #endif /* COMMANDS_H_ */
