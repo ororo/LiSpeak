@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*- 
-VERSION = 1.1
+VERSION = 1.2
 
 import subprocess,sys,platform,tarfile,os,argparse,shutil,urllib2,time,json,socket,zipfile,serial,dbus,getpass
 
@@ -263,6 +263,7 @@ class InstallGUI:
             self.userinfo["TTSENGINE"] = str(self.builder.get_object("cbtTTS").get_active_text())
             self.userinfo["TTS"] = str(self.builder.get_object("swEspeak").get_active())
             self.userinfo["ARDUINO"] = "/dev/ttyACM0"
+            self.userinfo["VERSION"] = VERSION
             lang = str(self.builder.get_object("cbtLang").get_active_text())
             languages = {"English":"en","Polski":'pl',"Español":'es',"Français":'fr',"Italiano":"it"}
             self.userinfo['LANG'] = languages[lang]
@@ -310,6 +311,16 @@ def set_combo_active_text(combo, text):
         if model[i][0] == text:
             combo.set_active(i)
     
+def checkVersion():
+    i = getInfo()
+    if 'VERSION' in i:
+        if VERSION != getInfo()['VERSION']:
+            print "Please run the setup again. The new version requires it."
+            sys.exit()
+    else:
+        print "Please run the setup again. The new version requires it."
+        sys.exit()
+
 def checkDepends(depends):
     needs = []
     try:
@@ -1192,12 +1203,14 @@ def get_resource_path(rel_path):
     rel_path_to_resource = os.path.join(dir_of_py_file, rel_path)
     abs_path_to_resource = os.path.abspath(rel_path_to_resource)
     return abs_path_to_resource
+    
 quiet = False
 debugMode = False
 if __name__ == "__main__": 
     installDir = os.path.dirname(os.path.realpath(__file__))
 else:
-    installDir = getInfo()['ROOTDIR']    
+    installDir = getInfo()['ROOTDIR']   
+    checkVersion() 
 try:
     import goslate
     gt = goslate.Goslate()
@@ -1227,15 +1240,17 @@ if __name__ == "__main__":
     force = args.force
     debug(args)
     something_done = False
+    if args.setup:
+        something_done = True
+        setup()
+    else:
+        checkVersion()
     if args.warn:
         something_done = True
         displayOSWarning()
     if args.ask:
         something_done = True
         askInfo()
-    if args.setup:
-        something_done = True
-        setup()
     if args.r != "":
         something_done = True
         removePlugin(args.r)
