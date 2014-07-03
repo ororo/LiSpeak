@@ -593,7 +593,7 @@ def displayOSWarning():
         else:
             dialogPrompt(text=str(d)+" "+str(v)+" ("+str(j.title())+") "+" is NOT a supported operating system.\nLiSpeak may not work properly.\n\nDo you want to continue?",exit=True)
     else:
-        dialogPrompt(text="Your operating system could not be detected.\nLiSpeak may not work properly.\n\nDo you want to continue?",exit=true)
+        dialogPrompt(text="Your operating system could not be detected.\nLiSpeak may not work properly.\n\nDo you want to continue?",exit=True)
 def touch(path,out=True):   
     if type(path)==str:
         if not os.path.exists(os.path.dirname(path)):
