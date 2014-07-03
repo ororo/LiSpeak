@@ -91,8 +91,8 @@ int main(int argc, char *argv[]) {
     if(cfg.starting_db_line > 0) { // if we ask for a line, we get one back.
       printf("%d\n",cfg.current_db_line-1);
     }
-  } else {
-    fprintf(stderr,"No Command recognized in %s.\n", cfg.database);
+  }else{
+    return 1;
   }
     
   free_structure(&cfg);

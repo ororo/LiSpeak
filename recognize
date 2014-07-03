@@ -74,21 +74,13 @@ SPEECH=$(eval "echo \"$SPEECH\" | tr '[:upper:]' '[:lower:]'")
 }
 
 
-#transform $1 (probably $COMMAND) into some formattable form
-#i.e. " replaced with \"
-function escape_command() {
-echo "${1}" |sed -e 's/\"/_FUCK_/' |sed -e 's/\"/_FUCK_/' |sed -e 's/_FUCK_/\\"/' |sed -e 's/_FUCK_/\\"/'
-}
-
-
 # Try to run a command in ./Recognition/bin with useful errors.
 # This routine assumes $2 is not empty
 function run_command() {
-    
-    #Probably environment variables not getting inherited in the bash shell!!
-    CMDFMT=$(escape_command "$2")
-    eval "./Recognition/recognized.py \"$1\" \"$CMDFMT\""
 
+    eval "./Recognition/recognized.py \"$1\" \"$2\""
+
+    echo "Executing: $2"
     
     eval "./Recognition/bin/$2"
 
@@ -224,7 +216,12 @@ fi
 
 escape_speech
 
+echo $SPEECH
+
 speech2command
+
+
+echo "THE COMMAND: $COMMAND"
 
 if [ \! -z "$COMMAND"  ] ;
 then

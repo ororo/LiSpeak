@@ -61,7 +61,8 @@ if [ -e $PIDFILE ];then
     while kill -s 0 $PID_OF_SPEECH 2>/dev/null;do
     :
     done
-    RESULT="$(./send_speech ${FLACFILE})"
+    RESULT="$(./pyrecognize ${FLACFILE})"
+    echo $RESULT
     ./recognize "$RESULT"
     #bash -x    ./recognize "$RESULT"    #DEBUG
 

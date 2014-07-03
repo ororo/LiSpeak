@@ -23,8 +23,6 @@ void store_special_variables(char *speech,char *buf,struct config *cfg);
 */
 char *get_command(struct config *cfg) {
 
-  printf("get_command: %s, %s.\n", cfg->database, cfg->speech); //DEBUG
-
   FILE *file;
   char buf[1024];
   char *ret = NULL; // The command to return.

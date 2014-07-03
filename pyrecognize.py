@@ -2,6 +2,7 @@
 import sys
 import urllib2
 import json
+import lispeak
 try:
     filename = sys.argv[1]
 except IndexError:
@@ -12,7 +13,7 @@ f = open(filename)
 data = f.read()
 f.close()
 
-req = urllib2.Request('https://www.google.com/speech-api/v1/recognize?xjerr=1&client=chromium&lang=en-US', data=data, headers={'Content-type': 'audio/x-flac; rate=16000'})
+req = urllib2.Request('https://www.google.com/speech-api/v2/recognize?xjerr=1&client=chromium&lang=en-US', data=data, headers={'Content-type': 'audio/x-flac; rate=16000'})
 
 try:
     ret = urllib2.urlopen(req)
