@@ -314,7 +314,7 @@ def set_combo_active_text(combo, text):
 def checkVersion():
     i = getInfo()
     if 'VERSION' in i:
-        if VERSION != getInfo()['VERSION']:
+        if str(VERSION) != getInfo()['VERSION']:
             print "Please run the setup again. The new version requires it."
             sys.exit()
     else:
