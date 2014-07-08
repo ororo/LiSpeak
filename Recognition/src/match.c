@@ -228,7 +228,7 @@ int any_match(char **buffer,char **speech,char start,char end,struct config *cfg
 
   while(stop != 0) { // While we are in a balanced expression.
     if(**buffer == '\n' || **buffer == '\0' || **buffer == '\r') {
-      printf("ERROR, inconnect syntax of %c%c\n",start,end);
+      printf("ERROR, incorrect syntax of %c%c\n",start,end);
       exit(1);
     }
     if(**buffer == start) {
