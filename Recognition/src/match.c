@@ -219,16 +219,17 @@ int any_match(char **buffer,char **speech,char start,char end,struct config *cfg
     exit(1);
   }
   ++(*buffer);
+  //printf("matching buf='%s' speech='%s'\n", *buffer, *speech); //DEBUG
 
   char *buf = *buffer;
-  char *Gspeech = *speech;
-  char *tmpSpeech = *speech;
+  char *Gspeech = *speech;    //final position for *speech
+  char *tmpSpeech = *speech;  //current position in speech
 
   int stop = 1;
 
   while(stop != 0) { // While we are in a balanced expression.
     if(**buffer == '\n' || **buffer == '\0' || **buffer == '\r') {
-      printf("ERROR, inconnect syntax of %c%c\n",start,end);
+      printf("ERROR, incorrect syntax of %c%c\n",start,end);
       exit(1);
     }
     if(**buffer == start) {
@@ -247,6 +248,9 @@ int any_match(char **buffer,char **speech,char start,char end,struct config *cfg
   }
   --(*buffer);
   // We are now at the matching > or ]
+  //HERE: buf points at beginning of pattern
+  //      *buffer points at end of patter
+  //      *speech,tmpSpeech,Gspeech point at beginning of speech
 
   while(buf != *buffer) {
     if(*buf == ',') {
@@ -307,7 +311,8 @@ int any_match(char **buffer,char **speech,char start,char end,struct config *cfg
       	++buf;
       }
     }
-  }
+  } //end while
+  
   if(tmpSpeech > Gspeech) {
     Gspeech = tmpSpeech;
     tmpSpeech = *speech;
@@ -580,6 +585,7 @@ int check_equality(char *speech,char *buffer,struct config *cfg) {
   char* savespeech = speech;
 
   while(1) {
+    //printf("DEBUG matching buf='%s' speech='%s'\n", buffer, speech); //DEBUG
     if(*buffer == '\n' || *buffer == '#' || *buffer == '\r') {
       *buffer = '\0';
     }
@@ -589,7 +595,7 @@ int check_equality(char *speech,char *buffer,struct config *cfg) {
         break;
       else if (cfg->match_first && is_eow(*speech)) //speech not ended, however we just want first match
         break;
-    } else if(*speech == '\0') {//speech ended but buffer did not
+    } else if((*speech == '\0') && (*buffer != '[')) {//speech ended but buffer did not
       return 0;
     }
 
@@ -629,7 +635,7 @@ int check_equality(char *speech,char *buffer,struct config *cfg) {
       }
     else {
       if(*speech != *buffer) {
-      	//	printf("%c != %c\n",*speech,*buffer); // DEBUG
+      	//printf("%c != %c\n",*speech,*buffer); // DEBUG
       	return 0;
       }
       ++buffer;
