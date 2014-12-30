@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python2
 
 import lispeak,os,time
 from gi.repository import Gtk, Gdk

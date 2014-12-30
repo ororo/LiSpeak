@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python2
 
 from gi.repository import Gtk as gtk
 from gi.repository import Gdk as gdk

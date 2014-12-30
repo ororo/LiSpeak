@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python2
 # This module can accept many arguments. If the "" syntax is used, then the argument will be recognised as one,
 # else if no "" syntax is used, then the arguments will be recognised as different.
 # I did this to keep a steady syntax across all dictionaries
