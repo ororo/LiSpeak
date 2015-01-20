@@ -1,4 +1,4 @@
-#!/usr/bin/env python2
+#!/usr/bin/env python2.7
 #
 # Copyright 2009 Derik Pereira. All Rights Reserved.
 #
