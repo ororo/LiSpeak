@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python2.7
 
 # -*- coding: utf-8 -*-
 import urllib2,sys,time,os,lispeak,json,dbus,dbus.service,getpass
